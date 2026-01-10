@@ -1,18 +1,18 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official marketplace for flight505's Claude Code plugins - Storybook Assistant, Project Planner, and Nano Banana",
   "owner": {
     "name": "Jesper Vang",
-    "email": "jesper@example.com",
+    "email": "contact@flight505.dev",
     "url": "https://github.com/flight505"
   },
   "plugins": [
     {
       "name": "storybook-assistant",
       "description": "SOTA 2026 Storybook assistant with Vision AI design-to-code, natural language generation, AI-powered accessibility remediation, React Server Components, dark mode generation, and comprehensive testing",
-      "version": "2.0.5",
+      "version": "2.0.6",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
