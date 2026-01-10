@@ -1,0 +1,9 @@
+[submodule "storybook-assistant-plugin"]
+	path = storybook-assistant-plugin
+	url = https://github.com/flight505/storybook-assistant-plugin.git
+[submodule "claude-project-planner"]
+	path = claude-project-planner
+	url = https://github.com/flight505/claude-project-planner.git
+[submodule "nano-banana"]
+	path = nano-banana
+	url = https://github.com/flight505/nano-banana.git
