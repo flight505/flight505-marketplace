@@ -17,21 +17,39 @@
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
       },
-      "source": "https://github.com/flight505/storybook-assistant-plugin.git",
+      "source": {
+        "type": "github",
+        "repo": "flight505/storybook-assistant-plugin"
+      },
       "category": "development",
-      "keywords": ["storybook", "react", "components", "testing", "accessibility", "vision-ai"]
+      "keywords": [
+        "storybook",
+        "react",
+        "components",
+        "testing",
+        "accessibility",
+        "vision-ai"
+      ]
     },
     {
       "name": "claude-project-planner",
       "description": "AI-powered project planning and management assistant for Claude Code with task breakdown, timeline estimation, and progress tracking",
-      "version": "1.0.0",
+      "version": "1.0.18",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
       },
-      "source": "https://github.com/flight505/claude-project-planner.git",
+      "source": {
+        "type": "github",
+        "repo": "flight505/claude-project-planner"
+      },
       "category": "productivity",
-      "keywords": ["project-management", "planning", "tasks", "productivity"]
+      "keywords": [
+        "project-management",
+        "planning",
+        "tasks",
+        "productivity"
+      ]
     },
     {
       "name": "nano-banana",
@@ -41,9 +59,18 @@
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
       },
-      "source": "https://github.com/flight505/nano-banana.git",
+      "source": {
+        "type": "github",
+        "repo": "flight505/nano-banana"
+      },
       "category": "development",
-      "keywords": ["image-generation", "diagrams", "ai", "visualization", "openrouter"]
+      "keywords": [
+        "image-generation",
+        "diagrams",
+        "ai",
+        "visualization",
+        "openrouter"
+      ]
     }
   ]
 }
