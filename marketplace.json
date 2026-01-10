@@ -1,0 +1,49 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "flight505-plugins",
+  "version": "1.0.0",
+  "description": "Official marketplace for flight505's Claude Code plugins - Storybook Assistant, Project Planner, and Nano Banana",
+  "owner": {
+    "name": "Jesper Vang",
+    "email": "jesper@example.com",
+    "url": "https://github.com/flight505"
+  },
+  "plugins": [
+    {
+      "name": "storybook-assistant",
+      "description": "SOTA 2026 Storybook assistant with Vision AI design-to-code, natural language generation, AI-powered accessibility remediation, React Server Components, dark mode generation, and comprehensive testing",
+      "version": "2.0.5",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "https://github.com/flight505/storybook-assistant-plugin.git",
+      "category": "development",
+      "keywords": ["storybook", "react", "components", "testing", "accessibility", "vision-ai"]
+    },
+    {
+      "name": "claude-project-planner",
+      "description": "AI-powered project planning and management assistant for Claude Code with task breakdown, timeline estimation, and progress tracking",
+      "version": "1.0.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "https://github.com/flight505/claude-project-planner.git",
+      "category": "productivity",
+      "keywords": ["project-management", "planning", "tasks", "productivity"]
+    },
+    {
+      "name": "nano-banana",
+      "description": "AI-powered image and diagram generation using state-of-the-art models via OpenRouter with quality review and iteration",
+      "version": "1.0.3",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "https://github.com/flight505/nano-banana.git",
+      "category": "development",
+      "keywords": ["image-generation", "diagrams", "ai", "visualization", "openrouter"]
+    }
+  ]
+}
