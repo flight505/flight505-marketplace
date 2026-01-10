@@ -17,10 +17,7 @@
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
       },
-      "source": {
-        "type": "github",
-        "repo": "flight505/storybook-assistant-plugin"
-      },
+      "source": "flight505/storybook-assistant-plugin",
       "category": "development",
       "keywords": [
         "storybook",
@@ -39,10 +36,7 @@
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
       },
-      "source": {
-        "type": "github",
-        "repo": "flight505/claude-project-planner"
-      },
+      "source": "flight505/claude-project-planner",
       "category": "productivity",
       "keywords": [
         "project-management",
@@ -59,10 +53,7 @@
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
       },
-      "source": {
-        "type": "github",
-        "repo": "flight505/nano-banana"
-      },
+      "source": "flight505/nano-banana",
       "category": "development",
       "keywords": [
         "image-generation",
