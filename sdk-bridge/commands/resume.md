@@ -1,281 +1,263 @@
 ---
-description: "Resume CLI interaction after SDK agent completes"
+description: "Review completed SDK agent work with detailed analysis"
 argument-hint: ""
-allowed-tools: ["Task", "Bash", "Read", "TodoWrite"]
+allowed-tools: ["Bash", "Read"]
 ---
 
-# Resume After SDK Agent Completion
+# Resume and Review SDK Agent Work
 
-Let me help you resume interactive work after the SDK agent has completed.
+I'll provide a comprehensive review of the SDK agent's work with detailed analysis.
 
-## Check for Completion Signal
+## Part 1: Executive Summary
 
 ```bash
 if [ ! -f ".claude/sdk_complete.json" ]; then
-  echo "⚠️  SDK agent hasn't signaled completion yet"
+  echo "❌ SDK agent has not completed yet"
   echo ""
-
-  # Check if still running
-  if [ -f ".claude/sdk-bridge.pid" ]; then
-    PID=$(cat .claude/sdk-bridge.pid)
-    if ps -p $PID > /dev/null 2>&1; then
-      echo "SDK agent is still running (PID: $PID)"
-      echo ""
-      echo "Check current status:"
-      echo "  /sdk-bridge:status"
-      exit 0
-    else
-      echo "SDK agent process has stopped but didn't create completion signal."
-      echo "This may indicate a crash or error."
-      echo ""
-      echo "Check the logs:"
-      echo "  tail -50 .claude/sdk-bridge.log"
-      echo ""
-      echo "If the work looks complete, you can continue anyway."
-    fi
-  else
-    echo "No SDK agent appears to be running."
-    echo ""
-    echo "To start one, run: /sdk-bridge:handoff"
-    exit 0
-  fi
+  echo "Current options:"
+  echo "  • Check progress: /sdk-bridge:watch"
+  echo "  • View status: /sdk-bridge:status"
+  echo "  • View logs: tail -f .claude/sdk-bridge.log"
+  echo ""
+  exit 0
 fi
-```
 
-## Parse Completion Signal
-
-```bash
-if [ -f ".claude/sdk_complete.json" ]; then
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "SDK Agent Completion Report"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo ""
-
-  # Read completion data
-  REASON=$(jq -r '.reason // "unknown"' .claude/sdk_complete.json)
-  TOTAL_SESSIONS=$(jq -r '.session_count // "?"' .claude/sdk_complete.json)
-  FINAL_COMMIT=$(jq -r '.final_commit // ""' .claude/sdk_complete.json)
-
-  echo "Completion Reason: $REASON"
-  echo "Total Sessions: $TOTAL_SESSIONS"
-  if [ -n "$FINAL_COMMIT" ]; then
-    echo "Final Commit: ${FINAL_COMMIT:0:8}"
-  fi
-  echo ""
-fi
-```
-
-## Analyze Feature Progress
-
-```bash
-echo "Feature Progress:"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-FEATURES_TOTAL=$(jq 'length' feature_list.json)
-FEATURES_PASSING=$(jq '[.[] | select(.passes==true)] | length' feature_list.json)
-FEATURES_REMAINING=$((FEATURES_TOTAL - FEATURES_PASSING))
-COMPLETION_PCT=$((FEATURES_PASSING * 100 / FEATURES_TOTAL))
-
-echo "  Total: $FEATURES_TOTAL features"
-echo "  ✅ Completed: $FEATURES_PASSING ($COMPLETION_PCT%)"
-echo "  ❌ Remaining: $FEATURES_REMAINING"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 SDK BRIDGE COMPLETION REPORT"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Show completed features
-if [ "$FEATURES_PASSING" -gt 0 ]; then
-  echo "Completed Features:"
-  jq -r '.[] | select(.passes==true) | "  ✅ " + .description' feature_list.json | head -20
+# Parse completion data
+REASON=$(jq -r '.reason // "unknown"' .claude/sdk_complete.json)
+SESSIONS=$(jq -r '.session_count // 0' .claude/sdk_complete.json)
+END_TIME=$(jq -r '.completion_time // ""' .claude/sdk_complete.json)
 
-  if [ "$FEATURES_PASSING" -gt 20 ]; then
-    echo "  ... and $((FEATURES_PASSING - 20)) more"
-  fi
-  echo ""
+# Parse handoff context
+if [ -f ".claude/handoff-context.json" ]; then
+  START_TIME=$(jq -r '.handoff_time // ""' .claude/handoff-context.json)
+  MODE=$(jq -r '.mode // "sequential"' .claude/handoff-context.json)
+  MODEL=$(jq -r '.model // "unknown"' .claude/handoff-context.json)
+  PARALLEL=$(jq -r '.features.parallel_execution // false' .claude/handoff-context.json)
 fi
 
-# Show remaining features
-if [ "$FEATURES_REMAINING" -gt 0 ]; then
-  echo "Remaining Features:"
-  jq -r '.[] | select(.passes==false) | "  ❌ " + .description' feature_list.json | head -10
-
-  if [ "$FEATURES_REMAINING" -gt 10 ]; then
-    echo "  ... and $((FEATURES_REMAINING - 10)) more"
+# Calculate duration if times available
+if [ -n "$START_TIME" ] && [ -n "$END_TIME" ]; then
+  START_TS=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$START_TIME" "+%s" 2>/dev/null || echo 0)
+  END_TS=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$END_TIME" "+%s" 2>/dev/null || echo 0)
+  if [ "$START_TS" -gt 0 ] && [ "$END_TS" -gt 0 ]; then
+    DURATION_SEC=$((END_TS - START_TS))
+    DURATION_MIN=$((DURATION_SEC / 60))
   fi
-  echo ""
+fi
+
+# Feature progress
+FEATURES_TOTAL=$(jq 'length' feature_list.json 2>/dev/null || echo 0)
+FEATURES_PASSING=$(jq '[.[] | select(.passes==true)] | length' feature_list.json 2>/dev/null || echo 0)
+FEATURES_REMAINING=$((FEATURES_TOTAL - FEATURES_PASSING))
+COMPLETION_PCT=$((FEATURES_TOTAL > 0 ? FEATURES_PASSING * 100 / FEATURES_TOTAL : 0))
+
+# Display summary
+echo "✅ Status: Completed"
+echo "📝 Reason: $REASON"
+echo "🔄 Sessions: $SESSIONS"
+if [ -n "$DURATION_MIN" ]; then
+  echo "⏱️  Duration: $DURATION_MIN minutes"
+fi
+echo "🤖 Model: ${MODEL##*/}"  # Show just model name, not full path
+echo "🚀 Mode: $MODE"
+echo ""
+
+# Feature progress bar
+echo "Feature Progress: $FEATURES_PASSING / $FEATURES_TOTAL (${COMPLETION_PCT}%)"
+FILLED=$((COMPLETION_PCT / 5))
+EMPTY=$((20 - FILLED))
+printf "["
+for i in $(seq 1 $FILLED 2>/dev/null); do printf "████"; done
+for i in $(seq 1 $EMPTY 2>/dev/null); do printf "░░░░"; done
+printf "] ${COMPLETION_PCT}%%\n"
+echo ""
+
+# Speedup estimate for parallel mode
+if [ "$MODE" = "parallel" ] && [ -n "$DURATION_MIN" ]; then
+  SEQUENTIAL_EST=$((FEATURES_TOTAL * 15))
+  if [ "$DURATION_MIN" -lt "$SEQUENTIAL_EST" ]; then
+    SPEEDUP=$((SEQUENTIAL_EST / DURATION_MIN))
+    SAVED=$((SEQUENTIAL_EST - DURATION_MIN))
+    echo "⚡ Parallel Speedup: ~${SPEEDUP}x faster (saved ~$SAVED minutes)"
+    echo ""
+  fi
 fi
 ```
 
-## Validate Deliverables
+## Part 2: Feature-by-Feature Breakdown
 
 ```bash
-echo "Deliverable Verification:"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📋 FEATURE BREAKDOWN"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+jq -r '.[] | "\(.id)\t\(.passes)\t\(.description // "No description")"' feature_list.json | while IFS=$'\t' read -r ID PASSES DESC; do
+  if [ "$PASSES" = "true" ]; then
+    echo "✅ Feature $ID (PASSING)"
+  else
+    echo "❌ Feature $ID (NOT PASSING)"
+  fi
+  echo "   $DESC"
+  echo ""
+done
+```
+
+## Part 3: Deliverable Validation
+
+```bash
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📦 DELIVERABLE FILE VALIDATION"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
 # Extract all file references from completed features
-# Pattern: files with common extensions mentioned in descriptions/tests
-ALL_FILES=$(jq -r '.[] | select(.passes==true) | .description + " " + .test' feature_list.json | \
-  grep -oE '\b[a-zA-Z0-9_/-]+\.(py|js|ts|jsx|tsx|md|txt|json|yaml|yml|sh|sql|html|css|java|go|rs|cpp|c|h|rb|toml|conf|ini|xml)\b' | \
+ALL_FILES=$(jq -r '.[] | select(.passes==true) | .description + " " + (.test // "")' feature_list.json | \
+  grep -oE '\b[a-zA-Z0-9_/-]+\.(py|js|ts|jsx|tsx|md|txt|json|yaml|yml|sh|sql|html|css|java|go|rs|cpp|c|h|rb|toml|conf|ini|xml|vue|svelte|php|dart|swift|kt|scala|r|m|mm|cs|fs|ex|exs|erl|hrl|clj|cljs|cljc|edn)\b' 2>/dev/null | \
   sort -u)
 
 if [ -z "$ALL_FILES" ]; then
   echo "ℹ️  No deliverable files detected from feature descriptions"
-  echo "   (Features may be non-file changes like refactoring or fixes)"
   echo ""
 else
-  # Check each file
   TOTAL_DELIVERABLES=0
   MISSING_DELIVERABLES=0
-  MISSING_FILES=""
 
   while IFS= read -r file; do
     TOTAL_DELIVERABLES=$((TOTAL_DELIVERABLES + 1))
-
     if [ -f "$file" ]; then
       echo "  ✅ $file"
     else
       echo "  ❌ $file (MISSING)"
       MISSING_DELIVERABLES=$((MISSING_DELIVERABLES + 1))
-      MISSING_FILES="${MISSING_FILES}${file}\n"
     fi
   done <<< "$ALL_FILES"
 
   echo ""
-
-  EXISTING_DELIVERABLES=$((TOTAL_DELIVERABLES - MISSING_DELIVERABLES))
-
   if [ "$MISSING_DELIVERABLES" -eq 0 ]; then
-    echo "✅ All $EXISTING_DELIVERABLES deliverable files verified"
+    echo "✅ All $TOTAL_DELIVERABLES deliverable files verified"
   else
     echo "⚠️  Warning: $MISSING_DELIVERABLES of $TOTAL_DELIVERABLES deliverable files are missing!"
     echo ""
-    echo "   This indicates the SDK agent marked features as complete but"
-    echo "   didn't create the expected files. Common causes:"
-    echo "   • Commit succeeded but files weren't actually written"
-    echo "   • Files were created in wrong directory"
-    echo "   • Git issues prevented files from being added"
-    echo "   • File patterns were incorrectly extracted from descriptions"
+    echo "Troubleshooting:"
+    echo "  • Files may be in different directories than expected"
+    echo "  • Check .claude/sdk-bridge.log for file creation details"
+    echo "  • Agent may have used different file names"
+    echo "  • Some features may not have created files (configuration changes, etc.)"
+  fi
+  echo ""
+fi
+```
+
+## Part 4: Git Commits Analysis
+
+```bash
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📝 GIT COMMITS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+if ! command -v git &> /dev/null; then
+  echo "ℹ️  Git not available"
+  echo ""
+else
+  # Get commit from handoff time
+  if [ -f ".claude/handoff-context.json" ]; then
+    HANDOFF_COMMIT=$(jq -r '.git_commit // ""' .claude/handoff-context.json 2>/dev/null)
+  fi
+
+  if [ -n "$HANDOFF_COMMIT" ]; then
+    # Show commits since handoff
+    COMMIT_COUNT=$(git log --oneline "$HANDOFF_COMMIT"..HEAD 2>/dev/null | wc -l | tr -d ' ')
+
+    if [ "$COMMIT_COUNT" -gt 0 ]; then
+      echo "Commits since handoff ($COMMIT_COUNT total):"
+      echo ""
+      git log --oneline --decorate "$HANDOFF_COMMIT"..HEAD | while read -r line; do
+        HASH=$(echo "$line" | awk '{print $1}')
+        MSG=$(echo "$line" | cut -d' ' -f2-)
+        FILES=$(git diff-tree --no-commit-id --name-only -r "$HASH" 2>/dev/null | wc -l | tr -d ' ')
+        echo "  • $HASH: $MSG ($FILES files)"
+      done
+      echo ""
+    else
+      echo "ℹ️  No commits since handoff"
+      echo ""
+    fi
+  else
+    # Show recent commits (fallback)
+    echo "Recent commits (last 10):"
     echo ""
-    echo "   Recommendation: Review the missing files and re-run those features"
+    git log --oneline --decorate -10 2>/dev/null | while read -r line; do
+      HASH=$(echo "$line" | awk '{print $1}')
+      MSG=$(echo "$line" | cut -d' ' -f2-)
+      FILES=$(git diff-tree --no-commit-id --name-only -r "$HASH" 2>/dev/null | wc -l | tr -d ' ')
+      echo "  • $HASH: $MSG ($FILES files)"
+    done
+    echo ""
   fi
-
-  echo ""
 fi
 ```
 
-## Review Recent Commits
+## Part 5: Next Steps and Cleanup
 
 ```bash
-# Get handoff commit if available
-if [ -f ".claude/handoff-context.json" ]; then
-  HANDOFF_COMMIT=$(jq -r '.git_commit' .claude/handoff-context.json 2>/dev/null || echo "")
-fi
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🎯 NEXT STEPS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
 
-if [ -n "$HANDOFF_COMMIT" ] && [ "$HANDOFF_COMMIT" != "none" ]; then
-  echo "Commits Since Handoff:"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  git log --oneline ${HANDOFF_COMMIT}..HEAD 2>/dev/null | head -20 || \
-    git log --oneline --since="2 hours ago" | head -20
+if [ "$FEATURES_REMAINING" -gt 0 ]; then
+  echo "⚠️  Not all features are passing ($FEATURES_REMAINING remaining)"
+  echo ""
+  echo "Recommended actions:"
+  echo "  1. Review .claude/sdk-bridge.log for errors"
+  echo "  2. Check individual feature test results"
+  echo "  3. Fix issues manually or run /sdk-bridge:start again"
   echo ""
 else
-  echo "Recent Commits:"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  git log --oneline -20
+  echo "✅ All features are passing!"
   echo ""
-fi
-```
-
-## Check Tests and Build
-
-```bash
-echo "Verification:"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-# Check if tests exist and run them
-if [ -f "package.json" ] && jq -e '.scripts.test' package.json > /dev/null 2>&1; then
-  echo "Running tests..."
-  if npm test 2>&1 | tail -10; then
-    echo "✅ Tests passing"
-  else
-    echo "⚠️  Some tests may be failing - check above"
-  fi
-  echo ""
-elif command -v pytest &> /dev/null && [ -d "tests" ]; then
-  echo "Running tests..."
-  if pytest 2>&1 | tail -10; then
-    echo "✅ Tests passing"
-  else
-    echo "⚠️  Some tests may be failing - check above"
-  fi
+  echo "Recommended actions:"
+  echo "  1. Review deliverable files above"
+  echo "  2. Run tests: npm test / pytest / etc."
+  echo "  3. Review git commits for changes"
+  echo "  4. Commit and push if satisfied"
   echo ""
 fi
 
-# Check build if available
-if [ -f "package.json" ] && jq -e '.scripts.build' package.json > /dev/null 2>&1; then
-  echo "Checking build..."
-  if npm run build 2>&1 | tail -5; then
-    echo "✅ Build successful"
-  else
-    echo "⚠️  Build may have issues - check above"
-  fi
-  echo ""
-fi
-```
-
-## Summary and Next Steps
-
-```bash
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Summary"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Cleanup:"
+echo "  • Remove completion signal: rm .claude/sdk_complete.json"
+echo "  • Archive logs: mv .claude/sdk-bridge.log .claude/sdk-bridge-$(date +%Y%m%d).log"
+echo "  • Keep configuration for future runs"
 echo ""
 
-if [ "$FEATURES_REMAINING" -eq 0 ]; then
-  echo "🎉 All features complete!"
-  echo ""
-  echo "The SDK agent successfully implemented all $FEATURES_TOTAL features."
-  echo ""
-  echo "Recommended next steps:"
-  echo "  1. Review the commits to understand what was changed"
-  echo "  2. Run comprehensive tests"
-  echo "  3. Manual testing of critical features"
-  echo "  4. Deploy or continue development"
-else
-  echo "SDK agent completed $FEATURES_PASSING of $FEATURES_TOTAL features."
-  echo ""
-  echo "Recommended next steps:"
-  echo "  1. Review completed work"
-  echo "  2. Fix any test failures"
-  echo "  3. Continue with remaining features:"
-  echo ""
-  echo "     You can either:"
-  echo "     • Hand off again: /sdk-bridge:handoff"
-  echo "     • Complete remaining features manually in CLI"
-  echo "     • Refine feature descriptions and hand off again"
-fi
-
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 ```
 
-## Clean Up State Files
+## Summary Note
 
 ```bash
-# Archive completion signal
-if [ -f ".claude/sdk_complete.json" ]; then
-  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-  mv .claude/sdk_complete.json .claude/sdk_complete.$TIMESTAMP.json
-  echo "Archived completion signal to: .claude/sdk_complete.$TIMESTAMP.json"
-fi
+echo "📋 Summary saved to: .claude/completion-report.txt"
+# Save summary for future reference
+{
+  echo "SDK Bridge Completion Report"
+  echo "Generated: $(date)"
+  echo ""
+  echo "Status: Completed"
+  echo "Reason: $REASON"
+  echo "Sessions: $SESSIONS"
+  echo "Features: $FEATURES_PASSING / $FEATURES_TOTAL passing"
+  echo "Mode: $MODE"
+} > .claude/completion-report.txt
 
-# Remove PID file
-if [ -f ".claude/sdk-bridge.pid" ]; then
-  rm -f .claude/sdk-bridge.pid
-  echo "Removed PID file"
-fi
-
-echo ""
-echo "✅ Resumed in CLI mode"
-echo ""
-echo "You can now continue working interactively."
-echo "To hand off again later: /sdk-bridge:handoff"
+echo "Review complete!"
 echo ""
 ```

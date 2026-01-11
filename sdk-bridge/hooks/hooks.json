@@ -1,14 +1,14 @@
 {
-  "description": "SDK Bridge automation hooks for completion detection and cleanup",
+  "description": "SDK Bridge automation hooks for completion detection, cleanup, and context-aware help",
   "hooks": {
     "SessionStart": [
       {
         "matcher": "*",
         "hooks": [
           {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/check-sdk-completion.sh",
-            "timeout": 10
+            "type": "prompt",
+            "prompt": "Check if SDK Bridge completed while user was away. Only act if .claude/sdk_complete.json exists AND .claude/sdk-bridge.local.md exists (SDK Bridge project). If both exist: (1) Parse .claude/sdk_complete.json for reason and session_count, (2) Parse feature_list.json to count total features and passing features, (3) Calculate completion percentage, (4) Create a RICH, VISUALLY APPEALING completion notification with: 🎉 header, completion reason, session count, feature progress with visual bar (use ████░ blocks), estimated time saved if parallel mode, and clear call-to-action to run /sdk-bridge:resume. Use emojis, visual separators (━━━), and formatting to make it welcoming and informative. If files don't exist, return empty systemMessage.",
+            "timeout": 15
           }
         ]
       }
@@ -21,6 +21,18 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/cleanup-on-stop.sh",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Analyze user prompt for SDK Bridge context. Only respond if question is SDK Bridge-related. Check for these patterns: (1) 'how do I start' or 'getting started' → suggest /sdk-bridge:start for guided setup, (2) 'what's the status' or 'check progress' → suggest /sdk-bridge:watch for live updates or /sdk-bridge:status, (3) 'taking too long' or 'slow' → explain hybrid loops reduce retries, suggest checking .claude/sdk-bridge.log for activity, (4) 'is it done' or 'finished' → check if .claude/sdk_complete.json exists and guide accordingly, (5) 'how to cancel' or 'stop' → explain /sdk-bridge:cancel, (6) 'errors' or 'failed' → suggest /sdk-bridge:resume to see detailed status. Provide helpful, concise guidance. If NOT SDK Bridge-related, return empty systemMessage.",
+            "timeout": 10
           }
         ]
       }
