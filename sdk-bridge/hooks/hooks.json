@@ -1,0 +1,29 @@
+{
+  "description": "SDK Bridge automation hooks for completion detection and cleanup",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/check-sdk-completion.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/cleanup-on-stop.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

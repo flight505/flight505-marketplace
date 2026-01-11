@@ -7,6 +7,3 @@
 [submodule "nano-banana"]
 	path = nano-banana
 	url = https://github.com/flight505/nano-banana.git
-[submodule "sdk-bridge-marketplace"]
-	path = sdk-bridge-marketplace
-	url = https://github.com/flight505/sdk-bridge-marketplace.git

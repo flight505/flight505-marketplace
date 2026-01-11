@@ -1,0 +1,13 @@
+{
+  "name": "sdk-bridge",
+  "version": "1.9.0",
+  "description": "SOTA autonomous development plugin: hybrid loops, semantic memory, parallel execution, adaptive intelligence.",
+  "author": {
+    "name": "Jesper Vang",
+    "url": "https://github.com/flight505"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/flight505/sdk-bridge-marketplace",
+  "keywords": ["agent-sdk", "automation", "long-running", "harness", "handoff", "autonomous", "parallel-execution"],
+  "homepage": "https://github.com/flight505/sdk-bridge-marketplace"
+}
