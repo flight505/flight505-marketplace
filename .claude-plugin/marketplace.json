@@ -1,14 +1,33 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.0.1",
-  "description": "Official marketplace for flight505's Claude Code plugins - Storybook Assistant, Project Planner, and Nano Banana",
+  "version": "1.1.0",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, Storybook Assistant, Project Planner, and Nano Banana",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
     "url": "https://github.com/flight505"
   },
   "plugins": [
+    {
+      "name": "sdk-bridge",
+      "description": "SOTA autonomous development plugin with hybrid loops, semantic memory, parallel execution, and adaptive intelligence for multi-session development",
+      "version": "1.9.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "./sdk-bridge-marketplace/plugins/sdk-bridge",
+      "category": "workflows",
+      "keywords": [
+        "autonomous",
+        "agent-sdk",
+        "long-running",
+        "parallel-execution",
+        "semantic-memory",
+        "automation"
+      ]
+    },
     {
       "name": "storybook-assistant",
       "description": "SOTA 2026 Storybook assistant with Vision AI design-to-code, natural language generation, AI-powered accessibility remediation, React Server Components, dark mode generation, and comprehensive testing",
