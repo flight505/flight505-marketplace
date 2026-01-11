@@ -1,3 +1,5 @@
+![Flight505 Marketplace](./marketplace-hero.jpg)
+
 # flight505 Plugin Marketplace
 
 **Official Claude Code plugin marketplace by Jesper Vang**
@@ -6,7 +8,22 @@ This marketplace provides a centralized source for installing all flight505 plug
 
 ## 🎯 Available Plugins
 
-### 1. 🎨 Storybook Assistant
+### 1. 🚀 SDK Bridge
+**SOTA autonomous development plugin with hybrid loops, semantic memory, and parallel execution**
+
+- Autonomous multi-session development
+- Hybrid loop pattern (same-session self-healing + multi-session progression)
+- Semantic memory with cross-project learning
+- Adaptive model selection (Sonnet/Opus routing)
+- Parallel execution with git-isolated workers
+- Human-in-the-loop approval workflow
+- File validation (no phantom completions)
+
+**Version**: 1.9.0
+**Repository**: [sdk-bridge-marketplace](https://github.com/flight505/sdk-bridge-marketplace)
+**Documentation**: [README](https://github.com/flight505/sdk-bridge-marketplace#readme) | [Installation Guide](https://github.com/flight505/sdk-bridge-marketplace/blob/main/INSTALLATION.md)
+
+### 2. 🎨 Storybook Assistant
 **SOTA 2026 Storybook development toolkit**
 
 - Vision AI design-to-code transformation
@@ -18,8 +35,9 @@ This marketplace provides a centralized source for installing all flight505 plug
 - CI/CD pipeline generator
 
 **Repository**: [storybook-assistant-plugin](https://github.com/flight505/storybook-assistant-plugin)
+**Documentation**: [README](https://github.com/flight505/storybook-assistant-plugin#readme)
 
-### 2. 📋 Claude Project Planner
+### 3. 📋 Claude Project Planner
 **AI-powered project planning assistant**
 
 - Project breakdown and task management
@@ -29,8 +47,9 @@ This marketplace provides a centralized source for installing all flight505 plug
 - Resource allocation
 
 **Repository**: [claude-project-planner](https://github.com/flight505/claude-project-planner)
+**Documentation**: [README](https://github.com/flight505/claude-project-planner#readme)
 
-### 3. 🍌 Nano Banana
+### 4. 🍌 Nano Banana
 **AI image and diagram generation**
 
 - State-of-the-art image generation (Gemini 3 Pro, FLUX)
@@ -40,6 +59,7 @@ This marketplace provides a centralized source for installing all flight505 plug
 - Powered by OpenRouter
 
 **Repository**: [nano-banana](https://github.com/flight505/nano-banana)
+**Documentation**: [README](https://github.com/flight505/nano-banana#readme)
 
 ---
 
@@ -51,25 +71,30 @@ This marketplace provides a centralized source for installing all flight505 plug
 claude
 
 # In Claude prompt:
-/plugin
+/plugin marketplace add flight505/flight505-marketplace
 
-# When prompted, enter:
-flight505/flight505-marketplace
+# Install all plugins:
+/plugin install storybook-assistant@flight505-marketplace
+/plugin install claude-project-planner@flight505-marketplace
+/plugin install nano-banana@flight505-marketplace
+/plugin install sdk-bridge@flight505-marketplace
 ```
 
-This installs **all 3 plugins** at once.
+This installs **all 4 plugins**.
 
 ### Method 2: Install Individual Plugins
 
 ```bash
 claude
 
-/plugin
+# Add marketplace first:
+/plugin marketplace add flight505/flight505-marketplace
 
-# Choose one:
-flight505/storybook-assistant-plugin
-flight505/claude-project-planner
-flight505/nano-banana
+# Then install specific plugin:
+/plugin install sdk-bridge@flight505-marketplace
+/plugin install storybook-assistant@flight505-marketplace
+/plugin install claude-project-planner@flight505-marketplace
+/plugin install nano-banana@flight505-marketplace
 ```
 
 ### Method 3: Manual Installation
@@ -88,6 +113,7 @@ claude
 
 When you install this marketplace, you get:
 
+- ✅ **sdk-bridge** - Autonomous development with hybrid loops and parallel execution
 - ✅ **storybook-assistant** - Full Storybook 9 development toolkit
 - ✅ **claude-project-planner** - Project management assistant
 - ✅ **nano-banana** - Image and diagram generation
@@ -98,12 +124,15 @@ All plugins are maintained and updated regularly.
 
 ## 🔄 Updating Plugins
 
-Plugins installed via marketplace auto-update when marketplace refreshes:
+Plugins installed via marketplace can be updated:
 
 ```bash
 claude
 
-/plugin update
+/plugin update sdk-bridge@flight505-marketplace
+/plugin update storybook-assistant@flight505-marketplace
+/plugin update claude-project-planner@flight505-marketplace
+/plugin update nano-banana@flight505-marketplace
 ```
 
 Or update the marketplace manually:
@@ -119,9 +148,10 @@ git pull
 
 Each plugin has comprehensive documentation:
 
-- [Storybook Assistant Docs](https://github.com/flight505/storybook-assistant-plugin#readme)
-- [Project Planner Docs](https://github.com/flight505/claude-project-planner#readme)
-- [Nano Banana Docs](https://github.com/flight505/nano-banana#readme)
+- [SDK Bridge](https://github.com/flight505/sdk-bridge-marketplace#readme) - Quick Start | [Installation Guide](https://github.com/flight505/sdk-bridge-marketplace/blob/main/INSTALLATION.md) | Skill Guide
+- [Storybook Assistant](https://github.com/flight505/storybook-assistant-plugin#readme) - Complete Storybook toolkit
+- [Project Planner](https://github.com/flight505/claude-project-planner#readme) - Project planning & tracking
+- [Nano Banana](https://github.com/flight505/nano-banana#readme) - Image & diagram generation
 
 ---
 
@@ -137,6 +167,7 @@ Each plugin has comprehensive documentation:
 
 Individual plugins may have different licenses. Check each repository:
 
+- **sdk-bridge**: MIT License
 - **storybook-assistant**: MIT License
 - **claude-project-planner**: Check repository
 - **nano-banana**: Check repository
@@ -147,6 +178,11 @@ Individual plugins may have different licenses. Check each repository:
 
 - **GitHub**: https://github.com/flight505/flight505-marketplace
 - **Author**: [@flight505](https://github.com/flight505)
+- **Plugin Repositories**:
+  - [SDK Bridge](https://github.com/flight505/sdk-bridge-marketplace)
+  - [Storybook Assistant](https://github.com/flight505/storybook-assistant-plugin)
+  - [Claude Project Planner](https://github.com/flight505/claude-project-planner)
+  - [Nano Banana](https://github.com/flight505/nano-banana)
 
 ---
 
