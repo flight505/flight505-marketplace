@@ -80,10 +80,10 @@ claude
 /plugin marketplace add flight505/flight505-marketplace
 
 # Install all plugins:
-/plugin install storybook-assistant@flight505-marketplace
-/plugin install claude-project-planner@flight505-marketplace
-/plugin install nano-banana@flight505-marketplace
-/plugin install sdk-bridge@flight505-marketplace
+/plugin install storybook-assistant@flight505-plugins
+/plugin install claude-project-planner@flight505-plugins
+/plugin install nano-banana@flight505-plugins
+/plugin install sdk-bridge@flight505-plugins
 ```
 
 This installs **all 4 plugins**.
@@ -97,10 +97,10 @@ claude
 /plugin marketplace add flight505/flight505-marketplace
 
 # Then install specific plugin:
-/plugin install sdk-bridge@flight505-marketplace
-/plugin install storybook-assistant@flight505-marketplace
-/plugin install claude-project-planner@flight505-marketplace
-/plugin install nano-banana@flight505-marketplace
+/plugin install sdk-bridge@flight505-plugins
+/plugin install storybook-assistant@flight505-plugins
+/plugin install claude-project-planner@flight505-plugins
+/plugin install nano-banana@flight505-plugins
 ```
 
 ### Method 3: Manual Installation
@@ -130,22 +130,38 @@ All plugins are maintained and updated regularly.
 
 ## 🔄 Updating Plugins
 
-Plugins installed via marketplace can be updated:
+### Automatic Updates (Recommended) ⚡
+
+The marketplace **automatically updates daily** via GitHub Actions! When individual plugin repositories are updated, the marketplace syncs within 24 hours (or instantly via manual trigger).
+
+**How it works:**
+- 🤖 GitHub Actions checks for plugin updates daily at midnight UTC
+- 📦 Automatically updates submodule pointers to latest versions
+- 🔖 Updates `marketplace.json` with new version numbers
+- 🚀 Commits and pushes changes automatically
+
+**Manual trigger:**
+Visit [Actions tab](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml) and click "Run workflow"
+
+### Manual Updates
+
+**Update plugins via Claude Code:**
 
 ```bash
 claude
 
-/plugin update sdk-bridge@flight505-marketplace
-/plugin update storybook-assistant@flight505-marketplace
-/plugin update claude-project-planner@flight505-marketplace
-/plugin update nano-banana@flight505-marketplace
+/plugin update sdk-bridge@flight505-plugins
+/plugin update storybook-assistant@flight505-plugins
+/plugin update claude-project-planner@flight505-plugins
+/plugin update nano-banana@flight505-plugins
 ```
 
-Or update the marketplace manually:
+**Update marketplace manually:**
 
 ```bash
-cd ~/.claude/plugins/marketplaces/flight505
+cd ~/.claude/plugins/marketplaces/flight505-plugins
 git pull
+git submodule update --init --recursive
 ```
 
 ---

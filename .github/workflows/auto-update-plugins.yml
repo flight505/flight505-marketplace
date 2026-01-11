@@ -1,0 +1,162 @@
+name: Auto-update Plugin Submodules
+
+on:
+  # Run daily at midnight UTC
+  schedule:
+    - cron: '0 0 * * *'
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+  # Trigger when individual plugin repos are updated (requires webhook setup)
+  repository_dispatch:
+    types: [plugin-updated]
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout marketplace repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update all submodules to latest
+        id: update
+        run: |
+          echo "Updating submodules..."
+          git submodule update --remote --recursive
+
+          # Check if there are any changes
+          if git diff --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No submodule updates available"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Submodule updates found"
+          fi
+
+      - name: Extract version information
+        if: steps.update.outputs.has_changes == 'true'
+        id: versions
+        run: |
+          # Initialize variables
+          UPDATES=""
+
+          # Check each submodule for updates
+          for submodule in nano-banana claude-project-planner storybook-assistant-plugin; do
+            if git diff --name-only | grep -q "^${submodule}$"; then
+              # Get the new commit hash
+              NEW_COMMIT=$(git diff ${submodule} | grep "^+Subproject commit" | awk '{print $3}')
+              OLD_COMMIT=$(git diff ${submodule} | grep "^-Subproject commit" | awk '{print $3}')
+
+              # Extract version from plugin.json if it exists
+              PLUGIN_JSON="${submodule}/.claude-plugin/plugin.json"
+              if [ -f "${PLUGIN_JSON}" ]; then
+                VERSION=$(jq -r '.version' "${PLUGIN_JSON}")
+                echo "Updated ${submodule} to version ${VERSION} (${NEW_COMMIT:0:7})"
+                UPDATES="${UPDATES}\n- ${submodule}: ${VERSION} (${OLD_COMMIT:0:7} → ${NEW_COMMIT:0:7})"
+              else
+                echo "Updated ${submodule} (${NEW_COMMIT:0:7})"
+                UPDATES="${UPDATES}\n- ${submodule}: ${OLD_COMMIT:0:7} → ${NEW_COMMIT:0:7}"
+              fi
+            fi
+          done
+
+          # Save for commit message
+          echo "updates<<EOF" >> $GITHUB_OUTPUT
+          echo -e "${UPDATES}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Update marketplace.json versions
+        if: steps.update.outputs.has_changes == 'true'
+        run: |
+          # Update versions in marketplace.json based on plugin.json files
+          MARKETPLACE_JSON=".claude-plugin/marketplace.json"
+
+          # Backup original
+          cp "${MARKETPLACE_JSON}" "${MARKETPLACE_JSON}.backup"
+
+          # Update each plugin version
+          for submodule in nano-banana claude-project-planner storybook-assistant-plugin; do
+            PLUGIN_JSON="${submodule}/.claude-plugin/plugin.json"
+
+            if [ -f "${PLUGIN_JSON}" ]; then
+              VERSION=$(jq -r '.version' "${PLUGIN_JSON}")
+
+              # Map directory name to plugin name in marketplace.json
+              case "$submodule" in
+                "nano-banana")
+                  PLUGIN_NAME="nano-banana"
+                  ;;
+                "claude-project-planner")
+                  PLUGIN_NAME="claude-project-planner"
+                  ;;
+                "storybook-assistant-plugin")
+                  PLUGIN_NAME="storybook-assistant"
+                  ;;
+              esac
+
+              # Update version in marketplace.json
+              jq --arg name "$PLUGIN_NAME" --arg version "$VERSION" \
+                '(.plugins[] | select(.name == $name) | .version) = $version' \
+                "${MARKETPLACE_JSON}" > "${MARKETPLACE_JSON}.tmp"
+
+              mv "${MARKETPLACE_JSON}.tmp" "${MARKETPLACE_JSON}"
+
+              echo "Updated ${PLUGIN_NAME} version to ${VERSION} in marketplace.json"
+            fi
+          done
+
+          # Bump marketplace version (patch increment)
+          CURRENT_VERSION=$(jq -r '.version' "${MARKETPLACE_JSON}")
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+          PATCH=$((VERSION_PARTS[2] + 1))
+          NEW_MARKETPLACE_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${PATCH}"
+
+          jq --arg version "$NEW_MARKETPLACE_VERSION" '.version = $version' \
+            "${MARKETPLACE_JSON}" > "${MARKETPLACE_JSON}.tmp"
+          mv "${MARKETPLACE_JSON}.tmp" "${MARKETPLACE_JSON}"
+
+          echo "Bumped marketplace version: ${CURRENT_VERSION} → ${NEW_MARKETPLACE_VERSION}"
+          echo "new_marketplace_version=${NEW_MARKETPLACE_VERSION}" >> $GITHUB_ENV
+
+      - name: Commit and push changes
+        if: steps.update.outputs.has_changes == 'true'
+        run: |
+          git add .
+
+          # Create commit message
+          cat > commit_message.txt << 'EOF'
+          chore: auto-update plugin submodules
+
+          Automated submodule updates:
+          ${{ steps.versions.outputs.updates }}
+
+          Marketplace version: ${{ env.new_marketplace_version }}
+
+          Generated by GitHub Actions workflow
+          EOF
+
+          git commit -F commit_message.txt
+          git push origin main
+
+      - name: Summary
+        if: steps.update.outputs.has_changes == 'true'
+        run: |
+          echo "✅ Successfully updated plugins!"
+          echo "Updates applied:"
+          echo "${{ steps.versions.outputs.updates }}"
+          echo "Marketplace version: ${{ env.new_marketplace_version }}"
+
+      - name: No updates needed
+        if: steps.update.outputs.has_changes == 'false'
+        run: |
+          echo "✅ All plugins are already up to date"
