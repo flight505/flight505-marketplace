@@ -9,17 +9,23 @@ This marketplace provides a centralized source for installing all flight505 plug
 ## 🎯 Available Plugins
 
 ### 1. 🚀 SDK Bridge
-**SOTA autonomous development plugin with hybrid loops, semantic memory, and parallel execution**
+**SOTA autonomous development with intelligent generative UI** ⭐ NEW v2.0
 
-- Autonomous multi-session development
-- Hybrid loop pattern (same-session self-healing + multi-session progression)
-- Semantic memory with cross-project learning
+**Generative UI Features (v2.0)**:
+- Interactive onboarding with AskUserQuestion (model, parallel, features)
+- Live progress updates with TodoWrite polling (simulated real-time)
+- Proactive completion notifications (SessionStart hook with LLM analysis)
+- Context-aware help (UserPromptSubmit hook for natural questions)
+- Comprehensive reports with ✅/❌ file validation
+
+**Core Autonomous Features**:
+- Autonomous multi-session development with hybrid loops
+- Semantic memory (cross-project learning)
 - Adaptive model selection (Sonnet/Opus routing)
-- Parallel execution with git-isolated workers
+- Parallel execution (2-4x speedup, git-isolated workers)
 - Human-in-the-loop approval workflow
-- File validation (no phantom completions)
 
-**Version**: 1.9.0
+**Version**: 2.0.0 (Jan 2026)
 **Repository**: [sdk-bridge-marketplace](https://github.com/flight505/sdk-bridge-marketplace)
 **Documentation**: [README](https://github.com/flight505/sdk-bridge-marketplace#readme) | [Installation Guide](https://github.com/flight505/sdk-bridge-marketplace/blob/main/INSTALLATION.md)
 
