@@ -1,5 +1,8 @@
 name: Auto-update Plugin Submodules
 
+permissions:
+  contents: write
+
 on:
   # Run daily at midnight UTC
   schedule:
