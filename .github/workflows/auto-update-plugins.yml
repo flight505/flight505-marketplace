@@ -20,6 +20,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Log trigger information
+        run: |
+          echo "========================================="
+          echo "Marketplace Update Triggered"
+          echo "========================================="
+          echo "Trigger: ${{ github.event_name }}"
+
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "Plugin: ${{ github.event.client_payload.plugin }}"
+            echo "Version: ${{ github.event.client_payload.version }}"
+            echo "Previous: ${{ github.event.client_payload.previous_version }}"
+            echo "Commit: ${{ github.event.client_payload.commit }}"
+            echo "Timestamp: ${{ github.event.client_payload.timestamp }}"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "Type: Daily cron (midnight UTC)"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Type: Manual trigger"
+          fi
+          echo "========================================="
+
       - name: Checkout marketplace repository
         uses: actions/checkout@v4
         with:
