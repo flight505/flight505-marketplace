@@ -54,14 +54,19 @@ jobs:
           UPDATES=""
 
           # Check each submodule for updates
-          for submodule in nano-banana claude-project-planner storybook-assistant-plugin; do
+          for submodule in nano-banana claude-project-planner storybook-assistant-plugin sdk-bridge; do
             if git diff --name-only | grep -q "^${submodule}$"; then
               # Get the new commit hash
               NEW_COMMIT=$(git diff ${submodule} | grep "^+Subproject commit" | awk '{print $3}')
               OLD_COMMIT=$(git diff ${submodule} | grep "^-Subproject commit" | awk '{print $3}')
 
-              # Extract version from plugin.json if it exists
-              PLUGIN_JSON="${submodule}/.claude-plugin/plugin.json"
+              # Extract version from plugin.json (handle nested structure for sdk-bridge)
+              if [ "${submodule}" = "sdk-bridge" ]; then
+                PLUGIN_JSON="${submodule}/plugins/sdk-bridge/.claude-plugin/plugin.json"
+              else
+                PLUGIN_JSON="${submodule}/.claude-plugin/plugin.json"
+              fi
+
               if [ -f "${PLUGIN_JSON}" ]; then
                 VERSION=$(jq -r '.version' "${PLUGIN_JSON}")
                 echo "Updated ${submodule} to version ${VERSION} (${NEW_COMMIT:0:7})"
@@ -88,8 +93,13 @@ jobs:
           cp "${MARKETPLACE_JSON}" "${MARKETPLACE_JSON}.backup"
 
           # Update each plugin version
-          for submodule in nano-banana claude-project-planner storybook-assistant-plugin; do
-            PLUGIN_JSON="${submodule}/.claude-plugin/plugin.json"
+          for submodule in nano-banana claude-project-planner storybook-assistant-plugin sdk-bridge; do
+            # Handle nested structure for sdk-bridge
+            if [ "${submodule}" = "sdk-bridge" ]; then
+              PLUGIN_JSON="${submodule}/plugins/sdk-bridge/.claude-plugin/plugin.json"
+            else
+              PLUGIN_JSON="${submodule}/.claude-plugin/plugin.json"
+            fi
 
             if [ -f "${PLUGIN_JSON}" ]; then
               VERSION=$(jq -r '.version' "${PLUGIN_JSON}")
@@ -104,6 +114,9 @@ jobs:
                   ;;
                 "storybook-assistant-plugin")
                   PLUGIN_NAME="storybook-assistant"
+                  ;;
+                "sdk-bridge")
+                  PLUGIN_NAME="sdk-bridge"
                   ;;
               esac
 
