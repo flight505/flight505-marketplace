@@ -26,8 +26,8 @@ This marketplace provides a centralized source for installing all flight505 plug
 - Human-in-the-loop approval workflow
 
 **Version**: 2.0.0 (Jan 2026)
-**Repository**: [sdk-bridge-marketplace](https://github.com/flight505/sdk-bridge-marketplace)
-**Documentation**: [README](https://github.com/flight505/sdk-bridge-marketplace#readme) | [Installation Guide](https://github.com/flight505/sdk-bridge-marketplace/blob/main/INSTALLATION.md)
+**Repository**: [sdk-bridge](https://github.com/flight505/sdk-bridge)
+**Documentation**: [README](https://github.com/flight505/sdk-bridge#readme) | [Installation Guide](https://github.com/flight505/sdk-bridge/blob/main/INSTALLATION.md)
 
 ### 2. 🎨 Storybook Assistant
 **SOTA 2026 Storybook development toolkit**
@@ -40,8 +40,8 @@ This marketplace provides a centralized source for installing all flight505 plug
 - Performance analysis
 - CI/CD pipeline generator
 
-**Repository**: [storybook-assistant-plugin](https://github.com/flight505/storybook-assistant-plugin)
-**Documentation**: [README](https://github.com/flight505/storybook-assistant-plugin#readme)
+**Repository**: [storybook-assistant](https://github.com/flight505/storybook-assistant)
+**Documentation**: [README](https://github.com/flight505/storybook-assistant#readme)
 
 ### 3. 📋 Claude Project Planner
 **AI-powered project planning assistant**
@@ -170,8 +170,8 @@ git submodule update --init --recursive
 
 Each plugin has comprehensive documentation:
 
-- [SDK Bridge](https://github.com/flight505/sdk-bridge-marketplace#readme) - Quick Start | [Installation Guide](https://github.com/flight505/sdk-bridge-marketplace/blob/main/INSTALLATION.md) | Skill Guide
-- [Storybook Assistant](https://github.com/flight505/storybook-assistant-plugin#readme) - Complete Storybook toolkit
+- [SDK Bridge](https://github.com/flight505/sdk-bridge#readme) - Quick Start | [Installation Guide](https://github.com/flight505/sdk-bridge/blob/main/INSTALLATION.md) | Skill Guide
+- [Storybook Assistant](https://github.com/flight505/storybook-assistant#readme) - Complete Storybook toolkit
 - [Project Planner](https://github.com/flight505/claude-project-planner#readme) - Project planning & tracking
 - [Nano Banana](https://github.com/flight505/nano-banana#readme) - Image & diagram generation
 
@@ -201,8 +201,8 @@ Individual plugins may have different licenses. Check each repository:
 - **GitHub**: https://github.com/flight505/flight505-marketplace
 - **Author**: [@flight505](https://github.com/flight505)
 - **Plugin Repositories**:
-  - [SDK Bridge](https://github.com/flight505/sdk-bridge-marketplace)
-  - [Storybook Assistant](https://github.com/flight505/storybook-assistant-plugin)
+  - [SDK Bridge](https://github.com/flight505/sdk-bridge)
+  - [Storybook Assistant](https://github.com/flight505/storybook-assistant)
   - [Claude Project Planner](https://github.com/flight505/claude-project-planner)
   - [Nano Banana](https://github.com/flight505/nano-banana)
 

@@ -36,7 +36,7 @@
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
       },
-      "source": "./storybook-assistant-plugin",
+      "source": "./storybook-assistant",
       "category": "development",
       "keywords": [
         "storybook",

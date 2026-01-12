@@ -1,6 +1,6 @@
-[submodule "storybook-assistant-plugin"]
-	path = storybook-assistant-plugin
-	url = https://github.com/flight505/storybook-assistant-plugin.git
+[submodule "storybook-assistant"]
+	path = storybook-assistant
+	url = https://github.com/flight505/storybook-assistant.git
 [submodule "claude-project-planner"]
 	path = claude-project-planner
 	url = https://github.com/flight505/claude-project-planner.git
@@ -9,4 +9,4 @@
 	url = https://github.com/flight505/nano-banana.git
 [submodule "sdk-bridge"]
 	path = sdk-bridge
-	url = https://github.com/flight505/sdk-bridge-marketplace.git
+	url = https://github.com/flight505/sdk-bridge.git
