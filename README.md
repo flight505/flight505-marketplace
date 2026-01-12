@@ -2,9 +2,16 @@
 
 # flight505 Plugin Marketplace
 
+[![Auto-update Plugins](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml)
+[![Marketplace Version](https://img.shields.io/badge/version-1.2.5-blue.svg)](https://github.com/flight505/flight505-marketplace)
+[![Plugins](https://img.shields.io/badge/plugins-4-success.svg)](https://github.com/flight505/flight505-marketplace)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 **Official Claude Code plugin marketplace by Jesper Vang**
 
 This marketplace provides a centralized source for installing all flight505 plugins with a single command.
+
+> 🚀 **Real-time updates enabled!** Plugin versions sync automatically within 30 seconds of release.
 
 ## 🎯 Available Plugins
 
