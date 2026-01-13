@@ -3,7 +3,7 @@
 # flight505 Plugin Marketplace
 
 [![Auto-update Plugins](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml)
-[![Marketplace Version](https://img.shields.io/badge/version-1.2.6-blue.svg)](https://github.com/flight505/flight505-marketplace)
+[![Marketplace Version](https://img.shields.io/badge/version-1.2.7-blue.svg)](https://github.com/flight505/flight505-marketplace)
 [![Plugins](https://img.shields.io/badge/plugins-4-success.svg)](https://github.com/flight505/flight505-marketplace)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -139,10 +139,11 @@ All plugins are maintained and updated regularly.
 
 ### Automatic Updates (Recommended) ⚡
 
-The marketplace **automatically updates daily** via GitHub Actions! When individual plugin repositories are updated, the marketplace syncs within 24 hours (or instantly via manual trigger).
+The marketplace **automatically updates via webhooks and daily cron** via GitHub Actions! When plugin versions are bumped, the marketplace syncs within 30 seconds via webhooks, with daily cron as backup.
 
 **How it works:**
-- 🤖 GitHub Actions checks for plugin updates daily at midnight UTC
+- ⚡ **Webhooks** - Plugin version bumps trigger instant marketplace updates (~30 seconds)
+- 🤖 **Daily Cron** - Backup check at midnight UTC for any missed updates
 - 📦 Automatically updates submodule pointers to latest versions
 - 🔖 Updates `marketplace.json` with new version numbers
 - 🚀 Commits and pushes changes automatically
