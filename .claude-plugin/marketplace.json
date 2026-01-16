@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
   "version": "1.2.10",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge v2.0 with SOTA generative UI, Storybook Assistant, Project Planner, and Nano Banana",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge v2.0 with SOTA generative UI, Storybook Assistant, Project Planner v1.4.0, and Nano Banana",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -17,7 +17,7 @@
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
       },
-      "source": "./sdk-bridge",
+      "source": "./sdk-bridge/plugins/sdk-bridge",
       "category": "workflows",
       "keywords": [
         "autonomous",
@@ -49,8 +49,8 @@
     },
     {
       "name": "claude-project-planner",
-      "description": "AI-powered project planning and management assistant for Claude Code with task breakdown, timeline estimation, and progress tracking",
-      "version": "1.4.0-alpha",
+      "description": "Production-ready project planning with progress tracking, error recovery, and comprehensive research - generates architecture docs, sprint plans, cost analyses, and implementation roadmaps",
+      "version": "1.4.0",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
@@ -61,7 +61,9 @@
         "project-management",
         "planning",
         "tasks",
-        "productivity"
+        "productivity",
+        "architecture",
+        "research"
       ]
     },
     {
