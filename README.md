@@ -3,9 +3,16 @@
 # flight505 Plugin Marketplace
 
 [![Auto-update Plugins](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml)
-[![Marketplace Version](https://img.shields.io/badge/version-1.2.8-blue.svg)](https://github.com/flight505/flight505-marketplace)
+[![Marketplace Version](https://img.shields.io/github/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fflight505%2Fflight505-marketplace%2Fmain%2F.claude-plugin%2Fmarketplace.json&query=%24.version&label=marketplace&color=blue)](https://github.com/flight505/flight505-marketplace)
 [![Plugins](https://img.shields.io/badge/plugins-4-success.svg)](https://github.com/flight505/flight505-marketplace)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+### Plugin Versions
+
+[![SDK Bridge](https://img.shields.io/github/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fflight505%2Fflight505-marketplace%2Fmain%2F.claude-plugin%2Fmarketplace.json&query=%24.plugins%5B%3F%28%40.name%3D%3D%27sdk-bridge%27%29%5D.version&label=sdk-bridge&color=brightgreen)](https://github.com/flight505/sdk-bridge)
+[![Storybook Assistant](https://img.shields.io/github/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fflight505%2Fflight505-marketplace%2Fmain%2F.claude-plugin%2Fmarketplace.json&query=%24.plugins%5B%3F%28%40.name%3D%3D%27storybook-assistant%27%29%5D.version&label=storybook-assistant&color=brightgreen)](https://github.com/flight505/storybook-assistant)
+[![Claude Project Planner](https://img.shields.io/github/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fflight505%2Fflight505-marketplace%2Fmain%2F.claude-plugin%2Fmarketplace.json&query=%24.plugins%5B%3F%28%40.name%3D%3D%27claude-project-planner%27%29%5D.version&label=claude-project-planner&color=brightgreen)](https://github.com/flight505/claude-project-planner)
+[![Nano Banana](https://img.shields.io/github/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fflight505%2Fflight505-marketplace%2Fmain%2F.claude-plugin%2Fmarketplace.json&query=%24.plugins%5B%3F%28%40.name%3D%3D%27nano-banana%27%29%5D.version&label=nano-banana&color=brightgreen)](https://github.com/flight505/nano-banana)
 
 **Official Claude Code plugin marketplace by Jesper Vang**
 
@@ -32,7 +39,6 @@ This marketplace provides a centralized source for installing all flight505 plug
 - Parallel execution (2-4x speedup, git-isolated workers)
 - Human-in-the-loop approval workflow
 
-**Version**: 2.0.0 (Jan 2026)
 **Repository**: [sdk-bridge](https://github.com/flight505/sdk-bridge)
 **Documentation**: [README](https://github.com/flight505/sdk-bridge#readme) | [Installation Guide](https://github.com/flight505/sdk-bridge/blob/main/INSTALLATION.md)
 
