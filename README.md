@@ -3,6 +3,7 @@
 # flight505 Plugin Marketplace
 
 [![Auto-update Plugins](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml)
+[![Validate Manifests](https://github.com/flight505/flight505-marketplace/actions/workflows/validate-plugin-manifests.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/validate-plugin-manifests.yml)
 [![Marketplace Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.version&label=marketplace&color=blue)](https://github.com/flight505/flight505-marketplace)
 [![Plugins](https://img.shields.io/badge/plugins-4-success.svg)](https://github.com/flight505/flight505-marketplace)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -16,49 +17,70 @@
 
 **Official Claude Code plugin marketplace by Jesper Vang**
 
-This marketplace provides a centralized source for installing all flight505 plugins with a single command.
+A centralized source for installing and automatically updating 4 professional Claude Code plugins with a single command.
 
-> 🚀 **Real-time updates enabled!** Plugin versions sync automatically within 30 seconds of release.
+> 🚀 **Real-time updates!** Plugin versions sync automatically within 30 seconds when new versions are released.
 
-## 🎯 Available Plugins
+---
 
-### 1. 🚀 SDK Bridge
-**SOTA autonomous development with intelligent generative UI** ⭐ NEW v2.0
+## 🎯 What This Marketplace Does (ELI5)
 
-**Generative UI Features (v2.0)**:
-- Interactive onboarding with AskUserQuestion (model, parallel, features)
-- Live progress updates with TodoWrite polling (simulated real-time)
-- Proactive completion notifications (SessionStart hook with LLM analysis)
-- Context-aware help (UserPromptSubmit hook for natural questions)
-- Comprehensive reports with ✅/❌ file validation
+Think of this marketplace as an **app store for Claude Code plugins**. Instead of manually downloading and updating each plugin from different places, you add this marketplace once, and it handles everything automatically.
 
-**Core Autonomous Features**:
-- Autonomous multi-session development with hybrid loops
-- Semantic memory (cross-project learning)
-- Adaptive model selection (Sonnet/Opus routing)
-- Parallel execution (2-4x speedup, git-isolated workers)
-- Human-in-the-loop approval workflow
+**What makes it special:**
+
+1. **Install all plugins with one command** - No need to visit 4 different repositories
+2. **Automatic updates** - When plugin authors release new versions, your marketplace syncs automatically (usually within 30 seconds)
+3. **Quality assurance** - All plugins are validated before release to ensure they work correctly
+4. **Maintenance scripts** - Behind the scenes, automated scripts keep everything in sync
+
+**In simple terms:** You install this marketplace once, and your plugins stay up-to-date automatically. It's like having an app store that updates your apps in the background.
+
+---
+
+## 📦 Available Plugins
+
+<details open>
+<summary><b>🚀 SDK Bridge</b> - Autonomous development with intelligent generative UI (v2.0)</summary>
+
+**What it does:** Lets Claude Code work on tasks autonomously using multiple parallel sessions, with a smart UI that shows progress and asks questions when needed.
+
+**Key features:**
+- Interactive onboarding with model selection
+- Live progress tracking
+- Proactive completion notifications
+- Parallel execution (2-4x faster)
+- Semantic memory (learns from past projects)
 
 **Repository**: [sdk-bridge](https://github.com/flight505/sdk-bridge)
 **Documentation**: [README](https://github.com/flight505/sdk-bridge#readme) | [Installation Guide](https://github.com/flight505/sdk-bridge/blob/main/INSTALLATION.md)
 
-### 2. 🎨 Storybook Assistant
-**SOTA 2026 Storybook development toolkit**
+</details>
 
+<details>
+<summary><b>🎨 Storybook Assistant</b> - Complete Storybook 9 development toolkit (v2.1)</summary>
+
+**What it does:** Helps you build and maintain React component libraries using Storybook, with AI-powered design-to-code transformation.
+
+**Key features:**
 - Vision AI design-to-code transformation
 - Natural language component generation
 - AI-powered accessibility remediation (WCAG 2.2)
-- React 19 & Next.js 15 Server Components
+- React 19 & Next.js 15 support
 - Dark mode auto-generation
 - Performance analysis
-- CI/CD pipeline generator
 
 **Repository**: [storybook-assistant](https://github.com/flight505/storybook-assistant)
 **Documentation**: [README](https://github.com/flight505/storybook-assistant#readme)
 
-### 3. 📋 Claude Project Planner
-**AI-powered project planning assistant**
+</details>
 
+<details>
+<summary><b>📋 Claude Project Planner</b> - AI-powered project planning assistant (v1.3)</summary>
+
+**What it does:** Helps you break down projects into tasks, estimate timelines, and track progress.
+
+**Key features:**
 - Project breakdown and task management
 - Timeline estimation
 - Progress tracking
@@ -68,9 +90,14 @@ This marketplace provides a centralized source for installing all flight505 plug
 **Repository**: [claude-project-planner](https://github.com/flight505/claude-project-planner)
 **Documentation**: [README](https://github.com/flight505/claude-project-planner#readme)
 
-### 4. 🍌 Nano Banana
-**AI image and diagram generation**
+</details>
 
+<details>
+<summary><b>🍌 Nano Banana</b> - AI image and diagram generation (v1.0)</summary>
+
+**What it does:** Generates high-quality images and technical diagrams using state-of-the-art AI models.
+
+**Key features:**
 - State-of-the-art image generation (Gemini 3 Pro, FLUX)
 - Technical diagram creation with quality review
 - Mermaid diagram support
@@ -80,140 +107,332 @@ This marketplace provides a centralized source for installing all flight505 plug
 **Repository**: [nano-banana](https://github.com/flight505/nano-banana)
 **Documentation**: [README](https://github.com/flight505/nano-banana#readme)
 
+</details>
+
 ---
 
 ## 🚀 Installation
 
-### Method 1: Install Entire Marketplace (All Plugins)
+### Quick Install (Recommended)
+
+Install the marketplace and all 4 plugins with these commands:
 
 ```bash
+# Start Claude Code
 claude
 
-# In Claude prompt:
+# Add the marketplace
 /plugin marketplace add flight505/flight505-marketplace
 
-# Install all plugins:
-/plugin install storybook-assistant@flight505-plugins
-/plugin install claude-project-planner@flight505-plugins
-/plugin install nano-banana@flight505-plugins
-/plugin install sdk-bridge@flight505-plugins
-```
-
-This installs **all 4 plugins**.
-
-### Method 2: Install Individual Plugins
-
-```bash
-claude
-
-# Add marketplace first:
-/plugin marketplace add flight505/flight505-marketplace
-
-# Then install specific plugin:
+# Install all plugins
 /plugin install sdk-bridge@flight505-plugins
 /plugin install storybook-assistant@flight505-plugins
 /plugin install claude-project-planner@flight505-plugins
 /plugin install nano-banana@flight505-plugins
 ```
 
-### Method 3: Manual Installation
+That's it! The marketplace will now keep all plugins updated automatically.
+
+<details>
+<summary><b>Alternative Installation Methods</b></summary>
+
+### Manual Clone (Advanced)
 
 ```bash
-# Clone the marketplace
-git clone https://github.com/flight505/flight505-marketplace.git ~/.claude/plugins/marketplaces/flight505
+# Clone the marketplace with all submodules
+git clone --recurse-submodules https://github.com/flight505/flight505-marketplace.git ~/.claude/plugins/marketplaces/flight505-plugins
 
 # Claude Code will auto-discover and install all plugins
 claude
 ```
 
----
-
-## 📦 What Gets Installed
-
-When you install this marketplace, you get:
-
-- ✅ **sdk-bridge** - Autonomous development with hybrid loops and parallel execution
-- ✅ **storybook-assistant** - Full Storybook 9 development toolkit
-- ✅ **claude-project-planner** - Project management assistant
-- ✅ **nano-banana** - Image and diagram generation
-
-All plugins are maintained and updated regularly.
-
----
-
-## 🔄 Updating Plugins
-
-### Automatic Updates (Recommended) ⚡
-
-The marketplace **automatically updates via webhooks and daily cron** via GitHub Actions! When plugin versions are bumped, the marketplace syncs within 30 seconds via webhooks, with daily cron as backup.
-
-**How it works:**
-- ⚡ **Webhooks** - Plugin version bumps trigger instant marketplace updates (~30 seconds)
-- 🤖 **Daily Cron** - Backup check at midnight UTC for any missed updates
-- 📦 Automatically updates submodule pointers to latest versions
-- 🔖 Updates `marketplace.json` with new version numbers
-- 🚀 Commits and pushes changes automatically
-
-**Manual trigger:**
-Visit [Actions tab](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml) and click "Run workflow"
-
-### Manual Updates
-
-**Update plugins via Claude Code:**
+### Install Individual Plugins Only
 
 ```bash
 claude
 
+# Add marketplace first
+/plugin marketplace add flight505/flight505-marketplace
+
+# Then install only the plugins you want
+/plugin install sdk-bridge@flight505-plugins
+```
+
+</details>
+
+---
+
+## 🔄 How Automatic Updates Work
+
+This marketplace uses a sophisticated automation system to keep plugins updated. Here's what happens behind the scenes:
+
+```mermaid
+graph TB
+    A[Plugin Developer<br/>Bumps Version] --> B[Plugin Repository<br/>plugin.json updated]
+    B --> C{Version Changed?}
+    C -->|Yes| D[notify-marketplace.yml<br/>GitHub Workflow]
+    C -->|No| E[No Action]
+    D --> F[Webhook Sent<br/>repository_dispatch]
+    F --> G[Marketplace Repository<br/>Receives Event]
+    G --> H[auto-update-plugins.yml<br/>GitHub Workflow]
+    H --> I[Update Submodule Pointer]
+    I --> J[Update marketplace.json]
+    J --> K[Validate Changes<br/>validate-plugin-manifests.sh]
+    K --> L{Valid?}
+    L -->|Yes| M[Commit & Push Changes]
+    L -->|No| N[Fail & Alert]
+    M --> O[Users Get Update<br/>~30 seconds total]
+
+    style A fill:#ffa500,stroke:#333,stroke-width:2px,color:#000
+    style D fill:#4169e1,stroke:#333,stroke-width:2px,color:#fff
+    style H fill:#4169e1,stroke:#333,stroke-width:2px,color:#fff
+    style K fill:#32cd32,stroke:#333,stroke-width:2px,color:#000
+    style O fill:#ffa500,stroke:#333,stroke-width:2px,color:#000
+```
+
+**What this means for you:**
+
+1. **Fully Automated** - No manual work required once installed
+2. **Fast** - Updates typically arrive within 30 seconds of release
+3. **Reliable** - Daily backup checks ensure nothing is missed
+4. **Safe** - All updates are validated before being published
+
+### Manual Update (If Needed)
+
+You can manually check for updates anytime:
+
+```bash
+claude
+
+# Update specific plugin
 /plugin update sdk-bridge@flight505-plugins
+
+# Or update all plugins
 /plugin update storybook-assistant@flight505-plugins
 /plugin update claude-project-planner@flight505-plugins
 /plugin update nano-banana@flight505-plugins
 ```
 
-**Update marketplace manually:**
+---
+
+## 🛠️ Maintenance Scripts (For Developers)
+
+If you're maintaining this marketplace or contributing, there are automated scripts that handle common tasks:
+
+<details>
+<summary><b>View Maintenance Scripts</b></summary>
+
+### validate-plugin-manifests.sh
+
+Checks that all plugin configuration files are correct and in sync.
 
 ```bash
-cd ~/.claude/plugins/marketplaces/flight505-plugins
-git pull
-git submodule update --init --recursive
+# Check all plugins
+./scripts/validate-plugin-manifests.sh
+
+# Auto-fix common issues
+./scripts/validate-plugin-manifests.sh --fix
 ```
+
+**What it validates:**
+- JSON syntax is correct
+- Required fields are present
+- Version numbers match between files
+- File paths are correct
+- Semantic versioning format
+
+### bump-plugin-version.sh
+
+Automates the entire process of releasing a new plugin version.
+
+```bash
+# Bump a plugin version
+./scripts/bump-plugin-version.sh storybook-assistant 2.2.0
+
+# Test what would happen (dry run)
+./scripts/bump-plugin-version.sh sdk-bridge 3.0.0 --dry-run
+```
+
+**What it does automatically:**
+1. Updates plugin.json version
+2. Updates marketplace.json
+3. Creates git commits in both repos
+4. Pushes to GitHub
+5. Creates version tags
+6. Triggers webhook notification
+
+### setup-webhooks.sh
+
+Deploys webhook workflows to all plugin repositories.
+
+```bash
+./scripts/setup-webhooks.sh
+```
+
+**What it does:**
+- Copies webhook workflow to each plugin
+- Creates necessary directories
+- Reports status for each operation
+
+See [CLAUDE.md](CLAUDE.md) for detailed developer documentation.
+
+</details>
+
+---
+
+## 🔍 Technical Deep Dive
+
+<details>
+<summary><b>How This Marketplace Works Under the Hood</b></summary>
+
+### Architecture
+
+This marketplace is built on **git submodules** and **GitHub Actions workflows**:
+
+1. **Git Submodules** - Each plugin is a separate git repository included as a submodule
+2. **marketplace.json** - Central configuration file listing all plugins and versions
+3. **GitHub Actions Webhooks** - Automated pipelines that sync changes instantly
+4. **Validation Scripts** - Quality checks that run before any update
+
+### The Update Pipeline
+
+When a plugin developer releases a new version, here's the complete flow:
+
+**Step 1: Version Bump**
+- Developer updates `.claude-plugin/plugin.json` with new version number
+- Commits and pushes to plugin repository
+
+**Step 2: Webhook Trigger**
+- Plugin's `notify-marketplace.yml` workflow detects version change
+- Sends `repository_dispatch` event to marketplace repository
+- This happens automatically via GitHub Actions
+
+**Step 3: Marketplace Update**
+- Marketplace's `auto-update-plugins.yml` workflow receives event
+- Updates git submodule pointer to latest plugin commit
+- Updates `marketplace.json` with new version number
+- Runs validation script to ensure everything is correct
+
+**Step 4: Validation**
+- `validate-plugin-manifests.sh` checks all configuration files
+- Verifies version numbers match across all files
+- Ensures all paths and references are valid
+- Blocks update if any errors are found
+
+**Step 5: Publish**
+- If validation passes, changes are committed
+- Pushed to main branch
+- Users pulling the marketplace get the update
+
+**Total Time:** Usually 20-30 seconds from version bump to availability
+
+### Backup Systems
+
+**Daily Cron Job**
+- Runs at midnight UTC every day
+- Checks all plugins for version mismatches
+- Catches any updates that webhooks might have missed
+- Ensures long-term reliability
+
+**Manual Trigger**
+- Marketplace maintainers can trigger updates manually
+- Useful for troubleshooting or immediate updates
+- Available via GitHub Actions web interface
+
+### Version Synchronization
+
+The system maintains version numbers in three places:
+
+1. **Plugin's plugin.json** - Source of truth for plugin version
+2. **marketplace.json** - Lists all plugin versions for Claude Code
+3. **Git submodule pointer** - Points to specific plugin commit
+
+All three must stay in sync. The automation and validation scripts ensure this happens automatically.
+
+### Why Git Submodules?
+
+Git submodules allow each plugin to:
+- Have its own independent repository
+- Be developed separately with its own history
+- Be included in multiple marketplaces if desired
+- Maintain a clear link between marketplace and specific plugin version
+
+The downside is complexity, which is why we built automation scripts to handle it.
+
+### Security & Quality
+
+**Webhook Authentication**
+- Uses GitHub Personal Access Tokens (PAT)
+- Token stored as encrypted secret in GitHub
+- Only authorized workflows can trigger updates
+
+**Validation Gates**
+- All updates must pass validation script
+- Checks syntax, structure, and semantic versioning
+- Prevents broken configurations from being published
+
+**Manual Review Option**
+- Maintainers can review updates before merging
+- Automated PRs can be used instead of direct commits
+- Provides extra safety for critical updates
+
+</details>
 
 ---
 
 ## 📚 Documentation
 
-Each plugin has comprehensive documentation:
+- **For Users**: This README
+- **For Plugin Developers**: [CLAUDE.md](CLAUDE.md) - Complete marketplace maintenance guide
+- **For Contributors**: [CONTRIBUTING.md](CONTRIBUTING.md) (if you create this)
 
-- [SDK Bridge](https://github.com/flight505/sdk-bridge#readme) - Quick Start | [Installation Guide](https://github.com/flight505/sdk-bridge/blob/main/INSTALLATION.md) | Skill Guide
-- [Storybook Assistant](https://github.com/flight505/storybook-assistant#readme) - Complete Storybook toolkit
-- [Project Planner](https://github.com/flight505/claude-project-planner#readme) - Project planning & tracking
+### Individual Plugin Documentation
+
+Each plugin has comprehensive documentation in its repository:
+
+- [SDK Bridge](https://github.com/flight505/sdk-bridge#readme) - Quick Start | [Installation](https://github.com/flight505/sdk-bridge/blob/main/INSTALLATION.md)
+- [Storybook Assistant](https://github.com/flight505/storybook-assistant#readme) - Complete toolkit guide
+- [Project Planner](https://github.com/flight505/claude-project-planner#readme) - Planning & tracking
 - [Nano Banana](https://github.com/flight505/nano-banana#readme) - Image & diagram generation
 
 ---
 
-## 🆘 Support
+## 🆘 Support & Contributing
 
-- **Issues**: Report bugs at each plugin's GitHub repository
+### Getting Help
+
+- **Plugin Issues**: Report at each plugin's GitHub repository (see links above)
+- **Marketplace Issues**: [Create an issue here](https://github.com/flight505/flight505-marketplace/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/flight505/flight505-marketplace/discussions)
-- **Author**: [Jesper Vang](https://github.com/flight505)
+
+### Contributing
+
+Contributions are welcome! If you'd like to:
+
+- **Report a bug**: Open an issue with detailed information
+- **Suggest a feature**: Start a discussion to gather feedback
+- **Submit a plugin**: Ensure it follows the plugin standards in [CLAUDE.md](CLAUDE.md)
+- **Improve documentation**: PRs are welcome for README or CLAUDE.md improvements
 
 ---
 
 ## 📄 License
 
-Individual plugins may have different licenses. Check each repository:
+This marketplace infrastructure is MIT licensed. Individual plugins may have different licenses:
 
 - **sdk-bridge**: MIT License
 - **storybook-assistant**: MIT License
-- **claude-project-planner**: Check repository
-- **nano-banana**: Check repository
+- **claude-project-planner**: MIT License
+- **nano-banana**: MIT License
+
+Check each plugin's repository for specific license details.
 
 ---
 
 ## 🔗 Links
 
-- **GitHub**: https://github.com/flight505/flight505-marketplace
-- **Author**: [@flight505](https://github.com/flight505)
+- **This Marketplace**: https://github.com/flight505/flight505-marketplace
+- **Author**: [@flight505](https://github.com/flight505) (Jesper Vang)
 - **Plugin Repositories**:
   - [SDK Bridge](https://github.com/flight505/sdk-bridge)
   - [Storybook Assistant](https://github.com/flight505/storybook-assistant)
@@ -224,4 +443,4 @@ Individual plugins may have different licenses. Check each repository:
 
 **Built with ❤️ by Jesper Vang**
 
-**Powered by Claude Code** 🚀
+**Powered by [Claude Code](https://claude.ai/download)** 🚀
