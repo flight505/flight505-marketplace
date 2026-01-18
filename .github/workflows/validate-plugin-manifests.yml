@@ -1,0 +1,68 @@
+name: Validate Plugin Manifests
+
+on:
+  push:
+    paths:
+      - '**/.claude-plugin/plugin.json'
+      - '.claude-plugin/marketplace.json'
+      - 'scripts/validate-plugin-manifests.sh'
+  pull_request:
+    paths:
+      - '**/.claude-plugin/plugin.json'
+      - '.claude-plugin/marketplace.json'
+      - 'scripts/validate-plugin-manifests.sh'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate plugin.json files
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Run validation script
+        run: |
+          chmod +x scripts/validate-plugin-manifests.sh
+          ./scripts/validate-plugin-manifests.sh
+
+      - name: Comment on PR (if failed)
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ❌ Plugin Manifest Validation Failed
+
+The plugin manifest validation detected issues. Please run:
+
+\`\`\`bash
+./scripts/validate-plugin-manifests.sh
+\`\`\`
+
+To automatically fix common issues, run:
+
+\`\`\`bash
+./scripts/validate-plugin-manifests.sh --fix
+\`\`\`
+
+### Common Issues:
+- **Skills** must be relative paths: \`./skills/skill-name\`
+- **Agents** must be relative paths with .md extension: \`./agents/agent-name.md\`
+- **Versions** must be synchronized between plugin.json and marketplace.json
+- **Version format** must be semantic versioning (X.Y.Z)
+
+See the validation log above for specific errors.`
+            })
