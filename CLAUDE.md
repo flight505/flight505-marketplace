@@ -156,13 +156,16 @@ cat .claude-plugin/marketplace.json | jq '.plugins[] | select(.name=="nano-banan
 
 ### Version Update Checklist
 
-When a plugin version changes:
+**Recommended approach:** Use `./scripts/bump-plugin-version.sh` (see Maintenance Scripts section)
+
+**Manual approach** (if needed):
 
 1. ✅ Plugin repo: Update `.claude-plugin/plugin.json`
 2. ✅ Plugin repo: Commit and push to main
 3. ✅ Webhook: Auto-triggers (verify in Actions tab)
 4. ✅ Marketplace: Auto-updates within 30 seconds
 5. ✅ Verify: `git pull` and check marketplace.json
+6. ✅ Run `./scripts/validate-plugin-manifests.sh` to verify sync
 
 ### Manual Update (if webhook fails)
 
@@ -243,6 +246,176 @@ git add .
 git commit -m "feat: add <new-plugin> to marketplace"
 git push origin main
 ```
+
+---
+
+## Maintenance Scripts
+
+**Location:** `scripts/` directory
+
+The marketplace includes automated scripts for common maintenance tasks. **Always use these scripts instead of manual operations** to ensure consistency and avoid errors.
+
+### validate-plugin-manifests.sh
+
+Validates all plugin.json manifests for correct format and synchronization with marketplace.json.
+
+**Usage:**
+```bash
+# Validate all plugins
+./scripts/validate-plugin-manifests.sh
+
+# Auto-fix common issues (paths, formatting)
+./scripts/validate-plugin-manifests.sh --fix
+```
+
+**What it validates:**
+- JSON syntax correctness
+- Required fields (name, version, description, author)
+- Semantic versioning format (X.Y.Z)
+- Skills paths must be `./skills/name`
+- Agents paths must be `./agents/name.md`
+- Commands paths and format
+- Version synchronization with marketplace.json
+- File existence for all referenced paths
+
+**When to use:**
+- Before committing any manifest changes
+- After updating plugin versions
+- In CI/CD pipelines (auto-runs on push)
+- When debugging version sync issues
+
+**Example output:**
+```bash
+✓ sdk-bridge validation passed
+✗ storybook-assistant: Skill 'my-skill' must be a relative path starting with './'
+⚠ nano-banana: Missing SKILL.md in ./skills/example
+```
+
+---
+
+### bump-plugin-version.sh
+
+Automates the complete version bump workflow across plugin and marketplace repos.
+
+**Usage:**
+```bash
+./scripts/bump-plugin-version.sh <plugin-name> <new-version> [--dry-run]
+```
+
+**Examples:**
+```bash
+# Bump storybook-assistant to version 2.2.0
+./scripts/bump-plugin-version.sh storybook-assistant 2.2.0
+
+# Test what would happen without making changes
+./scripts/bump-plugin-version.sh sdk-bridge 3.1.0 --dry-run
+```
+
+**What it does (fully automated):**
+1. Updates `.claude-plugin/plugin.json` version in plugin submodule
+2. Commits version change in plugin repo
+3. Updates corresponding entry in `marketplace.json`
+4. Bumps marketplace version (patch increment)
+5. Commits marketplace changes
+6. Pushes to both plugin and marketplace repos
+7. Creates and pushes git tag (e.g., `v2.2.0`)
+8. Triggers webhook notification (~30 second delay)
+
+**Supported plugins:**
+- `sdk-bridge`
+- `storybook-assistant`
+- `claude-project-planner`
+- `nano-banana`
+
+**Why use this:**
+- Ensures version synchronization between plugin.json and marketplace.json
+- Prevents manual errors in multi-step version bump process
+- Automatically creates git tags for releases
+- Triggers webhook system for real-time updates
+
+---
+
+### setup-webhooks.sh
+
+Deploys webhook notification workflows to all plugin repositories.
+
+**Usage:**
+```bash
+./scripts/setup-webhooks.sh
+```
+
+**What it does:**
+- Copies `templates/notify-marketplace.yml` to each plugin's `.github/workflows/`
+- Creates `.github/workflows` directories if needed
+- Skips plugins that already have the workflow
+- Reports success/skip/error status for each plugin
+
+**When to use:**
+- Setting up a new plugin in the marketplace
+- Updating webhook workflow across all plugins
+- Troubleshooting webhook issues
+
+**Next steps after running:**
+1. Review changes in each plugin directory
+2. Commit and push to each plugin repo
+3. Verify `MARKETPLACE_UPDATE_TOKEN` secret exists in each repo
+4. Test with a version bump
+
+---
+
+### Script Workflow Examples
+
+**Before any commit:**
+```bash
+# Always validate before committing
+./scripts/validate-plugin-manifests.sh
+
+# Fix issues automatically
+./scripts/validate-plugin-manifests.sh --fix
+```
+
+**Releasing a new plugin version:**
+```bash
+# 1. Use bump script (handles everything)
+./scripts/bump-plugin-version.sh storybook-assistant 2.2.0
+
+# 2. Validate everything worked
+./scripts/validate-plugin-manifests.sh
+
+# 3. Wait for webhook (~30 seconds)
+# 4. Verify in GitHub Actions
+gh run list --repo flight505/flight505-marketplace --workflow auto-update-plugins.yml --limit 1
+```
+
+**Setting up webhooks for new plugin:**
+```bash
+# 1. Run setup script
+./scripts/setup-webhooks.sh
+
+# 2. Commit webhook to plugin repo
+cd <plugin-name>
+git add .github/workflows/notify-marketplace.yml
+git commit -m "feat: add marketplace webhook notification"
+git push origin main
+
+# 3. Add secret to plugin repo
+gh secret set MARKETPLACE_UPDATE_TOKEN --repo flight505/<plugin-name>
+
+# 4. Test with version bump
+cd ..
+./scripts/bump-plugin-version.sh <plugin-name> 1.0.1
+```
+
+---
+
+### Requirements
+
+All scripts require:
+- **jq** - JSON processor
+  - macOS: `brew install jq`
+  - Ubuntu: `apt-get install jq`
+- **git** - Already required for marketplace
+- **bash** - Already available on all systems
 
 ---
 
@@ -354,4 +527,4 @@ git commit -m "chore: sync <plugin> submodule"
 ---
 
 **Maintained by:** Jesper Vang (@flight505)
-**Last Updated:** 2026-01-13
+**Last Updated:** 2026-01-18

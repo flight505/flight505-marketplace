@@ -40,29 +40,33 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const body = [
+              '## ❌ Plugin Manifest Validation Failed',
+              '',
+              'The plugin manifest validation detected issues. Please run:',
+              '',
+              '```bash',
+              './scripts/validate-plugin-manifests.sh',
+              '```',
+              '',
+              'To automatically fix common issues, run:',
+              '',
+              '```bash',
+              './scripts/validate-plugin-manifests.sh --fix',
+              '```',
+              '',
+              '### Common Issues:',
+              '- **Skills** must be relative paths: `./skills/skill-name`',
+              '- **Agents** must be relative paths with .md extension: `./agents/agent-name.md`',
+              '- **Versions** must be synchronized between plugin.json and marketplace.json',
+              '- **Version format** must be semantic versioning (X.Y.Z)',
+              '',
+              'See the validation log above for specific errors.'
+            ].join('\n');
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## ❌ Plugin Manifest Validation Failed
-
-The plugin manifest validation detected issues. Please run:
-
-\`\`\`bash
-./scripts/validate-plugin-manifests.sh
-\`\`\`
-
-To automatically fix common issues, run:
-
-\`\`\`bash
-./scripts/validate-plugin-manifests.sh --fix
-\`\`\`
-
-### Common Issues:
-- **Skills** must be relative paths: \`./skills/skill-name\`
-- **Agents** must be relative paths with .md extension: \`./agents/agent-name.md\`
-- **Versions** must be synchronized between plugin.json and marketplace.json
-- **Version format** must be semantic versioning (X.Y.Z)
-
-See the validation log above for specific errors.`
+              body: body
             })
