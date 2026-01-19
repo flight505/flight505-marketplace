@@ -9,10 +9,53 @@ This guide provides comprehensive testing workflows for developing and testing C
 ## Quick Reference: Developing vs Testing
 
 ### **Developing a Plugin** (Active Coding)
-**Where:** Inside the marketplace submodule
-**Path:** `/Users/jesper/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge`
+
+#### For Most Plugins (storybook-assistant, nano-banana, claude-project-planner)
+**Path:** `/Users/jesper/Projects/Dev_projects/Claude_SDK/flight505-marketplace/<plugin-name>`
 **Command:** `claude --plugin-dir . --dangerously-skip-permissions`
-**Purpose:** Test your changes as you code in that specific plugin
+
+```bash
+# Example: storybook-assistant
+cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/storybook-assistant
+claude --plugin-dir . --dangerously-skip-permissions
+```
+
+#### For sdk-bridge (Special Nested Structure)
+**⚠️ IMPORTANT:** sdk-bridge has a nested structure - the actual plugin is deeper in the directory tree.
+
+**You have two options:**
+
+**Option 1: Navigate to the Nested Plugin Directory** (Recommended)
+```bash
+cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge/plugins/sdk-bridge
+claude --plugin-dir . --dangerously-skip-permissions
+```
+
+**Option 2: Point to the Nested Directory**
+```bash
+cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge
+claude --plugin-dir ./plugins/sdk-bridge --dangerously-skip-permissions
+```
+
+**Why this happens:**
+
+The actual plugin manifest is at:
+```
+sdk-bridge/plugins/sdk-bridge/.claude-plugin/plugin.json  ← actual plugin
+```
+
+Not at:
+```
+sdk-bridge/.claude-plugin/plugin.json  ← doesn't exist
+```
+
+**In Claude Code, verify the plugin loaded:**
+```
+/help
+# Should show /sdk-bridge:start, /sdk-bridge:status, etc.
+```
+
+This nested structure is **unique to sdk-bridge**. Other plugins work directly from their root folders.
 
 ---
 
@@ -30,20 +73,38 @@ This guide provides comprehensive testing workflows for developing and testing C
 
 ### **Development Workflow**
 
+#### For Most Plugins
 ```bash
-# 1. DEVELOP (in marketplace submodule)
-cd /Users/jesper/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge
+# 1. DEVELOP (in plugin folder)
+cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/storybook-assistant
 # make changes, test locally
 claude --plugin-dir . --dangerously-skip-permissions
 
 # 2. TEST (back to marketplace root)
-cd /Users/jesper/Projects/Dev_projects/Claude_SDK/flight505-marketplace
+cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace
+./scripts/dev-test.sh storybook-assistant
+./scripts/test-marketplace-integration.sh
+./scripts/validate-plugin-manifests.sh
+```
+
+#### For sdk-bridge (Nested Structure)
+```bash
+# 1. DEVELOP (navigate to NESTED plugin folder)
+cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge/plugins/sdk-bridge
+# make changes, test locally
+claude --plugin-dir . --dangerously-skip-permissions
+
+# 2. TEST (back to marketplace root)
+cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace
 ./scripts/dev-test.sh sdk-bridge
 ./scripts/test-marketplace-integration.sh
 ./scripts/validate-plugin-manifests.sh
 ```
 
-**TL;DR:** Develop in submodule folders, test from marketplace root.
+**TL;DR:**
+- Most plugins: Develop in submodule folder
+- sdk-bridge: Develop in `sdk-bridge/plugins/sdk-bridge/`
+- All plugins: Test from marketplace root
 
 ---
 
