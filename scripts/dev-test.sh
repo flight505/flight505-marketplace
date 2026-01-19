@@ -37,6 +37,15 @@ test_plugin() {
     local plugin=$1
     local plugin_dir="$MARKETPLACE_ROOT/$plugin"
 
+    # Handle sdk-bridge nested structure (special case)
+    local manifest_path
+    if [ "$plugin" = "sdk-bridge" ]; then
+        manifest_path="$plugin_dir/plugins/sdk-bridge/.claude-plugin/plugin.json"
+        plugin_dir="$plugin_dir/plugins/sdk-bridge"
+    else
+        manifest_path="$plugin_dir/.claude-plugin/plugin.json"
+    fi
+
     echo ""
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${BLUE}Testing: $plugin${NC}"
@@ -51,21 +60,21 @@ test_plugin() {
 
     # Step 1: Validate manifest
     echo -e "${YELLOW}Step 1: Validating plugin manifest...${NC}"
-    if [ ! -f "$plugin_dir/.claude-plugin/plugin.json" ]; then
-        echo -e "${RED}❌ Missing plugin.json in $plugin${NC}"
+    if [ ! -f "$manifest_path" ]; then
+        echo -e "${RED}❌ Missing plugin.json at: $manifest_path${NC}"
         return 1
     fi
 
     # Validate JSON syntax
-    if ! jq empty "$plugin_dir/.claude-plugin/plugin.json" 2>/dev/null; then
+    if ! jq empty "$manifest_path" 2>/dev/null; then
         echo -e "${RED}❌ Invalid JSON in plugin.json${NC}"
         return 1
     fi
 
     # Extract plugin info
-    PLUGIN_NAME=$(jq -r '.name' "$plugin_dir/.claude-plugin/plugin.json")
-    PLUGIN_VERSION=$(jq -r '.version' "$plugin_dir/.claude-plugin/plugin.json")
-    PLUGIN_DESC=$(jq -r '.description' "$plugin_dir/.claude-plugin/plugin.json")
+    PLUGIN_NAME=$(jq -r '.name' "$manifest_path")
+    PLUGIN_VERSION=$(jq -r '.version' "$manifest_path")
+    PLUGIN_DESC=$(jq -r '.description' "$manifest_path")
 
     echo -e "${GREEN}✅ Manifest valid${NC}"
     echo "   Name: $PLUGIN_NAME"

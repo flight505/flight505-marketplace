@@ -30,13 +30,22 @@ The `--plugin-dir` flag loads your plugin directly without requiring installatio
 ```bash
 # Test single plugin
 cd flight505-marketplace
-claude --plugin-dir ./sdk-bridge
+
+# Most plugins (normal structure):
+claude --plugin-dir ./storybook-assistant
+claude --plugin-dir ./nano-banana
+claude --plugin-dir ./claude-project-planner
+
+# SDK Bridge (special nested structure):
+claude --plugin-dir ./sdk-bridge/plugins/sdk-bridge
 
 # In Claude Code session, try the commands:
 /sdk-bridge:start
 /sdk-bridge:status
 # etc.
 ```
+
+**Note:** SDK Bridge has a nested repository structure with the actual plugin at `sdk-bridge/plugins/sdk-bridge/`. The dev-test.sh script handles this automatically, but if you're using `--plugin-dir` manually, use the nested path shown above.
 
 ### Test Multiple Plugins Simultaneously
 
