@@ -10,6 +10,85 @@ This is the **flight505-marketplace** repository containing 4 Claude Code plugin
 
 ---
 
+## 🤖 Automatic Validation System
+
+**Status:** ✅ ACTIVE - Self-correcting hooks enabled
+
+This marketplace uses **intelligent PostToolUse hooks** that automatically validate manifests and enforce quality standards. No manual validation scripts needed!
+
+### How It Works
+
+**1. Real-Time Validation**
+- Edit any `plugin.json` → validator runs automatically
+- Edit `marketplace.json` → sync validator runs automatically
+- Issues found → Claude sees errors and **fixes them immediately**
+- No manual intervention needed
+
+**2. What Gets Validated**
+
+`.claude/hooks/validators/plugin-manifest-validator.py`:
+- ✅ JSON syntax correctness
+- ✅ Required fields (name, version, description, author)
+- ✅ Semantic versioning format (X.Y.Z)
+- ✅ Skills paths (must start with `./`)
+- ✅ Agents paths (must start with `./` and end with `.md`)
+- ✅ Commands format and paths
+- ✅ File/directory existence
+
+`.claude/hooks/validators/marketplace-sync-validator.py`:
+- ✅ Plugin exists in marketplace.json
+- ✅ Version synchronization between plugin.json and marketplace.json
+- ✅ Prevents version drift
+
+**3. Self-Correcting Workflow**
+
+```
+Edit plugin.json
+    ↓
+Validator runs automatically (PostToolUse hook)
+    ↓
+Error found? → Claude sees error message
+    ↓
+Claude fixes the issue
+    ↓
+Validator runs again
+    ↓
+✅ Pass → Changes saved
+```
+
+**4. Benefits**
+
+- ❌ **No more manual** `./scripts/validate-plugin-manifests.sh`
+- ✅ **Immediate feedback** - catch issues as you work
+- ✅ **Self-correcting** - Claude fixes issues automatically
+- ✅ **Always valid** - impossible to save invalid manifests
+- ✅ **Faster development** - no manual validation step
+
+### For Developers
+
+**The hooks are transparent:**
+- They run automatically after Edit/Write
+- You see helpful error messages if validation fails
+- Claude fixes issues and validators re-run
+- Everything just works
+
+**Manual validation still available:**
+```bash
+# If you want to manually validate (not needed with hooks active)
+./scripts/validate-plugin-manifests.sh
+
+# Or test validators directly
+echo '{"tool_name":"Edit","tool_input":{"file_path":"sdk-bridge/plugins/sdk-bridge/.claude-plugin/plugin.json"}}' | \
+    .claude/hooks/validators/plugin-manifest-validator.py
+```
+
+**Validator logs for debugging:**
+```bash
+tail -f .claude/hooks/validators/*.log
+```
+
+---
+
 ## Plugin Structure
 
 Each plugin is a **git submodule** pointing to its own repository:

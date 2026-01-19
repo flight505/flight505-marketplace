@@ -11,21 +11,22 @@
   "plugins": [
     {
       "name": "sdk-bridge",
-      "description": "SOTA autonomous development with generative UI: interactive setup (AskUserQuestion), live progress (TodoWrite), intelligent resume, and context-aware help (prompt hooks)",
+      "description": "Interactive autonomous development assistant - generates PRDs, converts to execution format, and runs Amp agent loops until complete. Based on Ralph pattern.",
       "version": "4.0.0",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
       },
-      "source": "./sdk-bridge/plugins/sdk-bridge",
+      "source": "./sdk-bridge",
       "category": "workflows",
       "keywords": [
+        "amp",
         "autonomous",
-        "agent-sdk",
+        "prd",
+        "agent-loop",
         "long-running",
-        "parallel-execution",
-        "semantic-memory",
-        "automation"
+        "interactive",
+        "ralph-pattern"
       ]
     },
     {

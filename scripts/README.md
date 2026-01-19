@@ -152,6 +152,62 @@ Deploys webhook notification workflows to all plugin repositories.
 
 ---
 
+### `test-marketplace-integration.sh`
+
+Comprehensive marketplace integration testing - verifies plugins work together without conflicts.
+
+**Usage:**
+```bash
+./scripts/test-marketplace-integration.sh
+```
+
+**What it does:**
+1. **Phase 1**: Validates plugin structure (manifests, required fields)
+2. **Phase 2**: Validates marketplace.json (all plugins listed, versions synced)
+3. **Phase 3**: Counts components (commands, skills, agents across all plugins)
+4. **Phase 4**: Sets up isolation tests (test each plugin independently)
+5. **Phase 5**: Sets up integration tests (test all plugins together)
+6. **Generates report**: Saves detailed results to `marketplace-test-report.txt`
+
+**Tests performed:**
+- ✅ Plugin structure validation (manifests, JSON syntax)
+- ✅ Namespace conflict detection (ensures no command name collisions)
+- ✅ Version synchronization (plugin.json ↔ marketplace.json)
+- ✅ Component availability (commands, skills, agents)
+- ✅ Marketplace manifest completeness
+
+**Output:**
+- Console output with colored pass/fail indicators
+- Detailed report file: `marketplace-test-report.txt`
+- Instructions for manual testing (plugins in isolation and together)
+- Success rate percentage
+
+**When to use:**
+- Before releasing marketplace updates
+- After adding/updating plugins
+- To verify plugins don't conflict
+- Before distributing to users
+
+**Example output:**
+```
+Phase 1: Plugin Structure Validation
+✅ PASS: sdk-bridge: Structure valid (v3.0.0)
+✅ PASS: storybook-assistant: Structure valid (v2.1.6)
+
+Phase 2: Marketplace Manifest Validation
+✅ PASS: All plugins listed in marketplace.json
+✅ PASS: All plugin versions synchronized
+
+Total Tests: 15
+Passed: 15
+Failed: 0
+Success Rate: 100%
+
+✅ ALL TESTS PASSED
+```
+
+---
+
 ## Workflow Integration
 
 ### Plugin Development Workflow
@@ -216,8 +272,9 @@ Both scripts are integrated into GitHub Actions:
 | Task | Command |
 |------|---------|
 | **Testing** | |
-| Test single plugin | `./scripts/dev-test.sh sdk-bridge` |
-| Test all plugins | `./scripts/dev-test.sh` |
+| Test single plugin structure | `./scripts/dev-test.sh sdk-bridge` |
+| Test all plugin structures | `./scripts/dev-test.sh` |
+| Test marketplace integration | `./scripts/test-marketplace-integration.sh` |
 | Setup auto-validation | `./scripts/setup-dev-hooks.sh` |
 | **Validation** | |
 | Check all manifests | `./scripts/validate-plugin-manifests.sh` |
