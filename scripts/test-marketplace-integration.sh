@@ -180,7 +180,7 @@ EOF
     log_info "To test $plugin in isolation:"
     echo ""
     echo -e "${YELLOW}  cd $TEST_DIR${NC}"
-    echo -e "${YELLOW}  claude --plugin-dir $path${NC}"
+    echo -e "${YELLOW}  claude --plugin-dir $path --dangerously-skip-permissions${NC}"
     echo ""
     echo -e "${YELLOW}  Then run:${NC}"
     echo -e "${YELLOW}    /help                    # Should show $plugin commands${NC}"
@@ -238,7 +238,7 @@ test_plugins_together() {
     log_info "To test all plugins together:"
     echo ""
     echo -e "${YELLOW}  cd $TEST_DIR${NC}"
-    echo -e "${YELLOW}  claude$plugin_dirs${NC}"
+    echo -e "${YELLOW}  claude$plugin_dirs --dangerously-skip-permissions${NC}"
     echo ""
     echo -e "${YELLOW}  Then verify:${NC}"
     echo -e "${YELLOW}    /help                              # All plugin commands listed${NC}"
@@ -451,12 +451,12 @@ main() {
     echo ""
     echo -e "${CYAN}3. Verify in a real project:${NC}"
     echo "   cd ~/Projects/your-real-project"
-    local all_dirs=""
+    echo "   claude \\"
     for plugin in "${PLUGINS[@]}"; do
         local path=$(get_plugin_path "$plugin")
-        all_dirs="$all_dirs \\"
-        echo "         --plugin-dir $path"
+        echo "         --plugin-dir $path \\"
     done
+    echo "         --dangerously-skip-permissions"
     echo ""
     echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""

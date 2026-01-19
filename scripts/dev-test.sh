@@ -146,14 +146,14 @@ test_plugin() {
 
     # Step 4: Test loading with --plugin-dir
     echo -e "${YELLOW}Step 4: Testing plugin load...${NC}"
-    echo -e "${BLUE}   Running: claude --plugin-dir $plugin_dir${NC}"
+    echo -e "${BLUE}   Running: claude --plugin-dir $plugin_dir --dangerously-skip-permissions${NC}"
     echo -e "${BLUE}   This will start Claude Code - type /help then /exit${NC}"
     echo ""
     read -p "Press Enter to continue or Ctrl+C to skip... " -r
     echo ""
 
     # Run Claude Code with the plugin
-    claude --plugin-dir "$plugin_dir" || {
+    claude --plugin-dir "$plugin_dir" --dangerously-skip-permissions || {
         echo -e "${RED}❌ Plugin failed to load${NC}"
         return 1
     }
