@@ -6,16 +6,66 @@ This guide provides comprehensive testing workflows for developing and testing C
 
 ---
 
-## Quick Reference
+## Quick Reference: Developing vs Testing
 
-| Need to... | Command/Approach |
-|-----------|------------------|
-| **Test plugin during development** | `claude --plugin-dir ./plugin-name` |
-| **Test multiple plugins** | `claude --plugin-dir ./plugin-1 --plugin-dir ./plugin-2` |
-| **Validate plugin structure** | `claude plugin validate .` or `/plugin validate .` |
-| **Debug plugin loading** | `claude --debug` |
-| **Auto-run tests after edits** | Use PostToolUse hooks (see below) |
-| **Interactive slash command testing** | Use `--plugin-dir` + restart after changes |
+### **Developing a Plugin** (Active Coding)
+**Where:** Inside the marketplace submodule
+**Path:** `/Users/jesper/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge`
+**Command:** `claude --plugin-dir . --dangerously-skip-permissions`
+**Purpose:** Test your changes as you code in that specific plugin
+
+---
+
+### **Testing Marketplace** (Verify Integration)
+**Where:** Marketplace root
+**Path:** `/Users/jesper/Projects/Dev_projects/Claude_SDK/flight505-marketplace`
+**Commands:**
+- `./scripts/dev-test.sh sdk-bridge` - Validate one plugin structure
+- `./scripts/test-marketplace-integration.sh` - Test all plugins work together
+- `./scripts/validate-plugin-manifests.sh` - Validate all plugin.json files
+
+**Purpose:** Verify plugins work together without conflicts
+
+---
+
+### **Development Workflow**
+
+```bash
+# 1. DEVELOP (in marketplace submodule)
+cd /Users/jesper/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge
+# make changes, test locally
+claude --plugin-dir . --dangerously-skip-permissions
+
+# 2. TEST (back to marketplace root)
+cd /Users/jesper/Projects/Dev_projects/Claude_SDK/flight505-marketplace
+./scripts/dev-test.sh sdk-bridge
+./scripts/test-marketplace-integration.sh
+./scripts/validate-plugin-manifests.sh
+```
+
+**TL;DR:** Develop in submodule folders, test from marketplace root.
+
+---
+
+## Command Reference
+
+| Task | Command | Run From |
+|------|---------|----------|
+| **Develop single plugin** | `claude --plugin-dir . --dangerously-skip-permissions` | Plugin folder |
+| **Test plugin structure** | `./scripts/dev-test.sh <plugin>` | Marketplace root |
+| **Test all plugins integration** | `./scripts/test-marketplace-integration.sh` | Marketplace root |
+| **Validate manifests** | `./scripts/validate-plugin-manifests.sh` | Marketplace root |
+| **Auto-fix manifest issues** | `./scripts/validate-plugin-manifests.sh --fix` | Marketplace root |
+| **Bump plugin version** | `./scripts/bump-plugin-version.sh <plugin> <version>` | Marketplace root |
+
+---
+
+**Note:** Throughout this guide, you can add `--dangerously-skip-permissions` to any `claude` command to bypass permission prompts during testing:
+```bash
+claude --plugin-dir ./sdk-bridge --dangerously-skip-permissions
+```
+
+This is recommended for development and testing workflows to avoid repeated permission prompts.
 
 ---
 
@@ -550,6 +600,62 @@ def test_commands_exist():
 ```
 
 But **behavioral testing** (slash commands, Skills) requires interactive Claude Code usage.
+
+---
+
+## Plugin Manifest Validation
+
+The marketplace includes automated validation scripts to prevent plugin installation errors caused by invalid manifest files.
+
+### Validation Scripts
+
+**validate-plugin-manifests.sh** - Validates all plugin.json files
+```bash
+# Check all plugins
+./scripts/validate-plugin-manifests.sh
+
+# Auto-fix common issues (paths, formatting)
+./scripts/validate-plugin-manifests.sh --fix
+```
+
+**What it validates:**
+- ✅ JSON syntax correctness
+- ✅ Required fields (name, version, description, author)
+- ✅ Semantic versioning format (X.Y.Z)
+- ✅ Skills paths must be `./skills/name`
+- ✅ Agents paths must be `./agents/name.md`
+- ✅ Commands paths and format
+- ✅ Version synchronization with marketplace.json
+- ✅ File existence for all referenced paths
+
+**When to use:**
+- Before committing any manifest changes
+- After updating plugin versions
+- Before releasing updates
+- When debugging installation issues
+
+**Example:**
+```bash
+# Before committing
+cd /Users/jesper/Projects/Dev_projects/Claude_SDK/flight505-marketplace
+./scripts/validate-plugin-manifests.sh
+
+# If issues found
+./scripts/validate-plugin-manifests.sh --fix
+
+# Then commit
+git add .
+git commit -m "fix: update plugin manifest"
+```
+
+### CI/CD Integration
+
+The marketplace automatically validates manifests on every commit via GitHub Actions:
+- **Trigger:** Any change to `**/.claude-plugin/plugin.json` or `.claude-plugin/marketplace.json`
+- **Action:** Runs validation script and comments on PRs if validation fails
+- **Benefit:** Prevents merging invalid manifests
+
+See [docs/PLUGIN-MANIFEST-VALIDATION.md](docs/PLUGIN-MANIFEST-VALIDATION.md) for detailed validation rules and troubleshooting.
 
 ---
 
