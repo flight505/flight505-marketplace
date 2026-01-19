@@ -67,7 +67,114 @@ Automates version bumping across plugin and marketplace files.
 
 ---
 
+### `dev-test.sh`
+
+Quick development testing for individual or all plugins without installation.
+
+**Usage:**
+```bash
+# Test single plugin
+./scripts/dev-test.sh sdk-bridge
+
+# Test all plugins
+./scripts/dev-test.sh
+```
+
+**What it does:**
+1. Validates plugin manifest (JSON syntax, required fields)
+2. Checks plugin structure (commands, skills, agents, hooks, MCP)
+3. Verifies executable permissions on scripts
+4. Loads plugin with `--plugin-dir` for interactive testing
+5. Provides detailed pass/fail report
+
+**When to use:**
+- During active plugin development
+- Before releasing updates
+- Testing plugin without installation
+- Verifying plugin structure is correct
+
+---
+
+### `setup-dev-hooks.sh`
+
+Configures development hooks for automatic validation after file edits.
+
+**Usage:**
+```bash
+./scripts/setup-dev-hooks.sh
+```
+
+**What it does:**
+- Creates `.claude/settings.local.json` with PostToolUse hooks
+- Automatically runs validation after Write/Edit operations
+- Displays confirmation on SessionStart
+- Provides real-time feedback during development
+
+**Result:**
+```json
+{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Write|Edit",
+      "hooks": [{
+        "type": "command",
+        "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/validate-plugin-manifests.sh"
+      }]
+    }]
+  }
+}
+```
+
+**Note:** Creates `.local.json` file which is gitignored and only affects your local environment.
+
+---
+
+### `setup-webhooks.sh`
+
+Deploys webhook notification workflows to all plugin repositories.
+
+**Usage:**
+```bash
+./scripts/setup-webhooks.sh
+```
+
+**What it does:**
+- Copies `templates/notify-marketplace.yml` to each plugin's `.github/workflows/`
+- Creates `.github/workflows` directories if needed
+- Skips plugins that already have the workflow
+- Reports success/skip/error status for each plugin
+
+**Next steps after running:**
+1. Review changes in each plugin directory
+2. Commit and push to each plugin repo
+3. Verify `MARKETPLACE_UPDATE_TOKEN` secret exists in each repo
+4. Test with a version bump
+
+---
+
 ## Workflow Integration
+
+### Plugin Development Workflow
+
+```bash
+# 1. Set up auto-validation (one-time)
+./scripts/setup-dev-hooks.sh
+
+# 2. Test plugin interactively
+./scripts/dev-test.sh sdk-bridge
+
+# 3. Make changes
+# (Edit files - hooks validate automatically)
+
+# 4. Test all components
+./scripts/dev-test.sh sdk-bridge
+
+# 5. Before release, validate everything
+./scripts/validate-plugin-manifests.sh
+
+# 6. Bump version and release
+./scripts/bump-plugin-version.sh sdk-bridge 2.0.1
+```
 
 ### Before Committing
 
@@ -77,6 +184,9 @@ Automates version bumping across plugin and marketplace files.
 
 # Fix issues
 ./scripts/validate-plugin-manifests.sh --fix
+
+# Test all plugins
+./scripts/dev-test.sh
 ```
 
 ### Version Bump Workflow
@@ -105,11 +215,18 @@ Both scripts are integrated into GitHub Actions:
 
 | Task | Command |
 |------|---------|
+| **Testing** | |
+| Test single plugin | `./scripts/dev-test.sh sdk-bridge` |
+| Test all plugins | `./scripts/dev-test.sh` |
+| Setup auto-validation | `./scripts/setup-dev-hooks.sh` |
+| **Validation** | |
 | Check all manifests | `./scripts/validate-plugin-manifests.sh` |
 | Fix manifest issues | `./scripts/validate-plugin-manifests.sh --fix` |
+| **Release** | |
 | Bump version | `./scripts/bump-plugin-version.sh <plugin> <version>` |
 | Test version bump | `./scripts/bump-plugin-version.sh <plugin> <version> --dry-run` |
-| Check specific plugin | Edit script to only check one plugin |
+| **Setup** | |
+| Deploy webhooks | `./scripts/setup-webhooks.sh` |
 
 ---
 
@@ -156,6 +273,6 @@ Then manually sync or use bump-plugin-version.sh.
 
 ## Documentation
 
-- [Plugin Manifest Validation](../docs/PLUGIN-MANIFEST-VALIDATION.md) - Complete validation guide
+- **[PLUGIN_TESTING_GUIDE.md](../PLUGIN_TESTING_GUIDE.md)** - Comprehensive plugin testing documentation
 - [CLAUDE.md](../CLAUDE.md) - Marketplace development guide
 - [README.md](../README.md) - Marketplace overview
