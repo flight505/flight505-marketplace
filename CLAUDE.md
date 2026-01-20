@@ -78,7 +78,7 @@ Validator runs again
 ./scripts/validate-plugin-manifests.sh
 
 # Or test validators directly
-echo '{"tool_name":"Edit","tool_input":{"file_path":"sdk-bridge/plugins/sdk-bridge/.claude-plugin/plugin.json"}}' | \
+echo '{"tool_name":"Edit","tool_input":{"file_path":"sdk-bridge/.claude-plugin/plugin.json"}}' | \
     .claude/hooks/validators/plugin-manifest-validator.py
 ```
 

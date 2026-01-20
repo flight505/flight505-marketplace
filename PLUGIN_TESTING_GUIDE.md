@@ -20,33 +20,18 @@ cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/storybook-assistant
 claude --plugin-dir . --dangerously-skip-permissions
 ```
 
-#### For sdk-bridge (Special Nested Structure)
-**⚠️ IMPORTANT:** sdk-bridge has a nested structure - the actual plugin is deeper in the directory tree.
+#### For sdk-bridge (Now Flattened)
+**✅ UPDATE:** sdk-bridge has been flattened and now uses the same structure as other plugins.
 
-**You have two options:**
-
-**Option 1: Navigate to the Nested Plugin Directory** (Recommended)
 ```bash
-cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge/plugins/sdk-bridge
+# Example: sdk-bridge
+cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge
 claude --plugin-dir . --dangerously-skip-permissions
 ```
 
-**Option 2: Point to the Nested Directory**
-```bash
-cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge
-claude --plugin-dir ./plugins/sdk-bridge --dangerously-skip-permissions
+**Plugin manifest location:**
 ```
-
-**Why this happens:**
-
-The actual plugin manifest is at:
-```
-sdk-bridge/plugins/sdk-bridge/.claude-plugin/plugin.json  ← actual plugin
-```
-
-Not at:
-```
-sdk-bridge/.claude-plugin/plugin.json  ← doesn't exist
+sdk-bridge/.claude-plugin/plugin.json  ← plugin root (CURRENT)
 ```
 
 **In Claude Code, verify the plugin loaded:**
@@ -55,7 +40,7 @@ sdk-bridge/.claude-plugin/plugin.json  ← doesn't exist
 # Should show /sdk-bridge:start, /sdk-bridge:status, etc.
 ```
 
-This nested structure is **unique to sdk-bridge**. Other plugins work directly from their root folders.
+**Note:** There's a worktree at `.worktrees/ralph-transformation/` with the old nested structure, but that's not the main plugin.
 
 ---
 
@@ -87,10 +72,10 @@ cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace
 ./scripts/validate-plugin-manifests.sh
 ```
 
-#### For sdk-bridge (Nested Structure)
+#### For sdk-bridge (Same as Other Plugins)
 ```bash
-# 1. DEVELOP (navigate to NESTED plugin folder)
-cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge/plugins/sdk-bridge
+# 1. DEVELOP (in plugin root folder)
+cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace/sdk-bridge
 # make changes, test locally
 claude --plugin-dir . --dangerously-skip-permissions
 
@@ -98,7 +83,6 @@ claude --plugin-dir . --dangerously-skip-permissions
 cd ~/Projects/Dev_projects/Claude_SDK/flight505-marketplace
 ./scripts/dev-test.sh sdk-bridge
 ./scripts/test-marketplace-integration.sh
-./scripts/validate-plugin-manifests.sh
 ```
 
 **TL;DR:**

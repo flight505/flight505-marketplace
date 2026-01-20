@@ -33,7 +33,7 @@ echo ""
 # Plugin configuration - simple function to get plugin dir
 get_plugin_dir() {
   case "$1" in
-    "sdk-bridge") echo "sdk-bridge/plugins/sdk-bridge" ;;
+    "sdk-bridge") echo "sdk-bridge" ;;
     "storybook-assistant") echo "storybook-assistant" ;;
     "claude-project-planner") echo "claude-project-planner" ;;
     "nano-banana") echo "nano-banana" ;;
