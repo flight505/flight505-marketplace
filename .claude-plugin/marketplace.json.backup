@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.2.27",
+  "version": "1.2.28",
   "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge v2.0 with SOTA generative UI, Storybook Assistant, Project Planner v1.4.0, and Nano Banana",
   "owner": {
     "name": "Jesper Vang",
@@ -11,21 +11,22 @@
   "plugins": [
     {
       "name": "sdk-bridge",
-      "description": "SOTA autonomous development with generative UI: interactive setup (AskUserQuestion), live progress (TodoWrite), intelligent resume, and context-aware help (prompt hooks)",
-      "version": "3.0.0",
+      "description": "Interactive autonomous development assistant - generates PRDs, converts to execution format, and runs Amp agent loops until complete. Based on Ralph pattern.",
+      "version": "4.0.0",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
       },
-      "source": "./sdk-bridge/plugins/sdk-bridge",
+      "source": "./sdk-bridge",
       "category": "workflows",
       "keywords": [
+        "amp",
         "autonomous",
-        "agent-sdk",
+        "prd",
+        "agent-loop",
         "long-running",
-        "parallel-execution",
-        "semantic-memory",
-        "automation"
+        "interactive",
+        "ralph-pattern"
       ]
     },
     {
