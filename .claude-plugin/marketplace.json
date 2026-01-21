@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.2.29",
+  "version": "1.2.30",
   "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge v2.0 with SOTA generative UI, Storybook Assistant, Project Planner v1.4.0, and Nano Banana",
   "owner": {
     "name": "Jesper Vang",
@@ -51,7 +51,7 @@
     {
       "name": "claude-project-planner",
       "description": "Production-ready project planning with progress tracking, error recovery, and comprehensive research - generates architecture docs, sprint plans, cost analyses, and implementation roadmaps",
-      "version": "1.4.4",
+      "version": "1.4.5",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
