@@ -48,7 +48,7 @@ fi
 case "$PLUGIN_NAME" in
   "sdk-bridge")
     PLUGIN_DIR="sdk-bridge"
-    PLUGIN_JSON="sdk-bridge/plugins/sdk-bridge/.claude-plugin/plugin.json"
+    PLUGIN_JSON="sdk-bridge/.claude-plugin/plugin.json"
     ;;
   "claude-project-planner")
     PLUGIN_DIR="claude-project-planner"
@@ -124,6 +124,37 @@ if [ "$DRY_RUN" = false ]; then
 else
   echo -e "${YELLOW}[DRY RUN]${NC} Would update $PLUGIN_JSON"
   echo -e "${YELLOW}[DRY RUN]${NC} Would commit in $PLUGIN_NAME repo"
+fi
+
+# Step 1.5: Update README badge
+echo ""
+echo -e "${BLUE}Step 1.5:${NC} Updating README badge..."
+README_FILE="$PLUGIN_DIR/README.md"
+
+if [ -f "$README_FILE" ]; then
+  if [ "$DRY_RUN" = false ]; then
+    # Use sed to update version badge (works on both macOS and Linux)
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      # macOS version of sed
+      sed -i '' "s/version-$CURRENT_VERSION-blue\.svg/version-$NEW_VERSION-blue.svg/g" "$README_FILE"
+    else
+      # Linux version of sed
+      sed -i "s/version-$CURRENT_VERSION-blue\.svg/version-$NEW_VERSION-blue.svg/g" "$README_FILE"
+    fi
+
+    echo -e "${GREEN}✓${NC} Updated README badge: $CURRENT_VERSION → $NEW_VERSION"
+
+    # Add README to the commit
+    cd "$PLUGIN_DIR"
+    git add README.md
+    git commit --amend --no-edit
+    echo -e "${GREEN}✓${NC} Added README to commit"
+    cd ..
+  else
+    echo -e "${YELLOW}[DRY RUN]${NC} Would update $README_FILE badge"
+  fi
+else
+  echo -e "${YELLOW}⚠️  Warning: README.md not found in $PLUGIN_DIR${NC}"
 fi
 
 # Step 2: Update marketplace.json
