@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.2.33",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge v4.1.0 with resilience features, Storybook Assistant, Project Planner v1.4.5, and Nano Banana",
+  "version": "1.2.35",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge v4.2.0 with skill access, Storybook Assistant, Project Planner v1.4.5, and Nano Banana",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -12,7 +12,7 @@
     {
       "name": "sdk-bridge",
       "description": "Interactive autonomous development assistant - generates PRDs, converts to execution format, and runs Amp agent loops until complete. Based on Ralph pattern.",
-      "version": "4.1.0",
+      "version": "4.2.0",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
