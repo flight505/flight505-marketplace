@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.2.42",
+  "version": "1.2.43",
   "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge v4.4.0 with model selection, Storybook Assistant, Project Planner v1.4.5, and Nano Banana",
   "owner": {
     "name": "Jesper Vang",
