@@ -12,7 +12,7 @@
     {
       "name": "sdk-bridge",
       "description": "Interactive autonomous development assistant - generates PRDs, converts to execution format, and runs fresh Claude instances until complete. Based on Ralph pattern.",
-      "version": "4.5.1",
+      "version": "4.6.0",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
