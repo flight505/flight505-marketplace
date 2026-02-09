@@ -123,11 +123,7 @@ def validate_marketplace_sync(file_path: Path) -> list[str]:
                 continue
 
             # Find corresponding plugin.json
-            # Handle sdk-bridge nested structure
-            if plugin_name == "sdk-bridge":
-                plugin_json_path = marketplace_root / "sdk-bridge" / "plugins" / "sdk-bridge" / ".claude-plugin" / "plugin.json"
-            else:
-                plugin_json_path = marketplace_root / plugin_name / ".claude-plugin" / "plugin.json"
+            plugin_json_path = marketplace_root / plugin_name / ".claude-plugin" / "plugin.json"
 
             if not plugin_json_path.exists():
                 errors.append(f"Plugin manifest not found for '{plugin_name}' at {plugin_json_path}")
