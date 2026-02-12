@@ -10,3 +10,6 @@
 [submodule "sdk-bridge"]
 	path = sdk-bridge
 	url = https://github.com/flight505/sdk-bridge.git
+[submodule "taskplex"]
+	path = taskplex
+	url = https://github.com/flight505/taskplex.git

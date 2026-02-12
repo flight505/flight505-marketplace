@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.2.51",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge v4.8.0 with Opus 4.6 support, Storybook Assistant, Project Planner v1.4.5, and Nano Banana",
+  "version": "1.3.0",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, and Nano Banana",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -83,6 +83,25 @@
         "ai",
         "visualization",
         "openrouter"
+      ]
+    },
+    {
+      "name": "taskplex",
+      "description": "Next-generation autonomous development with dependency-aware task execution, custom subagents, error categorization with smart retry, and structured completion reports",
+      "version": "1.0.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "./taskplex",
+      "category": "workflows",
+      "keywords": [
+        "autonomous",
+        "agent-loop",
+        "subagents",
+        "dependency-graph",
+        "error-recovery",
+        "prd"
       ]
     }
   ]
