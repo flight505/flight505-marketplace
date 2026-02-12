@@ -109,9 +109,6 @@ jobs:
           # Update versions in marketplace.json based on plugin.json files
           MARKETPLACE_JSON=".claude-plugin/marketplace.json"
 
-          # Backup original
-          cp "${MARKETPLACE_JSON}" "${MARKETPLACE_JSON}.backup"
-
           # Update each plugin version
           for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge taskplex; do
             # Handle nested structure for sdk-bridge
