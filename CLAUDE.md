@@ -2,11 +2,11 @@
 
 ## Overview
 
-This is the **flight505-marketplace** repository containing 4 Claude Code plugins as git submodules. This CLAUDE.md contains critical instructions for maintaining the marketplace infrastructure.
+This is the **flight505-marketplace** repository containing 5 Claude Code plugins as git submodules. This CLAUDE.md contains critical instructions for maintaining the marketplace infrastructure.
 
 **Repository:** https://github.com/flight505/flight505-marketplace
-**Current Version:** 1.2.7
-**Plugins:** sdk-bridge, storybook-assistant, claude-project-planner, nano-banana
+**Current Version:** 1.3.0
+**Plugins:** sdk-bridge, taskplex, storybook-assistant, claude-project-planner, nano-banana
 
 ---
 
@@ -96,6 +96,7 @@ Each plugin is a **git submodule** pointing to its own repository:
 ```
 flight505-marketplace/
 ├── sdk-bridge/                    → github.com/flight505/sdk-bridge
+├── taskplex/                      → github.com/flight505/taskplex
 ├── storybook-assistant/           → github.com/flight505/storybook-assistant
 ├── claude-project-planner/        → github.com/flight505/claude-project-planner
 └── nano-banana/                   → github.com/flight505/nano-banana
@@ -224,11 +225,12 @@ cat .claude-plugin/marketplace.json | jq '.plugins[] | select(.name=="nano-banan
 
 ## Plugin Tracking
 
-### Current Plugins (4)
+### Current Plugins (5)
 
 | Plugin | Version | Repo | Status |
 |--------|---------|------|--------|
 | **sdk-bridge** | 4.8.1 | [github.com/flight505/sdk-bridge](https://github.com/flight505/sdk-bridge) | ✅ Active |
+| **taskplex** | 1.0.0 | [github.com/flight505/taskplex](https://github.com/flight505/taskplex) | ✅ Active |
 | **storybook-assistant** | 2.2.0 | [github.com/flight505/storybook-assistant](https://github.com/flight505/storybook-assistant) | ✅ Active |
 | **claude-project-planner** | 1.4.5 | [github.com/flight505/claude-project-planner](https://github.com/flight505/claude-project-planner) | ✅ Active |
 | **nano-banana** | 1.0.8 | [github.com/flight505/nano-banana](https://github.com/flight505/nano-banana) | ✅ Active |
@@ -402,6 +404,7 @@ Automates the complete version bump workflow across plugin and marketplace repos
 
 **Supported plugins:**
 - `sdk-bridge`
+- `taskplex`
 - `storybook-assistant`
 - `claude-project-planner`
 - `nano-banana`
