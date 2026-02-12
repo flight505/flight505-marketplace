@@ -74,7 +74,7 @@ jobs:
           UPDATES=""
 
           # Check each submodule for updates
-          for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge; do
+          for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge taskplex; do
             if git diff --name-only | grep -q "^${submodule}$"; then
               # Get the new commit hash
               NEW_COMMIT=$(git diff ${submodule} | grep "^+Subproject commit" | awk '{print $3}')
@@ -113,7 +113,7 @@ jobs:
           cp "${MARKETPLACE_JSON}" "${MARKETPLACE_JSON}.backup"
 
           # Update each plugin version
-          for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge; do
+          for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge taskplex; do
             # Handle nested structure for sdk-bridge
             if [ "${submodule}" = "sdk-bridge" ]; then
               PLUGIN_JSON="${submodule}/plugins/sdk-bridge/.claude-plugin/plugin.json"
@@ -137,6 +137,9 @@ jobs:
                   ;;
                 "sdk-bridge")
                   PLUGIN_NAME="sdk-bridge"
+                  ;;
+                "taskplex")
+                  PLUGIN_NAME="taskplex"
                   ;;
               esac
 
