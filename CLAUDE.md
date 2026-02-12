@@ -5,7 +5,7 @@
 This is the **flight505-marketplace** repository containing 5 Claude Code plugins as git submodules. This CLAUDE.md contains critical instructions for maintaining the marketplace infrastructure.
 
 **Repository:** https://github.com/flight505/flight505-marketplace
-**Current Version:** 1.3.0
+**Current Version:** 1.3.1
 **Plugins:** sdk-bridge, taskplex, storybook-assistant, claude-project-planner, nano-banana
 
 ---

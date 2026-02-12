@@ -5,7 +5,7 @@
 [![Auto-update Plugins](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml)
 [![Validate Manifests](https://github.com/flight505/flight505-marketplace/actions/workflows/validate-plugin-manifests.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/validate-plugin-manifests.yml)
 [![Marketplace Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.version&label=marketplace&color=blue)](https://github.com/flight505/flight505-marketplace)
-[![Plugins](https://img.shields.io/badge/plugins-4-success.svg)](https://github.com/flight505/flight505-marketplace)
+[![Plugins](https://img.shields.io/badge/plugins-5-success.svg)](https://github.com/flight505/flight505-marketplace)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ### Plugin Versions
@@ -14,10 +14,11 @@
 [![Storybook Assistant](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[1].version&label=storybook-assistant&color=brightgreen)](https://github.com/flight505/storybook-assistant)
 [![Claude Project Planner](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[2].version&label=claude-project-planner&color=brightgreen)](https://github.com/flight505/claude-project-planner)
 [![Nano Banana](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[3].version&label=nano-banana&color=brightgreen)](https://github.com/flight505/nano-banana)
+[![TaskPlex](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[4].version&label=taskplex&color=brightgreen)](https://github.com/flight505/taskplex)
 
 **Official Claude Code plugin marketplace by Jesper Vang**
 
-A centralized source for installing and automatically updating 4 professional Claude Code plugins with a single command.
+A centralized source for installing and automatically updating 5 professional Claude Code plugins with a single command.
 
 > 🚀 **Real-time updates!** Plugin versions sync automatically within 30 seconds when new versions are released.
 
@@ -41,24 +42,42 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 ## 📦 Available Plugins
 
 <details open>
-<summary><b>🚀 SDK Bridge</b> - Autonomous development with intelligent generative UI (v2.0)</summary>
+<summary><b>🚀 SDK Bridge</b> - Autonomous development assistant</summary>
 
-**What it does:** Lets Claude Code work on tasks autonomously using multiple parallel sessions, with a smart UI that shows progress and asks questions when needed.
+**What it does:** Interactive autonomous development assistant that generates PRDs, converts to execution format, and runs fresh Claude instances until all work is complete.
 
 **Key features:**
-- Interactive onboarding with model selection
-- Live progress tracking
-- Proactive completion notifications
-- Parallel execution (2-4x faster)
-- Semantic memory (learns from past projects)
+- Interactive wizard with 7-checkpoint workflow
+- PRD generation with smart story decomposition
+- Configurable iteration timeouts and model selection
+- Already-implemented detection (skips completed work)
+- Robust process management with trap-based cleanup
 
 **Repository**: [sdk-bridge](https://github.com/flight505/sdk-bridge)
-**Documentation**: [README](https://github.com/flight505/sdk-bridge#readme) | [Installation Guide](https://github.com/flight505/sdk-bridge/blob/main/INSTALLATION.md)
+**Documentation**: [README](https://github.com/flight505/sdk-bridge#readme)
 
 </details>
 
 <details>
-<summary><b>🎨 Storybook Assistant</b> - Complete Storybook 9 development toolkit (v2.1)</summary>
+<summary><b>🔧 TaskPlex</b> - Next-generation autonomous development</summary>
+
+**What it does:** Resilient autonomous development with dependency-aware task execution, custom subagents, error categorization, and branch lifecycle management. Successor to SDK Bridge.
+
+**Key features:**
+- Custom subagents (implementer, validator, reviewer, merger)
+- Error categorization with intelligent retry/skip
+- Dependency-aware task selection
+- Branch lifecycle management (create, commit, merge)
+- Quality gate hooks (block destructive commands)
+- Structured completion reports
+
+**Repository**: [taskplex](https://github.com/flight505/taskplex)
+**Documentation**: [README](https://github.com/flight505/taskplex#readme)
+
+</details>
+
+<details>
+<summary><b>🎨 Storybook Assistant</b> - Complete Storybook 10 development toolkit</summary>
 
 **What it does:** Helps you build and maintain React component libraries using Storybook, with AI-powered design-to-code transformation.
 
@@ -68,7 +87,7 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 - AI-powered accessibility remediation (WCAG 2.2)
 - React 19 & Next.js 15 support
 - Dark mode auto-generation
-- Performance analysis
+- Visual regression testing
 
 **Repository**: [storybook-assistant](https://github.com/flight505/storybook-assistant)
 **Documentation**: [README](https://github.com/flight505/storybook-assistant#readme)
@@ -76,16 +95,16 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 </details>
 
 <details>
-<summary><b>📋 Claude Project Planner</b> - AI-powered project planning assistant (v1.3)</summary>
+<summary><b>📋 Claude Project Planner</b> - AI-powered project planning assistant</summary>
 
-**What it does:** Helps you break down projects into tasks, estimate timelines, and track progress.
+**What it does:** Production-ready project planning with progress tracking, error recovery, and comprehensive research.
 
 **Key features:**
-- Project breakdown and task management
-- Timeline estimation
-- Progress tracking
-- Sprint planning
-- Resource allocation
+- Architecture research and building blocks
+- Sprint planning with INVEST criteria
+- Service cost analysis and ROI projections
+- Risk assessment and mitigation strategies
+- Report generation (PDF/DOCX/MD)
 
 **Repository**: [claude-project-planner](https://github.com/flight505/claude-project-planner)
 **Documentation**: [README](https://github.com/flight505/claude-project-planner#readme)
@@ -93,7 +112,7 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 </details>
 
 <details>
-<summary><b>🍌 Nano Banana</b> - AI image and diagram generation (v1.0)</summary>
+<summary><b>🍌 Nano Banana</b> - AI image and diagram generation</summary>
 
 **What it does:** Generates high-quality images and technical diagrams using state-of-the-art AI models.
 
@@ -115,7 +134,7 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 
 ### Quick Install (Recommended)
 
-Install the marketplace and all 4 plugins with these commands:
+Install the marketplace and all 5 plugins with these commands:
 
 ```bash
 # Start Claude Code
@@ -126,6 +145,7 @@ claude
 
 # Install all plugins
 /plugin install sdk-bridge@flight505-plugins
+/plugin install taskplex@flight505-plugins
 /plugin install storybook-assistant@flight505-plugins
 /plugin install claude-project-planner@flight505-plugins
 /plugin install nano-banana@flight505-plugins
@@ -208,6 +228,7 @@ claude
 /plugin update sdk-bridge@flight505-plugins
 
 # Or update all plugins
+/plugin update taskplex@flight505-plugins
 /plugin update storybook-assistant@flight505-plugins
 /plugin update claude-project-planner@flight505-plugins
 /plugin update nano-banana@flight505-plugins
@@ -390,7 +411,8 @@ The downside is complexity, which is why we built automation scripts to handle i
 
 Each plugin has comprehensive documentation in its repository:
 
-- [SDK Bridge](https://github.com/flight505/sdk-bridge#readme) - Quick Start | [Installation](https://github.com/flight505/sdk-bridge/blob/main/INSTALLATION.md)
+- [SDK Bridge](https://github.com/flight505/sdk-bridge#readme) - Autonomous development assistant
+- [TaskPlex](https://github.com/flight505/taskplex#readme) - Next-generation autonomous development
 - [Storybook Assistant](https://github.com/flight505/storybook-assistant#readme) - Complete toolkit guide
 - [Project Planner](https://github.com/flight505/claude-project-planner#readme) - Planning & tracking
 - [Nano Banana](https://github.com/flight505/nano-banana#readme) - Image & diagram generation
@@ -421,6 +443,7 @@ Contributions are welcome! If you'd like to:
 This marketplace infrastructure is MIT licensed. Individual plugins may have different licenses:
 
 - **sdk-bridge**: MIT License
+- **taskplex**: MIT License
 - **storybook-assistant**: MIT License
 - **claude-project-planner**: MIT License
 - **nano-banana**: MIT License
@@ -435,6 +458,7 @@ Check each plugin's repository for specific license details.
 - **Author**: [@flight505](https://github.com/flight505) (Jesper Vang)
 - **Plugin Repositories**:
   - [SDK Bridge](https://github.com/flight505/sdk-bridge)
+  - [TaskPlex](https://github.com/flight505/taskplex)
   - [Storybook Assistant](https://github.com/flight505/storybook-assistant)
   - [Claude Project Planner](https://github.com/flight505/claude-project-planner)
   - [Nano Banana](https://github.com/flight505/nano-banana)

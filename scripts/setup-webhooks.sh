@@ -32,6 +32,7 @@ echo ""
 # Plugin repos to update
 PLUGINS=(
     "sdk-bridge"
+    "taskplex"
     "storybook-assistant"
     "claude-project-planner"
     "nano-banana"
