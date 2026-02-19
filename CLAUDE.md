@@ -30,14 +30,18 @@ This marketplace uses **intelligent PostToolUse hooks** that automatically valid
 - ✅ JSON syntax correctness
 - ✅ Required fields (name, version, description, author)
 - ✅ Semantic versioning format (X.Y.Z)
+- ✅ Author structure (must be `{name, url}` object)
+- ✅ Plugin name matches submodule directory name
 - ✅ Skills paths (must start with `./`)
 - ✅ Agents paths (must start with `./` and end with `.md`)
 - ✅ Commands format and paths
+- ✅ Hooks file existence (string path or inline object)
 - ✅ File/directory existence
 
 `.claude/hooks/validators/marketplace-sync-validator.py`:
 - ✅ Plugin exists in marketplace.json
 - ✅ Version synchronization between plugin.json and marketplace.json
+- ✅ Marketplace top-level version drift detection (compares against git HEAD)
 - ✅ Prevents version drift
 
 **3. Self-Correcting Workflow**
