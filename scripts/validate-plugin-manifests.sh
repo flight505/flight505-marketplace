@@ -205,7 +205,7 @@ validate_commands_format() {
   fi
 
   # Commands can be a string (directory) or array of files
-  local commands_type=$(jq -r 'type' "$plugin_json" 2>/dev/null)
+  local commands_type=$(jq -r '.commands | type' "$plugin_json" 2>/dev/null)
 
   if [ "$commands_type" = "string" ]; then
     local commands_dir=$(jq -r '.commands' "$plugin_json")

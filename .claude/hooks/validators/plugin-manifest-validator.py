@@ -33,6 +33,7 @@ LOG_FILE = Path(__file__).parent / "plugin-manifest-validator.log"
 # Plugin directory mapping
 PLUGIN_DIRS = {
     "sdk-bridge": "sdk-bridge",
+    "taskplex": "taskplex",
     "storybook-assistant": "storybook-assistant",
     "claude-project-planner": "claude-project-planner",
     "nano-banana": "nano-banana",
