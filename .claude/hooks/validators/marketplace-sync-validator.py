@@ -19,6 +19,7 @@ Runs automatically after Edit/Write on plugin.json or marketplace.json.
 """
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -142,6 +143,65 @@ def validate_marketplace_sync(file_path: Path) -> list[str]:
                     f"  • marketplace.json: {marketplace_version}\n"
                     f"\n💡 Sync versions between plugin.json and marketplace.json"
                 )
+
+        # Check marketplace top-level version was bumped when plugin versions changed
+        errors.extend(validate_marketplace_version_bump(file_path, marketplace_root))
+
+    return errors
+
+
+def validate_marketplace_version_bump(file_path: Path, marketplace_root: Path) -> list[str]:
+    """
+    Detect marketplace top-level version drift.
+
+    Compares the current marketplace.json against git HEAD to check if
+    any plugin versions changed without bumping the marketplace version.
+    """
+    errors = []
+
+    try:
+        result = subprocess.run(
+            ["git", "show", "HEAD:.claude-plugin/marketplace.json"],
+            capture_output=True, text=True, cwd=marketplace_root, timeout=5
+        )
+        if result.returncode != 0:
+            return errors  # No git history yet or file not tracked
+
+        old_data = json.loads(result.stdout)
+    except Exception:
+        return errors  # Can't compare, skip
+
+    new_data = load_json_file(file_path)
+    if not new_data:
+        return errors
+
+    old_marketplace_version = old_data.get("version", "")
+    new_marketplace_version = new_data.get("version", "")
+
+    old_plugin_versions = {
+        p["name"]: p["version"] for p in old_data.get("plugins", [])
+    }
+    new_plugin_versions = {
+        p["name"]: p["version"] for p in new_data.get("plugins", [])
+    }
+
+    # Check if any plugin version changed
+    plugin_versions_changed = old_plugin_versions != new_plugin_versions
+
+    if plugin_versions_changed and old_marketplace_version == new_marketplace_version:
+        changed = []
+        for name in new_plugin_versions:
+            old_v = old_plugin_versions.get(name)
+            new_v = new_plugin_versions.get(name)
+            if old_v != new_v:
+                changed.append(f"{name}: {old_v} → {new_v}")
+
+        errors.append(
+            f"Marketplace top-level version not bumped after plugin changes:\n"
+            f"  • marketplace.json version: {new_marketplace_version} (unchanged)\n"
+            f"  • Changed plugins: {', '.join(changed)}\n"
+            f"\n💡 Bump the marketplace 'version' field (currently {new_marketplace_version})"
+        )
 
     return errors
 

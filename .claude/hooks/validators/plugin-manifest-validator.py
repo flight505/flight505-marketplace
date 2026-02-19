@@ -14,9 +14,12 @@ Validates:
 - JSON syntax
 - Required fields (name, version, description, author)
 - Version format (semantic versioning)
+- Author structure (must be object with name and url)
+- Plugin name matches submodule directory name
 - Skills path format (must start with ./)
 - Agents path format (must start with ./ and end with .md)
 - Commands path format
+- Hooks file existence
 - File/directory existence
 
 This validator runs automatically - Claude sees errors and fixes them immediately.
@@ -170,6 +173,81 @@ def validate_agents_format(data: dict, plugin_name: str, marketplace_root: Path)
     return errors
 
 
+def validate_author_structure(data: dict) -> list[str]:
+    """Validate author field is an object with name and url."""
+    errors = []
+    author = data.get("author")
+
+    if author is None:
+        return errors  # Caught by validate_required_fields
+
+    if not isinstance(author, dict):
+        errors.append(
+            f"'author' must be an object with 'name' and 'url' fields, "
+            f"got {type(author).__name__}"
+        )
+        return errors
+
+    if "name" not in author or not author["name"]:
+        errors.append("'author.name' is required and must not be empty")
+
+    if "url" not in author or not author["url"]:
+        errors.append("'author.url' is required and must not be empty")
+
+    return errors
+
+
+def validate_hooks_format(data: dict, plugin_name: str, marketplace_root: Path) -> list[str]:
+    """Validate hooks field — check that referenced files exist."""
+    errors = []
+
+    if "hooks" not in data:
+        return errors  # Hooks are optional
+
+    hooks = data["hooks"]
+    plugin_dir = get_plugin_dir(plugin_name)
+
+    if isinstance(hooks, str):
+        # String path to a hooks config file
+        hooks_path = marketplace_root / plugin_dir / hooks.lstrip("./")
+        if not hooks_path.exists():
+            errors.append(f"Hooks config file not found: {hooks}")
+    elif isinstance(hooks, dict):
+        # Inline hooks object — no file path validation needed
+        pass
+    else:
+        errors.append("'hooks' must be a string (file path) or object")
+
+    return errors
+
+
+def validate_name_matches_directory(data: dict, file_path: Path, marketplace_root: Path) -> list[str]:
+    """Validate that plugin name matches the submodule directory name."""
+    errors = []
+    plugin_name = data.get("name", "")
+
+    if not plugin_name:
+        return errors  # Caught by validate_required_fields
+
+    # Resolve the directory containing .claude-plugin/plugin.json
+    # file_path is like: /path/to/marketplace/sdk-bridge/.claude-plugin/plugin.json
+    # We want the submodule directory name relative to marketplace root
+    try:
+        relative = file_path.relative_to(marketplace_root)
+        # relative is like: sdk-bridge/.claude-plugin/plugin.json
+        dir_name = relative.parts[0]
+    except (ValueError, IndexError):
+        return errors  # Can't determine directory, skip check
+
+    if plugin_name != dir_name:
+        errors.append(
+            f"Plugin name '{plugin_name}' does not match directory '{dir_name}'. "
+            f"These must be identical for marketplace routing to work."
+        )
+
+    return errors
+
+
 def validate_commands_format(data: dict, plugin_name: str, marketplace_root: Path) -> list[str]:
     """Validate commands format (can be string or array)."""
     errors = []
@@ -233,22 +311,31 @@ def validate_plugin_manifest(file_path: Path) -> list[str]:
     # 3. Validate version format
     all_errors.extend(validate_version_format(data))
 
+    # 4. Validate author structure
+    all_errors.extend(validate_author_structure(data))
+
     # If basic validation failed, don't continue with path validation
     if all_errors:
         return all_errors
 
-    # 4. Get plugin name and marketplace root
+    # 5. Get plugin name and marketplace root
     plugin_name = data.get("name", "unknown")
     marketplace_root = get_marketplace_root()
 
-    # 5. Validate skills format
+    # 6. Validate name matches directory
+    all_errors.extend(validate_name_matches_directory(data, file_path, marketplace_root))
+
+    # 7. Validate skills format
     all_errors.extend(validate_skills_format(data, plugin_name, marketplace_root))
 
-    # 6. Validate agents format
+    # 8. Validate agents format
     all_errors.extend(validate_agents_format(data, plugin_name, marketplace_root))
 
-    # 7. Validate commands format
+    # 9. Validate commands format
     all_errors.extend(validate_commands_format(data, plugin_name, marketplace_root))
+
+    # 10. Validate hooks format
+    all_errors.extend(validate_hooks_format(data, plugin_name, marketplace_root))
 
     return all_errors
 
