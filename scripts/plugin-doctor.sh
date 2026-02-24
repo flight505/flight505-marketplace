@@ -38,10 +38,7 @@ VALID_EVENTS="PreToolUse PostToolUse PostToolUseFailure Stop Notification Subage
 
 get_plugin_path() {
     local plugin=$1
-    case $plugin in
-        sdk-bridge) echo "$MARKETPLACE_ROOT/sdk-bridge/plugins/sdk-bridge" ;;
-        *)          echo "$MARKETPLACE_ROOT/$plugin" ;;
-    esac
+    echo "$MARKETPLACE_ROOT/$plugin"
 }
 
 fail() { echo -e "${RED}FAIL: $1${NC}"; FAILURES=$((FAILURES + 1)); }

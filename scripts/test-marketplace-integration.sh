@@ -24,14 +24,7 @@ PLUGINS=("sdk-bridge" "taskplex" "storybook-assistant" "nano-banana" "claude-pro
 # Helper functions to get plugin-specific info
 get_plugin_path() {
     local plugin=$1
-    case $plugin in
-        sdk-bridge)
-            echo "$MARKETPLACE_ROOT/sdk-bridge/plugins/sdk-bridge"
-            ;;
-        *)
-            echo "$MARKETPLACE_ROOT/$plugin"
-            ;;
-    esac
+    echo "$MARKETPLACE_ROOT/$plugin"
 }
 
 get_test_command() {

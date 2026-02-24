@@ -149,11 +149,11 @@ if [ -f "$README_FILE" ]; then
 
     echo -e "${GREEN}✓${NC} Updated README badge: $CURRENT_VERSION → $NEW_VERSION"
 
-    # Add README to the commit
+    # Commit README update separately
     cd "$PLUGIN_DIR"
     git add README.md
-    git commit --amend --no-edit
-    echo -e "${GREEN}✓${NC} Added README to commit"
+    git commit -m "docs: update version badge to $NEW_VERSION"
+    echo -e "${GREEN}✓${NC} Committed README badge update"
     cd ..
   else
     echo -e "${YELLOW}[DRY RUN]${NC} Would update $README_FILE badge"

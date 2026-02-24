@@ -37,14 +37,7 @@ test_plugin() {
     local plugin=$1
     local plugin_dir="$MARKETPLACE_ROOT/$plugin"
 
-    # Handle sdk-bridge nested structure (special case)
-    local manifest_path
-    if [ "$plugin" = "sdk-bridge" ]; then
-        manifest_path="$plugin_dir/plugins/sdk-bridge/.claude-plugin/plugin.json"
-        plugin_dir="$plugin_dir/plugins/sdk-bridge"
-    else
-        manifest_path="$plugin_dir/.claude-plugin/plugin.json"
-    fi
+    local manifest_path="$plugin_dir/.claude-plugin/plugin.json"
 
     echo ""
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
