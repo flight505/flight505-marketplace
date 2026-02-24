@@ -70,7 +70,7 @@
     {
       "name": "nano-banana",
       "description": "AI-powered image and diagram generation using state-of-the-art models via OpenRouter with quality review and iteration",
-      "version": "1.3.1",
+      "version": "1.3.2",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
