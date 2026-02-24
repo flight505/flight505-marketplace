@@ -26,6 +26,7 @@ if [ $# -lt 2 ]; then
   echo "  - claude-project-planner"
   echo "  - storybook-assistant"
   echo "  - nano-banana"
+  echo "  - research-assistant"
   exit 1
 fi
 
@@ -67,9 +68,13 @@ case "$PLUGIN_NAME" in
     PLUGIN_DIR="taskplex"
     PLUGIN_JSON="taskplex/.claude-plugin/plugin.json"
     ;;
+  "research-assistant")
+    PLUGIN_DIR="research-assistant"
+    PLUGIN_JSON="research-assistant/.claude-plugin/plugin.json"
+    ;;
   *)
     echo -e "${RED}Error: Unknown plugin '$PLUGIN_NAME'${NC}"
-    echo "Valid plugins: sdk-bridge, taskplex, claude-project-planner, storybook-assistant, nano-banana"
+    echo "Valid plugins: sdk-bridge, taskplex, claude-project-planner, storybook-assistant, nano-banana, research-assistant"
     exit 1
     ;;
 esac

@@ -2,11 +2,11 @@
 
 ## Overview
 
-This is the **flight505-marketplace** repository containing 5 Claude Code plugins as git submodules. This CLAUDE.md contains critical instructions for maintaining the marketplace infrastructure.
+This is the **flight505-marketplace** repository containing 6 Claude Code plugins as git submodules. This CLAUDE.md contains critical instructions for maintaining the marketplace infrastructure.
 
 **Repository:** https://github.com/flight505/flight505-marketplace
-**Current Version:** 1.4.15
-**Plugins:** sdk-bridge, taskplex, storybook-assistant, claude-project-planner, nano-banana
+**Current Version:** 1.5.0
+**Plugins:** sdk-bridge, taskplex, storybook-assistant, claude-project-planner, nano-banana, research-assistant
 
 ---
 
@@ -103,7 +103,8 @@ flight505-marketplace/
 ├── taskplex/                      → github.com/flight505/taskplex
 ├── storybook-assistant/           → github.com/flight505/storybook-assistant
 ├── claude-project-planner/        → github.com/flight505/claude-project-planner
-└── nano-banana/                   → github.com/flight505/nano-banana
+├── nano-banana/                   → github.com/flight505/nano-banana
+└── research-assistant/            → github.com/flight505/research-assistant
 ```
 
 **Critical files in each plugin:**
@@ -265,7 +266,7 @@ cat .claude-plugin/marketplace.json | jq '.plugins[] | select(.name=="nano-banan
 
 ## Plugin Tracking
 
-### Current Plugins (5)
+### Current Plugins (6)
 
 | Plugin | Version | Repo | Status |
 |--------|---------|------|--------|
@@ -274,6 +275,7 @@ cat .claude-plugin/marketplace.json | jq '.plugins[] | select(.name=="nano-banan
 | **storybook-assistant** | 2.2.1 | [github.com/flight505/storybook-assistant](https://github.com/flight505/storybook-assistant) | ✅ Active |
 | **claude-project-planner** | 1.4.6 | [github.com/flight505/claude-project-planner](https://github.com/flight505/claude-project-planner) | ✅ Active |
 | **nano-banana** | 1.3.1 | [github.com/flight505/nano-banana](https://github.com/flight505/nano-banana) | ✅ Active |
+| **research-assistant** | 1.0.0 | [github.com/flight505/research-assistant](https://github.com/flight505/research-assistant) | ✅ Active |
 
 ### Version Update Checklist
 

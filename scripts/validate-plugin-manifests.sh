@@ -38,6 +38,7 @@ get_plugin_dir() {
     "storybook-assistant") echo "storybook-assistant" ;;
     "claude-project-planner") echo "claude-project-planner" ;;
     "nano-banana") echo "nano-banana" ;;
+    "research-assistant") echo "research-assistant" ;;
     *) echo "" ;;
   esac
 }
@@ -331,7 +332,7 @@ auto_fix_paths() {
 # Main validation loop
 cd "$MARKETPLACE_ROOT"
 
-for plugin_name in "sdk-bridge" "taskplex" "storybook-assistant" "claude-project-planner" "nano-banana"; do
+for plugin_name in "sdk-bridge" "taskplex" "storybook-assistant" "claude-project-planner" "nano-banana" "research-assistant"; do
   plugin_dir=$(get_plugin_dir "$plugin_name")
   plugin_json="$plugin_dir/.claude-plugin/plugin.json"
 

@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.4.16",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, and Nano Banana",
+  "version": "1.5.0",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, and Research Assistant",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -102,6 +102,25 @@
         "dependency-graph",
         "error-recovery",
         "prd"
+      ]
+    },
+    {
+      "name": "research-assistant",
+      "description": "Deep research intelligence for Claude — SOTA papers, method analysis, and implementation guidance from arXiv, Semantic Scholar, and Hugging Face Papers",
+      "version": "1.0.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "./research-assistant",
+      "category": "research",
+      "keywords": [
+        "research",
+        "arxiv",
+        "semantic-scholar",
+        "huggingface-papers",
+        "literature-review",
+        "ai-research"
       ]
     }
   ]

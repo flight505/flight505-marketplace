@@ -19,7 +19,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Plugin list
-PLUGINS=("sdk-bridge" "taskplex" "storybook-assistant" "nano-banana" "claude-project-planner")
+PLUGINS=("sdk-bridge" "taskplex" "storybook-assistant" "nano-banana" "claude-project-planner" "research-assistant")
 
 # Helper functions to get plugin-specific info
 get_plugin_path() {
@@ -44,6 +44,9 @@ get_test_command() {
             ;;
         claude-project-planner)
             echo "/claude-project-planner:help"
+            ;;
+        research-assistant)
+            echo "/research-assistant:arxiv-search --help"
             ;;
     esac
 }

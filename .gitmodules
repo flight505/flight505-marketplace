@@ -13,3 +13,6 @@
 [submodule "taskplex"]
 	path = taskplex
 	url = https://github.com/flight505/taskplex.git
+[submodule "research-assistant"]
+	path = research-assistant
+	url = https://github.com/flight505/research-assistant.git
