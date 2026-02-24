@@ -613,4 +613,4 @@ git commit -m "chore: sync <plugin> submodule"
 ---
 
 **Maintained by:** Jesper Vang (@flight505)
-**Last Updated:** 2026-02-21
+**Last Updated:** 2026-02-24
