@@ -112,13 +112,49 @@ flight505-marketplace/
 - `CONTEXT_<plugin-name>.md` - Architecture and consolidated context
 - `.claude-plugin/plugin.json` - Plugin manifest
 
+### Plugin Component Types
+
+Plugins can contain any combination of these components:
+
+| Component | Location | Description |
+|-----------|----------|-------------|
+| **Skills** | `skills/` or `commands/` | `/name` shortcuts via `SKILL.md` files |
+| **Agents** | `agents/` | Specialized subagents (`.md` with frontmatter) |
+| **Hooks** | `hooks/hooks.json` | Event handlers (auto-discovered — **never** add `"hooks"` to plugin.json) |
+| **MCP servers** | `.mcp.json` | External service integrations |
+| **LSP servers** | `.lsp.json` | Code intelligence (go-to-def, find references, diagnostics) |
+| **Output styles** | `output-styles/` | Custom response formatting |
+
+### Hook Events Reference
+
+Available hook events for plugin `hooks/hooks.json`:
+
+| Event | When it fires |
+|-------|---------------|
+| `PreToolUse` | Before Claude uses any tool |
+| `PostToolUse` | After Claude successfully uses a tool |
+| `PostToolUseFailure` | After a tool execution fails |
+| `PermissionRequest` | When a permission dialog is shown |
+| `UserPromptSubmit` | When user submits a prompt |
+| `Notification` | When Claude Code sends notifications |
+| `Stop` | When Claude attempts to stop |
+| `SubagentStart` | When a subagent is started |
+| `SubagentStop` | When a subagent attempts to stop |
+| `SessionStart` | At the beginning of sessions |
+| `SessionEnd` | At the end of sessions |
+| `TeammateIdle` | When an agent team teammate is about to go idle |
+| `TaskCompleted` | When a task is being marked as completed |
+| `PreCompact` | Before conversation history is compacted |
+
+**Hook types:** `command` (shell script), `prompt` (LLM-evaluated), `agent` (agentic verifier with tools)
+
 ---
 
 ## marketplace.json Management
 
 **Location:** `.claude-plugin/marketplace.json`
 
-**Official Schema:** https://github.com/anthropics/claude-code/blob/main/docs/plugin-marketplace.md
+**Official Schema:** https://code.claude.com/docs/en/plugin-marketplaces.md
 
 ### Critical Rules (DOS & DON'TS)
 
@@ -605,8 +641,12 @@ git commit -m "chore: sync <plugin> submodule"
 
 ## References
 
-- **Official Plugin Marketplace Docs:** https://github.com/anthropics/claude-code/blob/main/docs/plugin-marketplace.md
-- **Plugin Development Guide:** https://github.com/anthropics/claude-code/blob/main/docs/plugins.md
+- **Create Plugins:** https://code.claude.com/docs/en/plugins.md
+- **Discover & Install Plugins:** https://code.claude.com/docs/en/discover-plugins.md
+- **Plugins Reference (schemas):** https://code.claude.com/docs/en/plugins-reference.md
+- **Plugin Marketplaces:** https://code.claude.com/docs/en/plugin-marketplaces.md
+- **Hooks Guide:** https://code.claude.com/docs/en/hooks-guide.md
+- **Hooks Reference:** https://code.claude.com/docs/en/hooks.md
 - **Git Submodules Reference:** https://git-scm.com/book/en/v2/Git-Tools-Submodules
 - **GitHub Actions - repository_dispatch:** https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#repository_dispatch
 
