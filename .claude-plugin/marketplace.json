@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.4.15",
+  "version": "1.4.16",
   "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, and Nano Banana",
   "owner": {
     "name": "Jesper Vang",
@@ -87,8 +87,8 @@
     },
     {
       "name": "taskplex",
-      "description": "Always-on autonomous development companion: proactive PRD generation, TDD enforcement, verification gates, two-stage code review, SQLite knowledge persistence, error recovery with retry, and model routing. Replaces Superpowers.",
-      "version": "3.0.0",
+      "description": "Always-on autonomous development companion: all 15 Superpowers discipline skills + PRD-driven execution, TDD enforcement, verification gates, two-stage code review, SQLite knowledge persistence, error recovery, and model routing.",
+      "version": "3.1.0",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"

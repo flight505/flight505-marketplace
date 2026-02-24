@@ -234,7 +234,7 @@ cat .claude-plugin/marketplace.json | jq '.plugins[] | select(.name=="nano-banan
 | Plugin | Version | Repo | Status |
 |--------|---------|------|--------|
 | **sdk-bridge** | 4.8.1 | [github.com/flight505/sdk-bridge](https://github.com/flight505/sdk-bridge) | ✅ Active |
-| **taskplex** | 3.0.0 | [github.com/flight505/taskplex](https://github.com/flight505/taskplex) | ✅ Active |
+| **taskplex** | 3.1.0 | [github.com/flight505/taskplex](https://github.com/flight505/taskplex) | ✅ Active |
 | **storybook-assistant** | 2.2.1 | [github.com/flight505/storybook-assistant](https://github.com/flight505/storybook-assistant) | ✅ Active |
 | **claude-project-planner** | 1.4.6 | [github.com/flight505/claude-project-planner](https://github.com/flight505/claude-project-planner) | ✅ Active |
 | **nano-banana** | 1.3.1 | [github.com/flight505/nano-banana](https://github.com/flight505/nano-banana) | ✅ Active |
