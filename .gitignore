@@ -21,3 +21,9 @@ npm-debug.log*
 # Claude Code local settings (ignore everything except hooks)
 .claude/*
 !.claude/hooks/
+
+# TaskPlex state files (auto-added)
+prd.json
+progress.txt
+knowledge.db
+knowledge.md
