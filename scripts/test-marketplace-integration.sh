@@ -19,7 +19,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Plugin list
-PLUGINS=("sdk-bridge" "storybook-assistant" "nano-banana" "claude-project-planner")
+PLUGINS=("sdk-bridge" "taskplex" "storybook-assistant" "nano-banana" "claude-project-planner")
 
 # Helper functions to get plugin-specific info
 get_plugin_path() {
@@ -39,6 +39,9 @@ get_test_command() {
     case $plugin in
         sdk-bridge)
             echo "/sdk-bridge:start --help"
+            ;;
+        taskplex)
+            echo "/taskplex:start --help"
             ;;
         storybook-assistant)
             echo "/storybook-assistant:help"

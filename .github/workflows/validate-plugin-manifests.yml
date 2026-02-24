@@ -35,6 +35,11 @@ jobs:
           chmod +x scripts/validate-plugin-manifests.sh
           ./scripts/validate-plugin-manifests.sh
 
+      - name: Run plugin doctor (offline checks)
+        run: |
+          chmod +x scripts/plugin-doctor.sh
+          ./scripts/plugin-doctor.sh
+
       - name: Comment on PR (if failed)
         if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v7

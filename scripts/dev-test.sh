@@ -17,7 +17,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Available plugins
-AVAILABLE_PLUGINS=("sdk-bridge" "storybook-assistant" "claude-project-planner" "nano-banana")
+AVAILABLE_PLUGINS=("sdk-bridge" "taskplex" "storybook-assistant" "claude-project-planner" "nano-banana")
 
 usage() {
     echo "Usage: $0 [plugin-name]"
