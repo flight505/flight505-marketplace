@@ -5,7 +5,7 @@
 This is the **flight505-marketplace** repository containing 5 Claude Code plugins as git submodules. This CLAUDE.md contains critical instructions for maintaining the marketplace infrastructure.
 
 **Repository:** https://github.com/flight505/flight505-marketplace
-**Current Version:** 1.4.5
+**Current Version:** 1.4.15
 **Plugins:** sdk-bridge, taskplex, storybook-assistant, claude-project-planner, nano-banana
 
 ---
@@ -234,10 +234,10 @@ cat .claude-plugin/marketplace.json | jq '.plugins[] | select(.name=="nano-banan
 | Plugin | Version | Repo | Status |
 |--------|---------|------|--------|
 | **sdk-bridge** | 4.8.1 | [github.com/flight505/sdk-bridge](https://github.com/flight505/sdk-bridge) | ✅ Active |
-| **taskplex** | 2.0.3 | [github.com/flight505/taskplex](https://github.com/flight505/taskplex) | ✅ Active |
-| **storybook-assistant** | 2.2.0 | [github.com/flight505/storybook-assistant](https://github.com/flight505/storybook-assistant) | ✅ Active |
+| **taskplex** | 3.0.0 | [github.com/flight505/taskplex](https://github.com/flight505/taskplex) | ✅ Active |
+| **storybook-assistant** | 2.2.1 | [github.com/flight505/storybook-assistant](https://github.com/flight505/storybook-assistant) | ✅ Active |
 | **claude-project-planner** | 1.4.6 | [github.com/flight505/claude-project-planner](https://github.com/flight505/claude-project-planner) | ✅ Active |
-| **nano-banana** | 1.2.1 | [github.com/flight505/nano-banana](https://github.com/flight505/nano-banana) | ✅ Active |
+| **nano-banana** | 1.3.1 | [github.com/flight505/nano-banana](https://github.com/flight505/nano-banana) | ✅ Active |
 
 ### Version Update Checklist
 
@@ -613,4 +613,4 @@ git commit -m "chore: sync <plugin> submodule"
 ---
 
 **Maintained by:** Jesper Vang (@flight505)
-**Last Updated:** 2026-02-19
+**Last Updated:** 2026-02-21
