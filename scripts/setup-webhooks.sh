@@ -36,7 +36,7 @@ PLUGINS=(
     "storybook-assistant"
     "claude-project-planner"
     "nano-banana"
-    "research-assistant"
+    "ai-frontier"
 )
 
 # Track results

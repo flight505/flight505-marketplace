@@ -74,7 +74,7 @@ jobs:
           UPDATES=""
 
           # Check each submodule for updates
-          for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge taskplex research-assistant; do
+          for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge taskplex ai-frontier; do
             if git diff --name-only | grep -q "^${submodule}$"; then
               # Get the new commit hash
               NEW_COMMIT=$(git diff ${submodule} | grep "^+Subproject commit" | awk '{print $3}')
@@ -106,7 +106,7 @@ jobs:
           MARKETPLACE_JSON=".claude-plugin/marketplace.json"
 
           # Update each plugin version
-          for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge taskplex research-assistant; do
+          for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge taskplex ai-frontier; do
             PLUGIN_JSON="${submodule}/.claude-plugin/plugin.json"
 
             if [ -f "${PLUGIN_JSON}" ]; then
@@ -129,8 +129,8 @@ jobs:
                 "taskplex")
                   PLUGIN_NAME="taskplex"
                   ;;
-                "research-assistant")
-                  PLUGIN_NAME="research-assistant"
+                "ai-frontier")
+                  PLUGIN_NAME="ai-frontier"
                   ;;
               esac
 
