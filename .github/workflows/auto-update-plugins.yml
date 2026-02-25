@@ -74,7 +74,7 @@ jobs:
           UPDATES=""
 
           # Check each submodule for updates
-          for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge taskplex ai-frontier; do
+          for submodule in $(jq -r '.plugins[].name' .claude-plugin/marketplace.json); do
             if git diff --name-only | grep -q "^${submodule}$"; then
               # Get the new commit hash
               NEW_COMMIT=$(git diff ${submodule} | grep "^+Subproject commit" | awk '{print $3}')
@@ -106,33 +106,14 @@ jobs:
           MARKETPLACE_JSON=".claude-plugin/marketplace.json"
 
           # Update each plugin version
-          for submodule in nano-banana claude-project-planner storybook-assistant sdk-bridge taskplex ai-frontier; do
+          for submodule in $(jq -r '.plugins[].name' .claude-plugin/marketplace.json); do
             PLUGIN_JSON="${submodule}/.claude-plugin/plugin.json"
 
             if [ -f "${PLUGIN_JSON}" ]; then
               VERSION=$(jq -r '.version' "${PLUGIN_JSON}")
 
-              # Map directory name to plugin name in marketplace.json
-              case "$submodule" in
-                "nano-banana")
-                  PLUGIN_NAME="nano-banana"
-                  ;;
-                "claude-project-planner")
-                  PLUGIN_NAME="claude-project-planner"
-                  ;;
-                "storybook-assistant")
-                  PLUGIN_NAME="storybook-assistant"
-                  ;;
-                "sdk-bridge")
-                  PLUGIN_NAME="sdk-bridge"
-                  ;;
-                "taskplex")
-                  PLUGIN_NAME="taskplex"
-                  ;;
-                "ai-frontier")
-                  PLUGIN_NAME="ai-frontier"
-                  ;;
-              esac
+              # Plugin name = directory name (enforced by validator)
+              PLUGIN_NAME="$submodule"
 
               # Update version in marketplace.json
               jq --arg name "$PLUGIN_NAME" --arg version "$VERSION" \

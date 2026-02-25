@@ -14,6 +14,7 @@ NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MARKETPLACE_ROOT="$(dirname "$SCRIPT_DIR")"
+source "$SCRIPT_DIR/common.sh"
 FIX_MODE=false
 ERRORS_FOUND=0
 WARNINGS_FOUND=0
@@ -30,17 +31,9 @@ echo -e "${BLUE}  Plugin Manifest Validation${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════${NC}"
 echo ""
 
-# Plugin configuration - simple function to get plugin dir
+# Plugin dir = plugin name (enforced by validator)
 get_plugin_dir() {
-  case "$1" in
-    "sdk-bridge") echo "sdk-bridge" ;;
-    "taskplex") echo "taskplex" ;;
-    "storybook-assistant") echo "storybook-assistant" ;;
-    "claude-project-planner") echo "claude-project-planner" ;;
-    "nano-banana") echo "nano-banana" ;;
-    "ai-frontier") echo "ai-frontier" ;;
-    *) echo "" ;;
-  esac
+  echo "$1"
 }
 
 # Validation functions
@@ -332,7 +325,7 @@ auto_fix_paths() {
 # Main validation loop
 cd "$MARKETPLACE_ROOT"
 
-for plugin_name in "sdk-bridge" "taskplex" "storybook-assistant" "claude-project-planner" "nano-banana" "ai-frontier"; do
+for plugin_name in $(get_plugins); do
   plugin_dir=$(get_plugin_dir "$plugin_name")
   plugin_json="$plugin_dir/.claude-plugin/plugin.json"
 

@@ -8,6 +8,7 @@ set -euo pipefail
 PLUGIN=${1:-}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MARKETPLACE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/common.sh"
 
 # Colors
 GREEN='\033[0;32m'
@@ -16,8 +17,8 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Available plugins
-AVAILABLE_PLUGINS=("sdk-bridge" "taskplex" "storybook-assistant" "claude-project-planner" "nano-banana" "ai-frontier")
+# Available plugins (from marketplace.json)
+read -ra AVAILABLE_PLUGINS <<< "$(get_plugins_string)"
 
 usage() {
     echo "Usage: $0 [plugin-name]"

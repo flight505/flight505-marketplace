@@ -33,14 +33,18 @@ from datetime import datetime
 
 LOG_FILE = Path(__file__).parent / "plugin-manifest-validator.log"
 
-# Plugin directory mapping
-PLUGIN_DIRS = {
-    "sdk-bridge": "sdk-bridge",
-    "taskplex": "taskplex",
-    "storybook-assistant": "storybook-assistant",
-    "claude-project-planner": "claude-project-planner",
-    "nano-banana": "nano-banana",
-}
+# Plugin directory mapping — derived from marketplace.json at runtime
+def _load_plugin_dirs() -> dict[str, str]:
+    """Load plugin names from marketplace.json (single source of truth)."""
+    marketplace_json = Path(__file__).parent.parent.parent.parent / ".claude-plugin" / "marketplace.json"
+    try:
+        with open(marketplace_json) as f:
+            data = json.load(f)
+        return {p["name"]: p["name"] for p in data.get("plugins", [])}
+    except Exception:
+        return {}
+
+PLUGIN_DIRS = _load_plugin_dirs()
 
 
 def log(message: str):

@@ -18,6 +18,7 @@ NC='\033[0m' # No Color
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MARKETPLACE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/common.sh"
 TEMPLATE_FILE="$MARKETPLACE_ROOT/templates/notify-marketplace.yml"
 
 # Verify template exists
@@ -29,15 +30,8 @@ fi
 echo -e "${GREEN}✅ Found template: $TEMPLATE_FILE${NC}"
 echo ""
 
-# Plugin repos to update
-PLUGINS=(
-    "sdk-bridge"
-    "taskplex"
-    "storybook-assistant"
-    "claude-project-planner"
-    "nano-banana"
-    "ai-frontier"
-)
+# Plugin repos to update (from marketplace.json)
+read -ra PLUGINS <<< "$(get_plugins_string)"
 
 # Track results
 SUCCESS_COUNT=0

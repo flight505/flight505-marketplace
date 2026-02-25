@@ -19,7 +19,16 @@ if [[ ! "$TOOL_NAME" =~ ^(Edit|Write)$ ]] || [[ ! "$FILE_PATH" =~ plugin\.json$ 
 fi
 
 # Only process plugin.json files in submodules (not marketplace.json)
-if [[ ! "$FILE_PATH" =~ ^(sdk-bridge|taskplex|storybook-assistant|claude-project-planner|nano-banana)/ ]]; then
+# Derive plugin list from marketplace.json (single source of truth)
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MARKETPLACE_JSON="$HOOK_DIR/../../.claude-plugin/marketplace.json"
+if [[ -f "$MARKETPLACE_JSON" ]]; then
+    PLUGIN_REGEX="^($(jq -r '.plugins[].name' "$MARKETPLACE_JSON" | paste -sd '|' -))/"
+else
+    # Fallback if marketplace.json not found
+    PLUGIN_REGEX="^[a-z]"
+fi
+if [[ ! "$FILE_PATH" =~ $PLUGIN_REGEX ]]; then
     echo '{}'
     exit 0
 fi

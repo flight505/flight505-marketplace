@@ -15,18 +15,16 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common.sh"
+
 # Parse arguments
 if [ $# -lt 2 ]; then
   echo -e "${RED}Error: Missing arguments${NC}"
   echo "Usage: $0 <plugin-name> <new-version> [--dry-run]"
   echo ""
   echo "Available plugins:"
-  echo "  - sdk-bridge"
-  echo "  - taskplex"
-  echo "  - claude-project-planner"
-  echo "  - storybook-assistant"
-  echo "  - nano-banana"
-  echo "  - ai-frontier"
+  for p in $(get_plugins); do echo "  - $p"; done
   exit 1
 fi
 
@@ -46,38 +44,14 @@ if ! echo "$NEW_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
   exit 1
 fi
 
-# Determine plugin directory structure
-case "$PLUGIN_NAME" in
-  "sdk-bridge")
-    PLUGIN_DIR="sdk-bridge"
-    PLUGIN_JSON="sdk-bridge/.claude-plugin/plugin.json"
-    ;;
-  "claude-project-planner")
-    PLUGIN_DIR="claude-project-planner"
-    PLUGIN_JSON="claude-project-planner/.claude-plugin/plugin.json"
-    ;;
-  "storybook-assistant")
-    PLUGIN_DIR="storybook-assistant"
-    PLUGIN_JSON="storybook-assistant/.claude-plugin/plugin.json"
-    ;;
-  "nano-banana")
-    PLUGIN_DIR="nano-banana"
-    PLUGIN_JSON="nano-banana/.claude-plugin/plugin.json"
-    ;;
-  "taskplex")
-    PLUGIN_DIR="taskplex"
-    PLUGIN_JSON="taskplex/.claude-plugin/plugin.json"
-    ;;
-  "ai-frontier")
-    PLUGIN_DIR="ai-frontier"
-    PLUGIN_JSON="ai-frontier/.claude-plugin/plugin.json"
-    ;;
-  *)
-    echo -e "${RED}Error: Unknown plugin '$PLUGIN_NAME'${NC}"
-    echo "Valid plugins: sdk-bridge, taskplex, claude-project-planner, storybook-assistant, nano-banana, ai-frontier"
-    exit 1
-    ;;
-esac
+# Determine plugin directory (name = dir, enforced by validator)
+if ! is_valid_plugin "$PLUGIN_NAME"; then
+  echo -e "${RED}Error: Unknown plugin '$PLUGIN_NAME'${NC}"
+  echo "Valid plugins: $(get_plugins_string)"
+  exit 1
+fi
+PLUGIN_DIR="$PLUGIN_NAME"
+PLUGIN_JSON="$PLUGIN_NAME/.claude-plugin/plugin.json"
 
 # Verify plugin directory exists
 if [ ! -d "$PLUGIN_DIR" ]; then

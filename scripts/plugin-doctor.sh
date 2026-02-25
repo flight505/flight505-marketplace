@@ -14,6 +14,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MARKETPLACE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/common.sh"
 
 # Colors
 GREEN='\033[0;32m'
@@ -22,7 +23,7 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-PLUGINS=("sdk-bridge" "taskplex" "storybook-assistant" "claude-project-planner" "nano-banana" "ai-frontier")
+read -ra PLUGINS <<< "$(get_plugins_string)"
 MARKETPLACE_NAME="flight505-plugins"
 FAILURES=0
 WARNINGS=0

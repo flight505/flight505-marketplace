@@ -7,6 +7,7 @@ set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MARKETPLACE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/common.sh"
 TEST_DIR="${TMPDIR:-/tmp}/claude-marketplace-test-$$"
 REPORT_FILE="$MARKETPLACE_ROOT/marketplace-test-report.txt"
 
@@ -18,8 +19,8 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Plugin list
-PLUGINS=("sdk-bridge" "taskplex" "storybook-assistant" "nano-banana" "claude-project-planner" "ai-frontier")
+# Plugin list (from marketplace.json)
+read -ra PLUGINS <<< "$(get_plugins_string)"
 
 # Helper functions to get plugin-specific info
 get_plugin_path() {
