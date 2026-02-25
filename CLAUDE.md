@@ -222,7 +222,7 @@ Users get updated plugin
 ### Critical Requirements
 
 **Each plugin repo needs:**
-- `.github/workflows/notify-marketplace.yml` workflow
+- `.github/workflows/notify-marketplace.yml` workflow (includes retry with exponential backoff)
 - `MARKETPLACE_UPDATE_TOKEN` secret (GitHub PAT with `repo` scope)
 
 **Marketplace repo needs:**
@@ -350,7 +350,7 @@ git push origin main
 # 1. Add as submodule
 git submodule add https://github.com/flight505/<new-plugin>.git <new-plugin>
 
-# 2. Update marketplace.json
+# 2. Update marketplace.json (single source of truth — all scripts auto-detect)
 cd .claude-plugin
 jq '.plugins += [{"name": "<new-plugin>", "version": "1.0.0", ...}]' marketplace.json > tmp && mv tmp marketplace.json
 jq '.version = "<bumped-version>"' marketplace.json > tmp && mv tmp marketplace.json
@@ -361,14 +361,36 @@ cp ../templates/notify-marketplace.yml ../<new-plugin>/.github/workflows/
 # 4. Add MARKETPLACE_UPDATE_TOKEN secret to new plugin repo
 gh secret set MARKETPLACE_UPDATE_TOKEN --repo flight505/<new-plugin> --body "$GITHUB_TOKEN"
 
-# 5. Update auto-update-plugins.yml workflow
-# Add <new-plugin> to submodule lists
-
-# 6. Commit all changes
+# 5. Commit all changes
 git add .
 git commit -m "feat: add <new-plugin> to marketplace"
 git push origin main
 ```
+
+> **Note:** No need to update scripts or workflows — they all derive the plugin list from `marketplace.json` via `common.sh`.
+
+---
+
+## Single Source of Truth: `scripts/common.sh`
+
+All scripts and automation derive plugin lists dynamically from `marketplace.json` via shared functions in `scripts/common.sh`:
+
+```bash
+source "$(dirname "$0")/common.sh"
+
+get_plugins          # newline-separated list: sdk-bridge\nstorybook-assistant\n...
+get_plugins_string   # space-separated: "sdk-bridge storybook-assistant ..."
+get_plugins_regex    # pipe-separated: "sdk-bridge|storybook-assistant|..."
+is_valid_plugin "x"  # exit 0 if valid, 1 if not
+```
+
+**When adding/removing a plugin:** Only update `marketplace.json` — all scripts, hooks, validators, and CI workflows pick up the change automatically.
+
+Files that use common.sh or derive from marketplace.json:
+- `scripts/validate-plugin-manifests.sh`, `bump-plugin-version.sh`, `setup-webhooks.sh`, `plugin-doctor.sh`, `dev-test.sh`, `test-marketplace-integration.sh`
+- `.claude/hooks/PostToolUse.sh` (dynamic plugin regex)
+- `.claude/hooks/validators/plugin-manifest-validator.py` (dynamic PLUGIN_DIRS)
+- `.github/workflows/auto-update-plugins.yml` (jq query)
 
 ---
 
@@ -444,12 +466,7 @@ Automates the complete version bump workflow across plugin and marketplace repos
 7. Creates and pushes git tag (e.g., `v2.2.0`)
 8. Triggers webhook notification (~30 second delay)
 
-**Supported plugins:**
-- `sdk-bridge`
-- `taskplex`
-- `storybook-assistant`
-- `claude-project-planner`
-- `nano-banana`
+**Supported plugins:** All plugins listed in `marketplace.json` (auto-detected via `common.sh`).
 
 **Why use this:**
 - Ensures version synchronization between plugin.json and marketplace.json
@@ -484,6 +501,49 @@ Deploys webhook notification workflows to all plugin repositories.
 2. Commit and push to each plugin repo
 3. Verify `MARKETPLACE_UPDATE_TOKEN` secret exists in each repo
 4. Test with a version bump
+
+---
+
+### plugin-doctor.sh
+
+Comprehensive diagnostic tool — native CLI validation, cache drift detection, and offline sanity checks.
+
+**Usage:**
+```bash
+./scripts/plugin-doctor.sh
+```
+
+**Three checks:**
+1. `claude plugin validate` per plugin (source-level, no API key)
+2. Cache drift detection — compares source against installed cache using `installed_plugins.json` and git SHAs
+3. Offline sanity — executable hooks, valid event names, no duplicate hooks field
+
+**Note:** Does NOT call `claude plugin list` (hangs inside a running session). Safe to run anytime.
+
+---
+
+### dev-test.sh
+
+Quick development testing for individual plugins.
+
+**Usage:**
+```bash
+./scripts/dev-test.sh <plugin-name>
+# Example: ./scripts/dev-test.sh sdk-bridge
+```
+
+Runs plugin-specific validation, checks file structure, and verifies manifest integrity for a single plugin.
+
+---
+
+### test-marketplace-integration.sh
+
+Multi-plugin integration testing — tests plugins in isolation and together to verify no conflicts.
+
+**Usage:**
+```bash
+./scripts/test-marketplace-integration.sh
+```
 
 ---
 
@@ -655,4 +715,4 @@ git commit -m "chore: sync <plugin> submodule"
 ---
 
 **Maintained by:** Jesper Vang (@flight505)
-**Last Updated:** 2026-02-24
+**Last Updated:** 2026-02-25
