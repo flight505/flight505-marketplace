@@ -275,7 +275,7 @@ cat .claude-plugin/marketplace.json | jq '.plugins[] | select(.name=="nano-banan
 | **storybook-assistant** | 2.2.1 | [github.com/flight505/storybook-assistant](https://github.com/flight505/storybook-assistant) | ✅ Active |
 | **claude-project-planner** | 1.4.6 | [github.com/flight505/claude-project-planner](https://github.com/flight505/claude-project-planner) | ✅ Active |
 | **nano-banana** | 1.3.1 | [github.com/flight505/nano-banana](https://github.com/flight505/nano-banana) | ✅ Active |
-| **ai-frontier** | 1.0.0 | [github.com/flight505/ai-frontier](https://github.com/flight505/ai-frontier) | ✅ Active |
+| **ai-frontier** | 1.1.0 | [github.com/flight505/ai-frontier](https://github.com/flight505/ai-frontier) | ✅ Active |
 
 ### Version Update Checklist
 
