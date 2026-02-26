@@ -35,7 +35,7 @@ KNOWN_MARKETPLACES="$HOME/.claude/plugins/known_marketplaces.json"
 MARKETPLACE_CLONE="$HOME/.claude/plugins/marketplaces/$MARKETPLACE_NAME"
 
 # Valid hook event names (case-sensitive, Claude Code CLI spec)
-VALID_EVENTS="PreToolUse PostToolUse PostToolUseFailure Stop Notification SubagentStart SubagentStop TaskCompleted PreCompact SessionStart SessionEnd PermissionRequest"
+VALID_EVENTS="PreToolUse PostToolUse PostToolUseFailure Stop Notification SubagentStart SubagentStop TaskCompleted PreCompact SessionStart SessionEnd PermissionRequest TeammateIdle UserPromptSubmit"
 
 get_plugin_path() {
     local plugin=$1
