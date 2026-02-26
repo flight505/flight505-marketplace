@@ -127,3 +127,20 @@
     "WARN: Semantic Scholar API: rate limited (429) - retry later"
   ]
 }
+{
+  "timestamp": "2026-02-26T10:44:33Z",
+  "plugin": "ai-frontier",
+  "version": "1.1.0",
+  "overall": "PASS",
+  "passed": 147,
+  "failed": 0,
+  "warned": 0,
+  "total": 147,
+  "apis": {
+    "arxiv": true,
+    "semantic_scholar": true,
+    "hf_papers": true,
+    "perplexity": "true"
+  },
+  "notes": []
+}

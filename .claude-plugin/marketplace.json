@@ -106,7 +106,7 @@
     },
     {
       "name": "ai-frontier",
-      "description": "AI frontier intelligence for Claude — SOTA papers, method analysis, and implementation guidance from arXiv, Semantic Scholar, and Hugging Face Papers",
+      "description": "Deep research intelligence — SOTA discovery, method analysis, and implementation guidance from arXiv, Semantic Scholar, Hugging Face Papers, and Perplexity",
       "version": "1.1.0",
       "author": {
         "name": "Jesper Vang",

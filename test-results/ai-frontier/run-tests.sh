@@ -325,16 +325,32 @@ run_validator "Literature reviewer: missing FRONTIER" \
     2 "validate-synthesis-output.py"
 
 run_validator "Method analyst: all sections" \
-    '{"agent_type": "method-analyst", "last_assistant_message": "## COMPARISON MATRIX\nfoo\n## RECOMMENDATION\nbar"}' \
+    '{"agent_type": "method-analyst", "last_assistant_message": "## DATA SOURCES\nok\n## COMPARISON MATRIX\nfoo\n## RECOMMENDATION\nbar"}' \
     0 "validate-synthesis-output.py"
 
+run_validator "Method analyst: missing DATA SOURCES" \
+    '{"agent_type": "method-analyst", "last_assistant_message": "## COMPARISON MATRIX\nfoo\n## RECOMMENDATION\nbar"}' \
+    2 "validate-synthesis-output.py"
+
+run_validator "Implementation guide: all sections" \
+    '{"agent_type": "implementation-guide", "last_assistant_message": "## DATA SOURCES\nok\n## CORE ALGORITHM\nfoo\n## REFERENCE IMPLEMENTATIONS\nbar"}' \
+    0 "validate-synthesis-output.py"
+
+run_validator "Implementation guide: missing DATA SOURCES" \
+    '{"agent_type": "implementation-guide", "last_assistant_message": "## CORE ALGORITHM\nfoo\n## REFERENCE IMPLEMENTATIONS\nbar"}' \
+    2 "validate-synthesis-output.py"
+
 run_validator "Implementation guide: missing CORE ALGORITHM" \
-    '{"agent_type": "implementation-guide", "last_assistant_message": "## REFERENCE IMPLEMENTATIONS\nfoo"}' \
+    '{"agent_type": "implementation-guide", "last_assistant_message": "## DATA SOURCES\nok\n## REFERENCE IMPLEMENTATIONS\nfoo"}' \
     2 "validate-synthesis-output.py"
 
 run_validator "Architecture evaluator: all sections" \
-    '{"agent_type": "architecture-evaluator", "last_assistant_message": "## CURRENT ARCHITECTURE\n## GAP ANALYSIS\n## RECOMMENDATIONS\n"}' \
+    '{"agent_type": "architecture-evaluator", "last_assistant_message": "## DATA SOURCES\nok\n## CURRENT ARCHITECTURE\n## GAP ANALYSIS\n## RECOMMENDATIONS\n"}' \
     0 "validate-synthesis-output.py"
+
+run_validator "Architecture evaluator: missing DATA SOURCES" \
+    '{"agent_type": "architecture-evaluator", "last_assistant_message": "## CURRENT ARCHITECTURE\n## GAP ANALYSIS\n## RECOMMENDATIONS\n"}' \
+    2 "validate-synthesis-output.py"
 
 run_validator "Prefixed agent name: catches missing section" \
     '{"agent_type": "ai-frontier:literature-reviewer", "last_assistant_message": "### CONSENSUS\nfoo\n### FRONTIER\nbar\n### KEY PAPERS\nbaz"}' \
@@ -345,7 +361,7 @@ run_validator "Prefixed agent name: all sections pass" \
     0 "validate-synthesis-output.py"
 
 run_validator "Prefixed architecture-evaluator: all sections" \
-    '{"agent_type": "ai-frontier:architecture-evaluator", "last_assistant_message": "## CURRENT ARCHITECTURE\n## GAP ANALYSIS\n## RECOMMENDATIONS\n"}' \
+    '{"agent_type": "ai-frontier:architecture-evaluator", "last_assistant_message": "## DATA SOURCES\nok\n## CURRENT ARCHITECTURE\n## GAP ANALYSIS\n## RECOMMENDATIONS\n"}' \
     0 "validate-synthesis-output.py"
 
 run_validator "Unknown agent: pass through" \
