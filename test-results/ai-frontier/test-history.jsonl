@@ -1,0 +1,129 @@
+{
+  "timestamp": "2026-02-25T20:21:22Z",
+  "plugin": "ai-frontier",
+  "version": "1.0.0",
+  "overall": "PASS",
+  "passed": 121,
+  "failed": 0,
+  "warned": 5,
+  "total": 126,
+  "apis": {
+    "arxiv": true,
+    "semantic_scholar": false,
+    "hf_papers": true
+  },
+  "notes": [
+    "WARN: Semantic Scholar API: rate limited (429) - retry later",
+    "WARN: architecture-evaluator: no explicit output format section",
+    "WARN: implementation-guide: no explicit output format section",
+    "WARN: literature-reviewer: no explicit output format section",
+    "WARN: method-analyst: no explicit output format section"
+  ]
+}
+{
+  "timestamp": "2026-02-25T20:23:12Z",
+  "plugin": "ai-frontier",
+  "version": "1.0.0",
+  "overall": "PASS",
+  "passed": 121,
+  "failed": 0,
+  "warned": 5,
+  "total": 126,
+  "apis": {
+    "arxiv": true,
+    "semantic_scholar": false,
+    "hf_papers": true
+  },
+  "notes": [
+    "WARN: Semantic Scholar API: rate limited (429) - retry later",
+    "WARN: architecture-evaluator: no explicit output format section",
+    "WARN: implementation-guide: no explicit output format section",
+    "WARN: literature-reviewer: no explicit output format section",
+    "WARN: method-analyst: no explicit output format section"
+  ]
+}
+{
+  "timestamp": "2026-02-25T20:35:38Z",
+  "plugin": "ai-frontier",
+  "version": "1.0.0",
+  "overall": "PASS",
+  "passed": 124,
+  "failed": 0,
+  "warned": 4,
+  "total": 128,
+  "apis": {
+    "arxiv": true,
+    "semantic_scholar": true,
+    "hf_papers": true
+  },
+  "notes": [
+    "WARN: architecture-evaluator: no explicit output format section",
+    "WARN: implementation-guide: no explicit output format section",
+    "WARN: literature-reviewer: no explicit output format section",
+    "WARN: method-analyst: no explicit output format section"
+  ]
+}
+{
+  "timestamp": "2026-02-25T20:41:50Z",
+  "plugin": "ai-frontier",
+  "version": "1.0.0",
+  "overall": "PASS",
+  "passed": 126,
+  "failed": 0,
+  "warned": 5,
+  "total": 131,
+  "apis": {
+    "arxiv": true,
+    "semantic_scholar": false,
+    "hf_papers": true
+  },
+  "notes": [
+    "WARN: Semantic Scholar API: rate limited (429) - retry later",
+    "WARN: architecture-evaluator: no explicit output format section",
+    "WARN: implementation-guide: no explicit output format section",
+    "WARN: literature-reviewer: no explicit output format section",
+    "WARN: method-analyst: no explicit output format section"
+  ]
+}
+{
+  "timestamp": "2026-02-26T02:13:58Z",
+  "plugin": "ai-frontier",
+  "version": "1.0.0",
+  "overall": "PASS",
+  "passed": 138,
+  "failed": 0,
+  "warned": 5,
+  "total": 143,
+  "apis": {
+    "arxiv": true,
+    "semantic_scholar": false,
+    "hf_papers": true,
+    "perplexity": "true"
+  },
+  "notes": [
+    "WARN: Semantic Scholar API: rate limited (429) - retry later",
+    "WARN: architecture-evaluator: no explicit output format section",
+    "WARN: implementation-guide: no explicit output format section",
+    "WARN: literature-reviewer: no explicit output format section",
+    "WARN: method-analyst: no explicit output format section"
+  ]
+}
+{
+  "timestamp": "2026-02-26T02:21:46Z",
+  "plugin": "ai-frontier",
+  "version": "1.0.0",
+  "overall": "PASS",
+  "passed": 142,
+  "failed": 0,
+  "warned": 1,
+  "total": 143,
+  "apis": {
+    "arxiv": true,
+    "semantic_scholar": false,
+    "hf_papers": true,
+    "perplexity": "true"
+  },
+  "notes": [
+    "WARN: Semantic Scholar API: rate limited (429) - retry later"
+  ]
+}
