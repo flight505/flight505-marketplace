@@ -777,7 +777,7 @@ ${VAGUE_CRITERIA}"
 
   HARDENED=$(echo "$HARDEN_PROMPT" | env -u CLAUDECODE claude -p \
     --model haiku --max-turns 1 --output-format json \
-    --dangerously-skip-permissions --no-session-persistence 2>/dev/null) || true
+    --dangerously-skip-permissions 2>/dev/null) || true
 
   if [ -z "$HARDENED" ]; then
     warn "spec-hardening: claude -p returned empty (API issue?)"
@@ -854,7 +854,7 @@ else
     local output
     output=$(echo "$query" | env -u CLAUDECODE claude -p \
       --append-system-prompt-file "$skill_path" \
-      --model haiku --max-turns 1 --no-session-persistence 2>/dev/null) || {
+      --model haiku --max-turns 1 2>/dev/null) || {
       warn "$skill: claude -p failed"
       return
     }
