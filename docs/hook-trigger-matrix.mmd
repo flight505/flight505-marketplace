@@ -1,0 +1,44 @@
+flowchart TD
+    title["Hook Trigger Matrix — Current vs Proposed"]
+
+    Edit["Edit / Write fires on a file"]
+
+    Edit --> IsPluginJson{file is<br/>plugin.json?}
+    Edit --> IsMarketplace{file is<br/>marketplace.json?}
+    Edit --> Other["Other file → all hooks SKIP"]
+
+    %% plugin.json path
+    IsPluginJson -->|Yes| H1["① PostToolUse.sh"]
+    H1 --> H1Check{plugin in<br/>known submodule?}
+    H1Check -->|Yes| H1Clear["Clear cache dir ✅<br/>(informational, never blocks)"]
+    H1Check -->|No| H1Skip["SKIP"]
+
+    IsPluginJson -->|Yes| H2["② plugin-manifest-validator.py"]
+    H2 --> H2Check{".claude-plugin"<br/>in path?}
+    H2Check -->|Yes| H2Validate["Validate structure ✅<br/>(blocks on bad JSON/fields)"]
+    H2Check -->|No| H2Skip["SKIP"]
+
+    IsPluginJson -->|Yes| H3["③ marketplace-sync-validator.py"]
+    H3 --> H3Current{"CURRENT behavior"}
+    H3Current --> H3Block["🔴 BLOCKS if plugin version<br/>≠ marketplace.json version<br/>→ forces cascade edits"]
+
+    H3 --> H3Proposed{"PROPOSED behavior"}
+    H3Proposed --> H3Pass["✅ SKIP — let webhook<br/>handle sync automatically"]
+
+    %% marketplace.json path
+    IsMarketplace -->|Yes| M1["① PostToolUse.sh → SKIP"]
+    IsMarketplace -->|Yes| M2["② plugin-manifest-validator.py → SKIP<br/>(not named plugin.json)"]
+    IsMarketplace -->|Yes| M3["③ marketplace-sync-validator.py"]
+    M3 --> M3Val["Validate ALL plugin versions match<br/>+ check top-level version bumped<br/>(BLOCKS on mismatch) ✅"]
+
+    %% Styling
+    style H3Block fill:#ffcccc,stroke:#cc0000,color:#000
+    style H3Pass fill:#ccffcc,stroke:#009900,color:#000
+    style H3Current fill:#fff0cc,stroke:#cc9900,color:#000
+    style H3Proposed fill:#ccffcc,stroke:#009900,color:#000
+    style Other fill:#f0f0f0,stroke:#999,color:#666
+    style H1Skip fill:#f0f0f0,stroke:#999,color:#666
+    style H2Skip fill:#f0f0f0,stroke:#999,color:#666
+    style M1 fill:#f0f0f0,stroke:#999,color:#666
+    style M2 fill:#f0f0f0,stroke:#999,color:#666
+    style M3Val fill:#cce5ff,stroke:#0066cc,color:#000

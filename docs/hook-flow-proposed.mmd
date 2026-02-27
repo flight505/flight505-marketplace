@@ -1,0 +1,51 @@
+sequenceDiagram
+    title Proposed Flow — Webhook Handles Sync, Validators Stay Local
+
+    participant Dev as Developer
+    participant CC as Claude Code
+    participant Cache as PostToolUse.sh<br/>(cache hook)
+    participant PMV as plugin-manifest<br/>-validator.py
+    participant MSV as marketplace-sync<br/>-validator.py
+    participant MJ as marketplace.json
+    participant GH as GitHub Actions<br/>(webhook chain)
+
+    Note over Dev,CC: Step 1: Developer bumps plugin version
+
+    Dev->>CC: Edit sdk-bridge/.claude-plugin/plugin.json<br/>version: 4.8.1 → 4.9.0
+
+    rect rgb(230, 245, 230)
+        Note over Cache,MSV: All hooks pass — no cascade
+        CC->>Cache: PostToolUse fires
+        Cache-->>CC: Cache cleared for sdk-bridge v4.9.0 ✅
+        CC->>PMV: PostToolUse fires
+        PMV-->>CC: Structure valid ✅
+        CC->>MSV: PostToolUse fires
+        MSV-->>CC: ✅ SKIP — plugin.json edit, webhook will sync
+    end
+
+    Note over Dev,CC: Step 2: Developer commits & pushes plugin
+
+    Dev->>Dev: git add + commit + push (plugin repo)
+
+    rect rgb(230, 240, 255)
+        Note over GH: Webhook chain handles sync (single source of truth)
+        Dev->>GH: push triggers notify-marketplace.yml
+        GH->>GH: Detects version 4.8.1 → 4.9.0
+        GH->>GH: repository_dispatch → auto-update-plugins.yml
+        GH->>GH: git submodule update --remote
+        GH->>MJ: Updates marketplace.json<br/>sdk-bridge → 4.9.0 + bumps version
+        GH->>GH: git commit + push to main
+    end
+
+    Note over Dev: git pull — clean fast-forward, no conflict ✅
+
+    Note over Dev,GH: Only ONE path updates marketplace.json
+
+    rect rgb(255, 250, 230)
+        Note over MSV,MJ: Validator STILL protects direct marketplace.json edits
+        Dev->>CC: Manually edit marketplace.json
+        CC->>MSV: PostToolUse fires
+        MSV->>MJ: Validate all plugin versions match
+        MSV-->>CC: 🔴 BLOCK if versions don't match
+        Note over CC: Ensures manual edits are correct
+    end

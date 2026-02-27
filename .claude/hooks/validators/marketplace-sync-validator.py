@@ -7,13 +7,13 @@
 """
 PostToolUse Hook: Marketplace Sync Validator
 
-Ensures plugin versions in plugin.json match marketplace.json.
-Critical for maintaining version consistency across the marketplace.
+Validates marketplace.json consistency when directly edited.
+Skips plugin.json edits — the webhook chain (notify-marketplace.yml →
+auto-update-plugins.yml) handles plugin→marketplace sync automatically.
 
-Validates:
-- Plugin exists in marketplace.json
-- Plugin version matches between plugin.json and marketplace.json
-- Marketplace version is bumped when plugin versions change
+On marketplace.json edits, validates:
+- All plugin versions match their respective plugin.json files
+- Marketplace top-level version is bumped when plugin versions change
 
 Runs automatically after Edit/Write on plugin.json or marketplace.json.
 """
@@ -66,50 +66,24 @@ def validate_marketplace_sync(file_path: Path) -> list[str]:
     if not (is_plugin_json or is_marketplace_json):
         return errors  # Not relevant
 
-    # Load marketplace.json
-    marketplace_json_path = marketplace_root / ".claude-plugin" / "marketplace.json"
-    marketplace_data = load_json_file(marketplace_json_path)
-
-    if not marketplace_data:
-        errors.append("Cannot load marketplace.json for version sync validation")
-        return errors
-
-    marketplace_plugins = {
-        p["name"]: p["version"]
-        for p in marketplace_data.get("plugins", [])
-    }
-
     if is_plugin_json:
-        # Validate plugin.json against marketplace.json
-        plugin_data = load_json_file(file_path)
-        if not plugin_data:
-            return ["Cannot load plugin.json for validation"]
-
-        plugin_name = plugin_data.get("name")
-        plugin_version = plugin_data.get("version")
-
-        if not plugin_name or not plugin_version:
-            return ["Plugin name or version missing"]
-
-        # Check if plugin exists in marketplace
-        if plugin_name not in marketplace_plugins:
-            errors.append(
-                f"Plugin '{plugin_name}' not found in marketplace.json. "
-                f"Add it to .claude-plugin/marketplace.json"
-            )
-            return errors
-
-        # Check version match
-        marketplace_version = marketplace_plugins[plugin_name]
-        if plugin_version != marketplace_version:
-            errors.append(
-                f"Version mismatch for '{plugin_name}':\n"
-                f"  • plugin.json: {plugin_version}\n"
-                f"  • marketplace.json: {marketplace_version}\n"
-                f"\n💡 Update marketplace.json to match plugin.json version"
-            )
+        # Skip sync check for plugin.json edits — the webhook chain
+        # (notify-marketplace.yml → auto-update-plugins.yml) handles
+        # syncing plugin versions to marketplace.json automatically.
+        # Enforcing sync here causes a double-update conflict: the validator
+        # forces a local marketplace.json edit, then the webhook pushes
+        # the same change to remote, resulting in merge conflicts.
+        log("SKIP: plugin.json edit — webhook chain handles marketplace sync")
+        return errors  # empty, no block
 
     elif is_marketplace_json:
+        # Load marketplace.json for validation
+        marketplace_json_path = marketplace_root / ".claude-plugin" / "marketplace.json"
+        marketplace_data = load_json_file(marketplace_json_path)
+
+        if not marketplace_data:
+            errors.append("Cannot load marketplace.json for version sync validation")
+            return errors
         # Validate marketplace.json against all plugin.json files
         marketplace_data = load_json_file(file_path)
         if not marketplace_data:

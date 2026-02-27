@@ -1,0 +1,63 @@
+sequenceDiagram
+    title Current Flow — Double Update Conflict
+
+    participant Dev as Developer
+    participant CC as Claude Code
+    participant Cache as PostToolUse.sh<br/>(cache hook)
+    participant PMV as plugin-manifest<br/>-validator.py
+    participant MSV as marketplace-sync<br/>-validator.py
+    participant MJ as marketplace.json
+    participant GH as GitHub Actions<br/>(webhook chain)
+
+    Note over Dev,CC: Step 1: Developer bumps plugin version
+
+    Dev->>CC: Edit sdk-bridge/.claude-plugin/plugin.json<br/>version: 4.8.1 → 4.9.0
+
+    rect rgb(230, 245, 230)
+        Note over Cache,PMV: These hooks pass fine
+        CC->>Cache: PostToolUse fires
+        Cache-->>CC: Cache cleared for sdk-bridge v4.9.0 ✅
+        CC->>PMV: PostToolUse fires
+        PMV-->>CC: Structure valid ✅
+    end
+
+    rect rgb(255, 220, 220)
+        Note over MSV,MJ: ⚠️ PROBLEM ZONE — forced cascade begins
+        CC->>MSV: PostToolUse fires
+        MSV->>MJ: Compare: plugin.json 4.9.0 vs marketplace.json 4.8.1
+        MSV-->>CC: 🔴 BLOCK — version mismatch!
+
+        Note over CC: Claude is FORCED to update marketplace.json
+
+        CC->>MJ: Edit marketplace.json<br/>sdk-bridge: 4.8.1 → 4.9.0
+        CC->>MSV: PostToolUse fires (on marketplace.json edit)
+        MSV->>MJ: Check top-level version bump
+        MSV-->>CC: 🔴 BLOCK — marketplace version not bumped!
+
+        Note over CC: Claude is FORCED to bump marketplace version
+
+        CC->>MJ: Edit marketplace.json<br/>version: 1.5.0 → 1.5.1
+        CC->>MSV: PostToolUse fires again
+        MSV-->>CC: ✅ PASS (finally)
+    end
+
+    Note over Dev,CC: Step 2: Developer commits & pushes plugin
+
+    Dev->>Dev: git add + commit + push (plugin repo)
+
+    rect rgb(255, 235, 200)
+        Note over GH: ⚠️ WEBHOOK CHAIN — does the SAME update
+        Dev->>GH: push triggers notify-marketplace.yml
+        GH->>GH: Detects version 4.8.1 → 4.9.0
+        GH->>GH: repository_dispatch → auto-update-plugins.yml
+        GH->>GH: git submodule update --remote
+        GH->>MJ: Updates marketplace.json<br/>sdk-bridge → 4.9.0 + bumps version
+        GH->>GH: git commit + push to main
+    end
+
+    rect rgb(255, 200, 200)
+        Note over Dev,GH: 💥 CONFLICT — two sources updated the same file
+        Dev->>Dev: git pull (marketplace repo)
+        Note over Dev: MERGE CONFLICT on marketplace.json<br/>Local: already updated by validator<br/>Remote: updated by GitHub Actions
+        Dev->>Dev: Must rebase / resolve conflict
+    end
