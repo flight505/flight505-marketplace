@@ -271,10 +271,10 @@ cat .claude-plugin/marketplace.json | jq '.plugins[] | select(.name=="nano-banan
 | Plugin | Version | Repo | Status |
 |--------|---------|------|--------|
 | **sdk-bridge** | 4.8.1 | [github.com/flight505/sdk-bridge](https://github.com/flight505/sdk-bridge) | ✅ Active |
-| **taskplex** | 3.1.0 | [github.com/flight505/taskplex](https://github.com/flight505/taskplex) | ✅ Active |
+| **taskplex** | 4.1.0 | [github.com/flight505/taskplex](https://github.com/flight505/taskplex) | ✅ Active |
 | **storybook-assistant** | 2.2.1 | [github.com/flight505/storybook-assistant](https://github.com/flight505/storybook-assistant) | ✅ Active |
 | **claude-project-planner** | 1.4.6 | [github.com/flight505/claude-project-planner](https://github.com/flight505/claude-project-planner) | ✅ Active |
-| **nano-banana** | 1.3.1 | [github.com/flight505/nano-banana](https://github.com/flight505/nano-banana) | ✅ Active |
+| **nano-banana** | 1.3.2 | [github.com/flight505/nano-banana](https://github.com/flight505/nano-banana) | ✅ Active |
 | **ai-frontier** | 1.1.0 | [github.com/flight505/ai-frontier](https://github.com/flight505/ai-frontier) | ✅ Active |
 
 ### Version Update Checklist
@@ -417,11 +417,15 @@ Validates all plugin.json manifests for correct format and synchronization with 
 - JSON syntax correctness
 - Required fields (name, version, description, author)
 - Semantic versioning format (X.Y.Z)
-- Skills paths must be `./skills/name`
+- Skills paths must be `./skills/name` with SKILL.md present
 - Agents paths must be `./agents/name.md`
 - Commands paths and format
 - Version synchronization with marketplace.json
 - File existence for all referenced paths
+- **hooks.json**: valid event names, script paths exist and are executable, SubagentStart/Stop matchers cross-ref against agent files (pipe-separated matchers supported)
+- **Agent frontmatter**: required fields (name, description, model, permissionMode), model/permissionMode enum validation, skills cross-ref against skill directories
+- **Skill frontmatter**: required name and description fields
+- **Shell scripts**: `bash -n` syntax check on all `.sh` files in `scripts/` and `hooks/`
 
 **When to use:**
 - Before committing any manifest changes

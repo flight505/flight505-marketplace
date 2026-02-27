@@ -515,6 +515,67 @@ rm -f "$KDB_MIGRATE" "$KDB_MD"
 
 rm -f "$TEST_DB"
 
+# 5.2b Bayesian confidence tracking
+BAYES_DB="/tmp/taskplex-bayes-test-$$.db"
+init_knowledge_db "$BAYES_DB"
+
+# Verify new columns exist
+BAYES_COLS=$(sqlite3 "$BAYES_DB" "PRAGMA table_info(learnings);" | grep -c "applied_count\|success_count")
+if [ "$BAYES_COLS" -eq 2 ]; then pass "knowledge-db: Bayesian columns (applied_count, success_count) exist"; else fail "knowledge-db: missing Bayesian columns (got $BAYES_COLS)"; fi
+
+# Insert learning and test application tracking
+insert_learning "$BAYES_DB" "US-B1" "run-b" "Bayesian test learning" '["US-B1"]'
+BAYES_ID=$(sqlite3 "$BAYES_DB" "SELECT id FROM learnings WHERE story_id='US-B1' LIMIT 1;")
+record_learning_application "$BAYES_DB" "$BAYES_ID"
+APPLIED=$(sqlite3 "$BAYES_DB" "SELECT applied_count FROM learnings WHERE id=$BAYES_ID;")
+if [ "$APPLIED" = "1" ]; then pass "knowledge-db: record_learning_application increments count"; else fail "knowledge-db: applied_count expected 1, got $APPLIED"; fi
+
+# Test success tracking
+record_learning_success "$BAYES_DB" "US-B1"
+SUCCESS=$(sqlite3 "$BAYES_DB" "SELECT success_count FROM learnings WHERE id=$BAYES_ID;")
+if [ "$SUCCESS" = "1" ]; then pass "knowledge-db: record_learning_success increments count"; else fail "knowledge-db: success_count expected 1, got $SUCCESS"; fi
+
+# Test Bayesian formula: with applied_count < 2, should use time-decay
+# (fresh learning = time-decay ≈ 1.0)
+DECAY_CONF=$(sqlite3 "$BAYES_DB" "SELECT ROUND(CASE WHEN applied_count >= 2 THEN CAST(success_count + 1 AS REAL) / (applied_count + 2) ELSE confidence * POWER(0.95, julianday('now') - julianday(created_at)) END, 3) FROM learnings WHERE id=$BAYES_ID;")
+if [ "$DECAY_CONF" = "1.0" ] || [ "$DECAY_CONF" = "1.000" ]; then
+  pass "knowledge-db: Bayesian fallback to time-decay when applied_count < 2"
+else
+  fail "knowledge-db: Bayesian time-decay expected ~1.0, got $DECAY_CONF"
+fi
+
+# Apply again to trigger Bayesian mode (applied_count=2)
+record_learning_application "$BAYES_DB" "$BAYES_ID"
+APPLIED2=$(sqlite3 "$BAYES_DB" "SELECT applied_count FROM learnings WHERE id=$BAYES_ID;")
+if [ "$APPLIED2" = "2" ]; then pass "knowledge-db: applied_count incremented to 2"; else fail "knowledge-db: applied_count expected 2, got $APPLIED2"; fi
+
+# Now Bayesian formula: (1+1)/(2+2) = 0.5
+BAYES_CONF=$(sqlite3 "$BAYES_DB" "SELECT ROUND(CASE WHEN applied_count >= 2 THEN CAST(success_count + 1 AS REAL) / (applied_count + 2) ELSE confidence * POWER(0.95, julianday('now') - julianday(created_at)) END, 3) FROM learnings WHERE id=$BAYES_ID;")
+if [ "$BAYES_CONF" = "0.5" ] || [ "$BAYES_CONF" = "0.500" ]; then
+  pass "knowledge-db: Bayesian confidence = (1+1)/(2+2) = 0.5"
+else
+  fail "knowledge-db: Bayesian confidence expected 0.5, got $BAYES_CONF"
+fi
+
+# Record another success → (2+1)/(2+2) = 0.75
+record_learning_success "$BAYES_DB" "US-B1"
+BAYES_CONF2=$(sqlite3 "$BAYES_DB" "SELECT ROUND(CASE WHEN applied_count >= 2 THEN CAST(success_count + 1 AS REAL) / (applied_count + 2) ELSE confidence * POWER(0.95, julianday('now') - julianday(created_at)) END, 3) FROM learnings WHERE id=$BAYES_ID;")
+if [ "$BAYES_CONF2" = "0.75" ] || [ "$BAYES_CONF2" = "0.750" ]; then
+  pass "knowledge-db: Bayesian confidence = (2+1)/(2+2) = 0.75"
+else
+  fail "knowledge-db: Bayesian confidence expected 0.75, got $BAYES_CONF2"
+fi
+
+# Test query_learnings_with_ids returns id column
+RESULT_WITH_IDS=$(query_learnings_with_ids "$BAYES_DB" 10 '["US-B1"]')
+if echo "$RESULT_WITH_IDS" | grep -q "^${BAYES_ID}|"; then
+  pass "knowledge-db: query_learnings_with_ids returns id column"
+else
+  fail "knowledge-db: query_learnings_with_ids missing id column"
+fi
+
+rm -f "$BAYES_DB"
+
 # 5.3 decision-call.sh — source and check function definitions
 if [ -f "$PLUGIN_DIR/scripts/decision-call.sh" ]; then
   # Just syntax check — functions need runtime context
