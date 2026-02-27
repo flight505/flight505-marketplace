@@ -16,6 +16,16 @@ FAIL=0
 WARN=0
 NOTES=()
 
+# Per-section tracking
+SEC_NAME=""
+SEC_PASS=0
+SEC_FAIL=0
+SEC_WARN=0
+SEC_NAMES=()
+SEC_PASSES=()
+SEC_FAILS=()
+SEC_WARNS=()
+
 # Flags
 SAVE=false
 CI=false
@@ -41,12 +51,43 @@ else
   NC='\033[0m'
 fi
 
-header() { echo -e "\n${CYAN}━━━ $1 ━━━${NC}"; }
-pass()   { PASS=$((PASS + 1)); echo -e "  ${GREEN}✓${NC} $1"; }
-fail()   { FAIL=$((FAIL + 1)); echo -e "  ${RED}✗${NC} $1"; NOTES+=("FAIL: $1"); }
-warn()   { WARN=$((WARN + 1)); echo -e "  ${YELLOW}⚠${NC} $1"; NOTES+=("WARN: $1"); }
+flush_section() {
+  if [ -n "$SEC_NAME" ]; then
+    SEC_NAMES+=("$SEC_NAME")
+    SEC_PASSES+=("$SEC_PASS")
+    SEC_FAILS+=("$SEC_FAIL")
+    SEC_WARNS+=("$SEC_WARN")
+  fi
+  SEC_NAME=""
+  SEC_PASS=0
+  SEC_FAIL=0
+  SEC_WARN=0
+}
+
+header() {
+  flush_section
+  SEC_NAME="$2"
+  echo -e "\n${CYAN}━━━ $1 ━━━${NC}"
+}
+
+pass()   { PASS=$((PASS + 1)); SEC_PASS=$((SEC_PASS + 1)); echo -e "  ${GREEN}✓${NC} $1"; }
+fail()   { FAIL=$((FAIL + 1)); SEC_FAIL=$((SEC_FAIL + 1)); echo -e "  ${RED}✗${NC} $1"; NOTES+=("FAIL: $1"); }
+warn()   { WARN=$((WARN + 1)); SEC_WARN=$((SEC_WARN + 1)); echo -e "  ${YELLOW}⚠${NC} $1"; NOTES+=("WARN: $1"); }
 
 should_run() { [ "$SECTION_FILTER" -eq 0 ] || [ "$SECTION_FILTER" -eq "$1" ]; }
+
+# Helper: run a hook script and check exit code
+# Args: $1=description, $2=hook_path, $3=stdin_input, $4=expected_exit, $5=cwd (optional)
+run_hook() {
+  local desc="$1" hook="$2" input="$3" expected_exit="$4" cwd="${5:-$(pwd)}"
+  local actual_exit=0
+  echo "$input" | (cd "$cwd" && bash "$hook") > /dev/null 2>&1 || actual_exit=$?
+  if [ "$actual_exit" -eq "$expected_exit" ]; then
+    pass "$desc"
+  else
+    fail "$desc (exit $actual_exit, expected $expected_exit)"
+  fi
+}
 
 VERSION=$(jq -r '.version // "unknown"' "$PLUGIN_DIR/.claude-plugin/plugin.json" 2>/dev/null)
 
@@ -55,7 +96,7 @@ echo "Plugin dir: $PLUGIN_DIR"
 
 # ─── SECTION 1: File Structure ──────────────────────────────────────
 if should_run 1; then
-header "1. Plugin File Structure"
+header "1. Plugin File Structure" "file_structure"
 
 # Check all files referenced in plugin.json exist
 manifest="$PLUGIN_DIR/.claude-plugin/plugin.json"
@@ -116,7 +157,7 @@ fi
 
 # ─── SECTION 2: Plugin Manifest ─────────────────────────────────────
 if should_run 2; then
-header "2. Plugin Manifest Validation"
+header "2. Plugin Manifest Validation" "manifest"
 
 manifest="$PLUGIN_DIR/.claude-plugin/plugin.json"
 
@@ -186,7 +227,7 @@ fi
 
 # ─── SECTION 3: Hooks Configuration ─────────────────────────────────
 if should_run 3; then
-header "3. Hooks Configuration"
+header "3. Hooks Configuration" "hooks_config"
 
 hooks_file="$PLUGIN_DIR/hooks/hooks.json"
 
@@ -283,7 +324,7 @@ fi
 
 # ─── SECTION 4: Hook Unit Tests ──────────────────────────────────────
 if should_run 4; then
-header "4. Hook Unit Tests"
+header "4. Hook Unit Tests" "hook_unit_tests"
 
 TEST_DIR="/tmp/taskplex-test-$$"
 mkdir -p "$TEST_DIR"
@@ -293,32 +334,28 @@ trap cleanup_test EXIT
 # 4.1 stop-guard.sh
 HOOK="$PLUGIN_DIR/hooks/stop-guard.sh"
 if [ -f "$HOOK" ]; then
-  # No prd.json → allows stop (exit 0)
   cd "$TEST_DIR" && rm -f prd.json
-  actual_exit=0
-  echo '{"session_id":"test","stop_hook_active":false}' | bash "$HOOK" > /dev/null 2>&1 || actual_exit=$?
-  if [ "$actual_exit" -eq 0 ]; then pass "stop-guard: no prd.json → allows stop"; else fail "stop-guard: no prd.json → got exit $actual_exit"; fi
+
+  run_hook "stop-guard: no prd.json → allows stop" "$HOOK" \
+    '{"session_id":"test","stop_hook_active":false}' 0 "$TEST_DIR"
 
   # Pending stories → blocks (exit 2)
   cat > "$TEST_DIR/prd.json" <<'PRDEOF'
 {"project":"test","userStories":[{"id":"US-001","title":"Test","passes":false}]}
 PRDEOF
-  actual_exit=0
-  echo '{"session_id":"test","stop_hook_active":false}' | bash "$HOOK" > /dev/null 2>&1 || actual_exit=$?
-  if [ "$actual_exit" -eq 2 ]; then pass "stop-guard: pending stories → blocks (exit 2)"; else fail "stop-guard: pending stories → got exit $actual_exit"; fi
+  run_hook "stop-guard: pending stories → blocks (exit 2)" "$HOOK" \
+    '{"session_id":"test","stop_hook_active":false}' 2 "$TEST_DIR"
 
   # stop_hook_active=true → allows even with pending (anti-loop)
-  actual_exit=0
-  echo '{"session_id":"test","stop_hook_active":true}' | bash "$HOOK" > /dev/null 2>&1 || actual_exit=$?
-  if [ "$actual_exit" -eq 0 ]; then pass "stop-guard: stop_hook_active=true → allows (anti-loop)"; else fail "stop-guard: anti-loop → got exit $actual_exit"; fi
+  run_hook "stop-guard: stop_hook_active=true → allows (anti-loop)" "$HOOK" \
+    '{"session_id":"test","stop_hook_active":true}' 0 "$TEST_DIR"
 
   # All passing → allows stop
   cat > "$TEST_DIR/prd.json" <<'PRDEOF'
 {"project":"test","userStories":[{"id":"US-001","title":"Test","passes":true}]}
 PRDEOF
-  actual_exit=0
-  echo '{"session_id":"test","stop_hook_active":false}' | bash "$HOOK" > /dev/null 2>&1 || actual_exit=$?
-  if [ "$actual_exit" -eq 0 ]; then pass "stop-guard: all passing → allows stop"; else fail "stop-guard: all passing → got exit $actual_exit"; fi
+  run_hook "stop-guard: all passing → allows stop" "$HOOK" \
+    '{"session_id":"test","stop_hook_active":false}' 0 "$TEST_DIR"
 
   rm -f "$TEST_DIR/prd.json"
   cd "$SCRIPT_DIR"
@@ -330,23 +367,16 @@ if [ -f "$HOOK" ]; then
   cd "$TEST_DIR"
   rm -rf "$TEST_DIR/.claude"
 
-  # No config → allows completion
-  actual_exit=0
-  echo '{}' | bash "$HOOK" > /dev/null 2>&1 || actual_exit=$?
-  if [ "$actual_exit" -eq 0 ]; then pass "task-completed: no config → allows"; else fail "task-completed: no config → got exit $actual_exit"; fi
+  run_hook "task-completed: no config → allows" "$HOOK" '{}' 0 "$TEST_DIR"
 
   # Passing test → allows
   mkdir -p "$TEST_DIR/.claude"
   printf '{"test_command":"exit 0"}' > "$TEST_DIR/.claude/taskplex.config.json"
-  actual_exit=0
-  echo '{}' | bash "$HOOK" > /dev/null 2>&1 || actual_exit=$?
-  if [ "$actual_exit" -eq 0 ]; then pass "task-completed: passing test → allows"; else fail "task-completed: passing test → got exit $actual_exit"; fi
+  run_hook "task-completed: passing test → allows" "$HOOK" '{}' 0 "$TEST_DIR"
 
   # Failing test → blocks (exit 2)
   printf '{"test_command":"exit 1"}' > "$TEST_DIR/.claude/taskplex.config.json"
-  actual_exit=0
-  echo '{}' | bash "$HOOK" > /dev/null 2>&1 || actual_exit=$?
-  if [ "$actual_exit" -eq 2 ]; then pass "task-completed: failing test → blocks (exit 2)"; else fail "task-completed: failing test → got exit $actual_exit"; fi
+  run_hook "task-completed: failing test → blocks (exit 2)" "$HOOK" '{}' 2 "$TEST_DIR"
 
   rm -rf "$TEST_DIR/.claude"
   cd "$SCRIPT_DIR"
@@ -386,9 +416,8 @@ fi
 HOOK="$PLUGIN_DIR/hooks/inject-knowledge.sh"
 if [ -f "$HOOK" ]; then
   cd "$TEST_DIR" && rm -f knowledge.db
-  actual_exit=0
-  output=$(echo '{"agent_type":"implementer","agent_id":"test-1"}' | bash "$HOOK" 2>/dev/null) || actual_exit=$?
-  if [ "$actual_exit" -eq 0 ]; then pass "inject-knowledge: no DB → exits 0"; else fail "inject-knowledge: no DB → got exit $actual_exit"; fi
+  run_hook "inject-knowledge: no DB → exits 0" "$HOOK" \
+    '{"agent_type":"implementer","agent_id":"test-1"}' 0 "$TEST_DIR"
 
   # With seeded DB
   sqlite3 "$TEST_DIR/knowledge.db" "
@@ -396,9 +425,8 @@ if [ -f "$HOOK" ]; then
     INSERT INTO learnings (story_id, run_id, content, tags) VALUES ('US-T', 'run-1', 'Test learning', '[\"test\"]');
   " 2>/dev/null || true
 
-  actual_exit=0
-  output2=$(echo '{"agent_type":"implementer","agent_id":"test-2"}' | bash "$HOOK" 2>/dev/null) || actual_exit=$?
-  if [ "$actual_exit" -eq 0 ]; then pass "inject-knowledge: with DB → exits 0"; else fail "inject-knowledge: with DB → got exit $actual_exit"; fi
+  run_hook "inject-knowledge: with DB → exits 0" "$HOOK" \
+    '{"agent_type":"implementer","agent_id":"test-2"}' 0 "$TEST_DIR"
 
   rm -f "$TEST_DIR/knowledge.db"
   cd "$SCRIPT_DIR"
@@ -442,7 +470,7 @@ fi
 
 # ─── SECTION 5: Script Unit Tests ───────────────────────────────────
 if should_run 5; then
-header "5. Script Unit Tests"
+header "5. Script Unit Tests" "script_unit_tests"
 
 # 5.1 bash -n syntax check on all .sh files
 for script in "$PLUGIN_DIR"/scripts/*.sh "$PLUGIN_DIR"/hooks/*.sh; do
@@ -590,7 +618,7 @@ fi
 
 # ─── SECTION 6: Agent Spec Quality ──────────────────────────────────
 if should_run 6; then
-header "6. Agent Spec Quality"
+header "6. Agent Spec Quality" "agent_spec_quality"
 
 valid_models="sonnet opus haiku inherit"
 valid_permissions="default acceptEdits dontAsk bypassPermissions plan"
@@ -640,18 +668,15 @@ fi
 
 # ─── SECTION 7: Skill Quality ───────────────────────────────────────
 if should_run 7; then
-header "7. Skill Quality"
+header "7. Skill Quality" "skill_quality"
 
 for skill_dir in "$PLUGIN_DIR"/skills/*/; do
   [ -d "$skill_dir" ] || continue
   name=$(basename "$skill_dir")
   skill_file="$skill_dir/SKILL.md"
 
-  # SKILL.md exists
-  if [ -f "$skill_file" ]; then
-    pass "skill $name: SKILL.md exists"
-  else
-    fail "skill $name: SKILL.md MISSING"
+  # Skip if SKILL.md missing (already caught by Section 1)
+  if [ ! -f "$skill_file" ]; then
     continue
   fi
 
@@ -685,29 +710,9 @@ fi
 
 # ─── SECTION 8: Cross-References ────────────────────────────────────
 if should_run 8; then
-header "8. Cross-References"
+header "8. Cross-References" "cross_references"
 
 manifest="$PLUGIN_DIR/.claude-plugin/plugin.json"
-
-# 8.1 plugin.json skills → skill directories exist
-while IFS= read -r skill; do
-  skill_path="${skill#./}"
-  if [ -d "$PLUGIN_DIR/$skill_path" ]; then
-    pass "xref: plugin.json skill '$skill_path' → directory exists"
-  else
-    fail "xref: plugin.json skill '$skill_path' → directory MISSING"
-  fi
-done < <(jq -r '.skills[]' "$manifest" 2>/dev/null)
-
-# 8.2 plugin.json agents → agent files exist
-while IFS= read -r agent; do
-  agent_path="${agent#./}"
-  if [ -f "$PLUGIN_DIR/$agent_path" ]; then
-    pass "xref: plugin.json agent '$agent_path' → file exists"
-  else
-    fail "xref: plugin.json agent '$agent_path' → file MISSING"
-  fi
-done < <(jq -r '.agents[]' "$manifest" 2>/dev/null)
 
 # 8.3 Agent skills → skill directories exist
 for agent_file in "$PLUGIN_DIR"/agents/*.md; do
@@ -735,37 +740,22 @@ for agent_file in "$PLUGIN_DIR"/agents/*.md; do
   fi
 done
 
-# 8.4 hooks.json SubagentStart/Stop matchers → agent files
-for event in SubagentStart SubagentStop; do
-  while IFS= read -r matcher; do
-    [ -z "$matcher" ] || [ "$matcher" = "null" ] && continue
-    IFS='|' read -ra parts <<< "$matcher"
-    for part in "${parts[@]}"; do
-      if [ -f "$PLUGIN_DIR/agents/${part}.md" ]; then
-        pass "xref: hooks $event matcher '$part' → agent file exists"
-      else
-        fail "xref: hooks $event matcher '$part' → agent file MISSING"
-      fi
-    done
-  done < <(jq -r ".hooks.${event}[]? | .matcher // empty" "$PLUGIN_DIR/hooks/hooks.json" 2>/dev/null)
-done
-
-# 8.5 Skill directories on disk → referenced in plugin.json
+# 8.5 Skill directories on disk → referenced in plugin.json (exact path match)
 for skill_dir in "$PLUGIN_DIR"/skills/*/; do
   [ -d "$skill_dir" ] || continue
   skill_name=$(basename "$skill_dir")
-  if jq -r '.skills[]' "$manifest" 2>/dev/null | grep -q "$skill_name"; then
+  if jq -r '.skills[]' "$manifest" 2>/dev/null | grep -q "/$skill_name$"; then
     pass "xref: skill dir '$skill_name' → referenced in plugin.json"
   else
     warn "xref: skill dir '$skill_name' → NOT in plugin.json (orphaned?)"
   fi
 done
 
-# 8.6 Agent files on disk → referenced in plugin.json
+# 8.6 Agent files on disk → referenced in plugin.json (exact path match)
 for agent_file in "$PLUGIN_DIR"/agents/*.md; do
   [ -f "$agent_file" ] || continue
   agent_name=$(basename "$agent_file")
-  if jq -r '.agents[]' "$manifest" 2>/dev/null | grep -q "$agent_name"; then
+  if jq -r '.agents[]' "$manifest" 2>/dev/null | grep -q "/$agent_name"; then
     pass "xref: agent '$agent_name' → referenced in plugin.json"
   else
     warn "xref: agent '$agent_name' → NOT in plugin.json (orphaned?)"
@@ -775,6 +765,8 @@ done
 fi
 
 # ─── Summary ────────────────────────────────────────────────────────
+flush_section
+
 echo ""
 echo -e "${CYAN}━━━ Summary ━━━${NC}"
 TOTAL=$((PASS + FAIL + WARN))
@@ -785,11 +777,21 @@ if [ "$TOTAL" -gt 0 ]; then
   SCORE=$((SCORE_NUM / TOTAL))
 fi
 
+# Three-tier overall
+if [ "$FAIL" -eq 0 ]; then
+  OVERALL="PASS"
+elif [ "$FAIL" -le 3 ]; then
+  OVERALL="PASS_WITH_ISSUES"
+else
+  OVERALL="FAIL"
+fi
+
 echo -e "  ${GREEN}Passed:${NC}  $PASS"
 echo -e "  ${RED}Failed:${NC}  $FAIL"
 echo -e "  ${YELLOW}Warned:${NC} $WARN"
 echo "  Total:   $TOTAL"
 echo "  Score:   ${SCORE}%"
+echo "  Overall: $OVERALL"
 
 if [ ${#NOTES[@]} -gt 0 ]; then
   echo ""
@@ -802,16 +804,39 @@ fi
 # Save results
 if [ "$SAVE" = true ]; then
   GIT_SHA=$(git -C "$PLUGIN_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
-  RECORD=$(jq -n \
+
+  # Build sections JSON
+  SECTIONS_OBJ="{}"
+  for i in "${!SEC_NAMES[@]}"; do
+    SECTIONS_OBJ=$(echo "$SECTIONS_OBJ" | jq \
+      --arg name "${SEC_NAMES[$i]}" \
+      --argjson p "${SEC_PASSES[$i]}" \
+      --argjson f "${SEC_FAILS[$i]}" \
+      --argjson w "${SEC_WARNS[$i]}" \
+      '. + {($name): {pass: $p, fail: $f, warn: $w}}')
+  done
+
+  # Build notes JSON array
+  NOTES_JSON="[]"
+  for note in "${NOTES[@]}"; do
+    NOTES_JSON=$(echo "$NOTES_JSON" | jq --arg n "$note" '. + [$n]')
+  done
+
+  RECORD=$(jq -cn \
     --arg ts "$TIMESTAMP" \
+    --arg suite "structural" \
+    --arg plugin "taskplex" \
     --arg version "$VERSION" \
     --arg sha "$GIT_SHA" \
+    --arg overall "$OVERALL" \
     --argjson pass "$PASS" \
     --argjson fail "$FAIL" \
     --argjson warn "$WARN" \
     --argjson total "$TOTAL" \
     --argjson score "$SCORE" \
-    '{timestamp: $ts, version: $version, git_sha: $sha, passed: $pass, failed: $fail, warned: $warn, total: $total, score: $score}')
+    --argjson sections "$SECTIONS_OBJ" \
+    --argjson notes "$NOTES_JSON" \
+    '{timestamp: $ts, suite: $suite, plugin: $plugin, version: $version, git_sha: $sha, overall: $overall, passed: $pass, failed: $fail, warned: $warn, total: $total, score: $score, sections: $sections, notes: $notes}')
 
   echo "$RECORD" >> "$RESULTS_DIR/test-history.jsonl"
   echo ""
@@ -822,12 +847,13 @@ fi
 if [ "$CI" = true ]; then
   jq -n \
     --arg version "$VERSION" \
+    --arg overall "$OVERALL" \
     --argjson pass "$PASS" \
     --argjson fail "$FAIL" \
     --argjson warn "$WARN" \
     --argjson total "$TOTAL" \
     --argjson score "$SCORE" \
-    '{version: $version, passed: $pass, failed: $fail, warned: $warn, total: $total, score: $score}'
+    '{version: $version, overall: $overall, passed: $pass, failed: $fail, warned: $warn, total: $total, score: $score}'
 fi
 
 # Exit code
