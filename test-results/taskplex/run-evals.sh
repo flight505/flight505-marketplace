@@ -1,11 +1,10 @@
 #!/bin/bash
 # TaskPlex evaluation suite — quality tests for key components
 # Separate from structural tests in run-tests.sh
-# Usage: ./run-evals.sh [--save] [--ci] [--section N] [--full]
+# Usage: ./run-evals.sh [--save] [--ci] [--section N]
 # --save     Append JSONL record to test-history.jsonl
 # --ci       No colors, JSON summary to stdout
-# --section N  Run only section N (1-7)
-# --full     Include LLM-gated sections (6-7); requires external terminal
+# --section N  Run only section N (1-5)
 
 # NOTE: -e omitted because sourced functions (mine_implicit_learnings, etc.)
 # use grep patterns that return exit 1 on no match. set -e would terminate
@@ -35,14 +34,11 @@ SEC_WARNS=()
 SAVE=false
 CI=false
 SECTION_FILTER=0
-FULL_MODE=false
-
 while [ $# -gt 0 ]; do
   case "$1" in
     --save) SAVE=true; shift ;;
     --ci) CI=true; shift ;;
     --section) SECTION_FILTER="$2"; shift 2 ;;
-    --full) FULL_MODE=true; shift ;;
     *) shift ;;
   esac
 done
@@ -113,11 +109,7 @@ VERSION=$(jq -r '.version // "unknown"' "$PLUGIN_DIR/.claude-plugin/plugin.json"
 
 echo "TaskPlex Evaluation Suite v${VERSION}"
 echo "Plugin dir: $PLUGIN_DIR"
-if [ "$FULL_MODE" = true ]; then
-  echo "Mode: FULL (includes LLM-gated sections)"
-else
-  echo "Mode: OFFLINE (LLM sections skipped; use --full for all)"
-fi
+echo "Mode: OFFLINE (pure bash/SQLite, no LLM calls)"
 
 # ─── Setup ───────────────────────────────────────────────────────────
 TEST_DIR="/tmp/taskplex-eval-$$"
@@ -751,173 +743,11 @@ fi
 
 fi
 
-# ─── SECTION 6: Spec Hardening Quality (LLM-gated) ───────────────────
-if should_run 6; then
-header "6. Spec Hardening Quality" "spec_hardening"
-
-if [ -n "${CLAUDECODE:-}" ] || [ "$FULL_MODE" = false ]; then
-  warn "SKIPPED: LLM-gated section (use --full from external terminal)"
-else
-  # Test requires harden_spec() from taskplex.sh — which needs many dependencies.
-  # Instead, test the concept: call claude -p with the spec hardening prompt directly.
-  SPEC_DIR="$TEST_DIR/spec"
-  mkdir -p "$SPEC_DIR"
-
-  # Create vague criteria
-  VAGUE_CRITERIA='["Handle edge cases gracefully","Be performant","Good UX"]'
-
-  HARDEN_PROMPT=$(cat <<'HARDENEOF'
-You are a spec hardening assistant. Given vague acceptance criteria, rewrite each one to be specific, measurable, and testable. Return ONLY a JSON array of strings with the rewritten criteria, no other text.
-
-Criteria to harden:
-HARDENEOF
-)
-  HARDEN_PROMPT="${HARDEN_PROMPT}
-${VAGUE_CRITERIA}"
-
-  HARDENED=$(echo "$HARDEN_PROMPT" | env -u CLAUDECODE claude -p \
-    --model haiku --max-turns 1 --output-format json \
-    --dangerously-skip-permissions 2>/dev/null) || true
-
-  if [ -z "$HARDENED" ]; then
-    warn "spec-hardening: claude -p returned empty (API issue?)"
-  else
-    # Parse output — Claude wraps in {"result": "..."}
-    CRITERIA_JSON=$(echo "$HARDENED" | jq -r '.result // ""' 2>/dev/null | jq '.' 2>/dev/null)
-
-    if [ -z "$CRITERIA_JSON" ] || [ "$CRITERIA_JSON" = "null" ]; then
-      # Try direct parsing in case output format varies
-      CRITERIA_JSON=$(echo "$HARDENED" | jq '.' 2>/dev/null)
-    fi
-
-    if [ -n "$CRITERIA_JSON" ] && [ "$CRITERIA_JSON" != "null" ]; then
-      # Check: criterion count >= original (hardening may expand vague criteria)
-      NEW_COUNT=$(echo "$CRITERIA_JSON" | jq 'length' 2>/dev/null || echo "0")
-      if [ "$NEW_COUNT" -ge 3 ]; then
-        pass "spec-hardening: criterion count $NEW_COUNT (≥3 original)"
-      else
-        fail "spec-hardening: criterion count $NEW_COUNT (expected ≥3)"
-      fi
-
-      # Check: no vague words remain
-      VAGUE_FOUND=false
-      for vague_word in "edge cases" "performant" "good ux"; do
-        if echo "$CRITERIA_JSON" | grep -qi "$vague_word"; then
-          VAGUE_FOUND=true
-          break
-        fi
-      done
-      if [ "$VAGUE_FOUND" = false ]; then
-        pass "spec-hardening: vague words removed"
-      else
-        fail "spec-hardening: vague words still present"
-      fi
-
-      # Check: at least one criterion contains a number/threshold
-      if echo "$CRITERIA_JSON" | grep -qE '[0-9]'; then
-        pass "spec-hardening: contains numeric threshold"
-      else
-        warn "spec-hardening: no numeric threshold in criteria"
-      fi
-
-      # Check: all criteria are non-empty strings
-      EMPTY_COUNT=$(echo "$CRITERIA_JSON" | jq '[.[] | select(length == 0)] | length' 2>/dev/null || echo "0")
-      if [ "$EMPTY_COUNT" -eq 0 ]; then
-        pass "spec-hardening: all criteria non-empty"
-      else
-        fail "spec-hardening: $EMPTY_COUNT empty criteria"
-      fi
-    else
-      warn "spec-hardening: could not parse output as JSON"
-    fi
-  fi
-fi
-
-fi
-
-# ─── SECTION 7: Skill Response Quality (LLM-gated) ───────────────────
-if should_run 7; then
-header "7. Skill Response Quality" "skill_quality_eval"
-
-if [ -n "${CLAUDECODE:-}" ] || [ "$FULL_MODE" = false ]; then
-  warn "SKIPPED: LLM-gated section (use --full from external terminal)"
-else
-  # eval_skill: test that a skill's SKILL.md produces relevant output when
-  # used as the system prompt for claude -p. Uses --system-prompt-file to
-  # REPLACE the default prompt (not append) so haiku focuses on the skill
-  # instructions without the heavy Claude Code system prompt.
-  eval_skill() {
-    local skill="$1" query="$2" required_patterns="$3" min_words="${4:-50}"
-    local skill_path="$PLUGIN_DIR/skills/$skill/SKILL.md"
-
-    if [ ! -f "$skill_path" ]; then
-      fail "$skill: SKILL.md not found"
-      return
-    fi
-
-    local output
-    output=$(echo "$query" | env -u CLAUDECODE claude -p \
-      --system-prompt-file "$skill_path" \
-      --model haiku --max-turns 1 2>/dev/null) || {
-      warn "$skill: claude -p failed"
-      return
-    }
-
-    if [ -z "$output" ]; then
-      warn "$skill: empty output"
-      return
-    fi
-
-    # Check required patterns in output (case-insensitive)
-    local pattern
-    for pattern in $required_patterns; do
-      if echo "$output" | grep -qi "$pattern"; then
-        pass "$skill: output contains '$pattern'"
-      else
-        fail "$skill: output missing '$pattern'"
-      fi
-    done
-
-    # Information density: word count > threshold
-    local wc
-    wc=$(echo "$output" | wc -w | tr -d ' ')
-    if [ "$wc" -gt "$min_words" ]; then
-      pass "$skill: ${wc} words (information dense)"
-    else
-      warn "$skill: ${wc} words (sparse, expected >$min_words)"
-    fi
-  }
-
-  # Queries are enriched to give enough context for headless single-turn mode.
-  # Pattern checks are broad — we verify the skill's structure is followed,
-  # not exact wording. These are smoke tests, not full behavioral tests.
-
-  eval_skill "brainstorm" \
-    "I want to add a caching layer to our REST API. We have a Node.js Express backend with PostgreSQL. What should I consider before implementing this?" \
-    "assumption alternative"
-
-  eval_skill "prd-generator" \
-    "I need a PRD for adding dark mode support to our React dashboard. The app uses Tailwind CSS and has about 30 components." \
-    "acceptance criteria"
-
-  eval_skill "systematic-debugging" \
-    "Our integration tests are failing with timeout errors after upgrading from Node 18 to Node 20. The tests pass locally but fail in CI. Error: 'Exceeded timeout of 5000ms'. What should I investigate?" \
-    "hypothesis evidence"
-
-  eval_skill "taskplex-tdd" \
-    "I need to add a new user profile endpoint that returns user data from our PostgreSQL database. The endpoint should be GET /api/users/:id." \
-    "test RED GREEN"
-
-  eval_skill "taskplex-verify" \
-    "I've fixed the login bug where users couldn't authenticate with email+password. I changed the bcrypt comparison in auth.ts." \
-    "evidence verify"
-
-  eval_skill "failure-analyzer" \
-    "Build failed with: Error: Cannot find module '@/utils/helpers'. The module was recently moved from src/utils to src/lib/utils." \
-    "category"
-fi
-
-fi
+# NOTE: Sections 6-7 (spec hardening, skill response quality) were removed.
+# Skills are plugin components designed for Claude Code's interactive runtime
+# (forked subagents, tool access, AskUserQuestion). They cannot be meaningfully
+# tested via headless claude -p calls. Structural quality is covered by
+# run-tests.sh sections 7-8 (frontmatter, cross-refs, required fields).
 
 # ─── Summary ────────────────────────────────────────────────────────
 flush_section
