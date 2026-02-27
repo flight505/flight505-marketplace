@@ -1,730 +1,151 @@
-# flight505-marketplace - Critical Instructions
+# flight505-marketplace
 
-## Overview
-
-This is the **flight505-marketplace** repository containing 6 Claude Code plugins as git submodules. This CLAUDE.md contains critical instructions for maintaining the marketplace infrastructure.
+6 Claude Code plugins as git submodules. Webhook-driven auto-updates, self-correcting validation hooks.
 
 **Repository:** https://github.com/flight505/flight505-marketplace
-**Current Version:** 1.5.0
-**Plugins:** sdk-bridge, taskplex, storybook-assistant, claude-project-planner, nano-banana, ai-frontier
 
 ---
 
-## 🤖 Automatic Validation System
+## Validation Hooks (Always Active)
 
-**Status:** ✅ ACTIVE - Self-correcting hooks enabled
+Edit `plugin.json` → manifest validator runs automatically → blocks on errors → Claude fixes → re-validates.
+Edit `marketplace.json` → sync validator runs → checks versions match plugin.json files.
 
-This marketplace uses **intelligent PostToolUse hooks** that automatically validate manifests and enforce quality standards. No manual validation scripts needed!
+Webhook chain handles plugin→marketplace version sync on push. Don't manually update marketplace.json after version bumps.
 
-### How It Works
-
-**1. Real-Time Validation**
-- Edit any `plugin.json` → manifest structure validator runs automatically
-- Edit `marketplace.json` → sync validator runs automatically
-- Issues found → Claude sees errors and **fixes them immediately**
-- No manual intervention needed
-
-**2. What Gets Validated**
-
-`.claude/hooks/validators/plugin-manifest-validator.py` (fires on `plugin.json` edits):
-- ✅ JSON syntax correctness
-- ✅ Required fields (name, version, description, author)
-- ✅ Semantic versioning format (X.Y.Z)
-- ✅ Author structure (must be `{name, url}` object)
-- ✅ Plugin name matches submodule directory name
-- ✅ Skills paths (must start with `./`)
-- ✅ Agents paths (must start with `./` and end with `.md`)
-- ✅ Commands format and paths
-- ✅ Hooks file existence (string path or inline object)
-- ✅ File/directory existence
-
-`.claude/hooks/validators/marketplace-sync-validator.py` (fires on `marketplace.json` edits only):
-- ✅ All plugin versions match their respective plugin.json files
-- ✅ Marketplace top-level version drift detection (compares against git HEAD)
-- ⏭️ **Skips `plugin.json` edits** — the webhook chain handles plugin→marketplace sync
-
-> **Why skip plugin.json?** The webhook chain (`notify-marketplace.yml` → `auto-update-plugins.yml`) automatically syncs plugin versions to marketplace.json on push. If the sync validator also forced local marketplace.json updates on every plugin.json edit, both systems would update the same file independently, causing merge conflicts on pull. See `docs/hook-flow-*.mmd` for diagrams.
-
-**3. Self-Correcting Workflow**
-
-```
-Edit plugin.json                    Edit marketplace.json
-    ↓                                   ↓
-manifest-validator runs             sync-validator runs
-    ↓                                   ↓
-Structure invalid? → BLOCK          Versions don't match? → BLOCK
-Claude fixes → re-validates         Claude fixes → re-validates
-    ↓                                   ↓
-✅ Pass                              ✅ Pass
-    ↓
-Webhook syncs marketplace.json
-on push (~30 seconds)
-```
-
-**4. Benefits**
-
-- ❌ **No more manual** `./scripts/validate-plugin-manifests.sh`
-- ✅ **Immediate feedback** - catch issues as you work
-- ✅ **Self-correcting** - Claude fixes issues automatically
-- ✅ **Always valid** - impossible to save invalid manifests
-- ✅ **Faster development** - no manual validation step
-
-### For Developers
-
-**The hooks are transparent:**
-- They run automatically after Edit/Write
-- You see helpful error messages if validation fails
-- Claude fixes issues and validators re-run
-- Everything just works
-
-**Manual validation still available:**
-```bash
-# If you want to manually validate (not needed with hooks active)
-./scripts/validate-plugin-manifests.sh
-
-# Or test validators directly
-echo '{"tool_name":"Edit","tool_input":{"file_path":"sdk-bridge/.claude-plugin/plugin.json"}}' | \
-    .claude/hooks/validators/plugin-manifest-validator.py
-```
-
-**Validator logs for debugging:**
-```bash
-tail -f .claude/hooks/validators/*.log
-```
+**Validators:** `.claude/hooks/validators/plugin-manifest-validator.py`, `marketplace-sync-validator.py`
 
 ---
 
 ## Plugin Structure
 
-Each plugin is a **git submodule** pointing to its own repository:
-
 ```
 flight505-marketplace/
-├── sdk-bridge/                    → github.com/flight505/sdk-bridge
-├── taskplex/                      → github.com/flight505/taskplex
-├── storybook-assistant/           → github.com/flight505/storybook-assistant
-├── claude-project-planner/        → github.com/flight505/claude-project-planner
-├── nano-banana/                   → github.com/flight505/nano-banana
-└── ai-frontier/            → github.com/flight505/ai-frontier
+├── sdk-bridge/              → github.com/flight505/sdk-bridge
+├── taskplex/                → github.com/flight505/taskplex
+├── storybook-assistant/     → github.com/flight505/storybook-assistant
+├── claude-project-planner/  → github.com/flight505/claude-project-planner
+├── nano-banana/             → github.com/flight505/nano-banana
+└── ai-frontier/             → github.com/flight505/ai-frontier
 ```
 
-**Critical files in each plugin:**
-- `CLAUDE.md` - Developer instructions
-- `README.md` - Public documentation
-- `CONTEXT_<plugin-name>.md` - Architecture and consolidated context
-- `.claude-plugin/plugin.json` - Plugin manifest
+**Each plugin has:** `CLAUDE.md`, `README.md`, `.claude-plugin/plugin.json`
 
-### Plugin Component Types
+### Component Types
 
-Plugins can contain any combination of these components:
+| Component | Location | Notes |
+|-----------|----------|-------|
+| Skills | `skills/` or `commands/` | `SKILL.md` files |
+| Agents | `agents/` | `.md` with YAML frontmatter |
+| Hooks | `hooks/hooks.json` | Auto-discovered — **never** add `"hooks"` to plugin.json |
+| MCP servers | `.mcp.json` | External service integrations |
 
-| Component | Location | Description |
-|-----------|----------|-------------|
-| **Skills** | `skills/` or `commands/` | `/name` shortcuts via `SKILL.md` files |
-| **Agents** | `agents/` | Specialized subagents (`.md` with frontmatter) |
-| **Hooks** | `hooks/hooks.json` | Event handlers (auto-discovered — **never** add `"hooks"` to plugin.json) |
-| **MCP servers** | `.mcp.json` | External service integrations |
-| **LSP servers** | `.lsp.json` | Code intelligence (go-to-def, find references, diagnostics) |
-| **Output styles** | `output-styles/` | Custom response formatting |
+### Hook Events
 
-### Hook Events Reference
+`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `UserPromptSubmit`, `Notification`, `Stop`, `SubagentStart`, `SubagentStop`, `SessionStart`, `SessionEnd`, `TeammateIdle`, `TaskCompleted`, `PreCompact`
 
-Available hook events for plugin `hooks/hooks.json`:
-
-| Event | When it fires |
-|-------|---------------|
-| `PreToolUse` | Before Claude uses any tool |
-| `PostToolUse` | After Claude successfully uses a tool |
-| `PostToolUseFailure` | After a tool execution fails |
-| `PermissionRequest` | When a permission dialog is shown |
-| `UserPromptSubmit` | When user submits a prompt |
-| `Notification` | When Claude Code sends notifications |
-| `Stop` | When Claude attempts to stop |
-| `SubagentStart` | When a subagent is started |
-| `SubagentStop` | When a subagent attempts to stop |
-| `SessionStart` | At the beginning of sessions |
-| `SessionEnd` | At the end of sessions |
-| `TeammateIdle` | When an agent team teammate is about to go idle |
-| `TaskCompleted` | When a task is being marked as completed |
-| `PreCompact` | Before conversation history is compacted |
-
-**Hook types:** `command` (shell script), `prompt` (LLM-evaluated), `agent` (agentic verifier with tools)
+**Hook types:** `command` (shell), `prompt` (LLM-evaluated), `agent` (agentic verifier)
 
 ---
 
-## marketplace.json Management
+## marketplace.json
 
 **Location:** `.claude-plugin/marketplace.json`
+**Schema:** https://code.claude.com/docs/en/plugin-marketplaces.md
 
-**Official Schema:** https://code.claude.com/docs/en/plugin-marketplaces.md
-
-### Critical Rules (DOS & DON'TS)
-
-✅ **DO:**
-- Keep `source` paths relative (e.g., `"./sdk-bridge"`)
-- Match plugin `name` to submodule directory name
-- Keep `description` concise (1-2 sentences)
-- Use semantic versioning (MAJOR.MINOR.PATCH)
-- Let the webhook chain handle version sync from plugin→marketplace automatically
-- Only edit marketplace.json directly when adding/removing plugins or fixing sync issues
-
-❌ **DON'T:**
-- Manually update marketplace.json after plugin version bumps (webhook handles this)
-- Use absolute paths in `source` field
-- Change plugin names without updating submodule directory
-- Skip version bumps (breaks auto-update detection)
-- Use underscores in plugin names (use hyphens)
-
-### Example Entry
-
-```json
-{
-  "name": "sdk-bridge",
-  "description": "SOTA autonomous development with generative UI...",
-  "version": "2.0.0",
-  "author": {
-    "name": "Jesper Vang",
-    "url": "https://github.com/flight505"
-  },
-  "source": "./sdk-bridge",
-  "category": "workflows",
-  "keywords": ["autonomous", "agent-sdk", "long-running"]
-}
-```
+**Rules:**
+- `source` paths must be relative (`"./sdk-bridge"`)
+- Plugin `name` must match submodule directory name
+- Semantic versioning (X.Y.Z), hyphens not underscores
+- Don't manually update after version bumps — webhook handles it
+- Only edit directly when adding/removing plugins
 
 ---
 
-## Webhook System (Real-Time Updates)
+## Webhook System
 
-**Status:** ✅ Operational (19-30 second latency)
+Version bump in plugin → push to main → `notify-marketplace.yml` → `repository_dispatch` → `auto-update-plugins.yml` → marketplace.json + submodule updated (~30 seconds).
 
-### Architecture
+**Each plugin repo needs:** `.github/workflows/notify-marketplace.yml` + `MARKETPLACE_UPDATE_TOKEN` secret.
 
-```
-Plugin Repo (version bump)
-    ↓ push to main
-notify-marketplace.yml workflow
-    ↓ repository_dispatch event
-flight505-marketplace
-    ↓ auto-update-plugins.yml workflow
-Updates marketplace.json + submodule pointer
-    ↓ ~30 seconds total
-Users get updated plugin
-```
-
-### How It Works
-
-1. **Plugin repo** - Developer bumps version in `.claude-plugin/plugin.json`
-2. **Webhook trigger** - `.github/workflows/notify-marketplace.yml` detects version change
-3. **Marketplace update** - Sends `repository_dispatch` to marketplace repo
-4. **Auto-update** - `.github/workflows/auto-update-plugins.yml` updates submodule and marketplace.json
-5. **Commit & push** - Changes committed with "chore: auto-update <plugin> to vX.Y.Z"
-
-### Critical Requirements
-
-**Each plugin repo needs:**
-- `.github/workflows/notify-marketplace.yml` workflow (includes retry with exponential backoff)
-- `MARKETPLACE_UPDATE_TOKEN` secret (GitHub PAT with `repo` scope)
-
-**Marketplace repo needs:**
-- Webhook-ready workflow with `repository_dispatch` trigger
-- Automated submodule update logic
-
-### Trigger Conditions
-
-**Webhooks ONLY trigger on:**
-- Version changes in `.claude-plugin/plugin.json`
-- Push to main branch
-
-**Webhooks DO NOT trigger on:**
-- Documentation changes (README, CLAUDE.md, etc.)
-- Code changes without version bump
-- Other branches
-
-**Rationale:** Reduces noise, follows semantic versioning, indicates intentional releases
-
-### Testing Webhooks
-
-```bash
-# 1. Bump version in plugin
-cd nano-banana
-jq '.version = "1.0.6"' .claude-plugin/plugin.json > tmp && mv tmp .claude-plugin/plugin.json
-git add .claude-plugin/plugin.json
-git commit -m "chore: bump version to 1.0.6"
-git push origin main
-
-# 2. Monitor webhook
-gh run list --repo flight505/nano-banana --workflow notify-marketplace.yml --limit 1
-gh run list --repo flight505/flight505-marketplace --workflow auto-update-plugins.yml --limit 1
-
-# 3. Verify update (~30 seconds)
-cd ../
-git pull origin main
-cat .claude-plugin/marketplace.json | jq '.plugins[] | select(.name=="nano-banana")'
-```
+**Only triggers on:** version changes in plugin.json pushed to main.
 
 ---
 
-## Plugin Tracking
-
-### Current Plugins (6)
-
-| Plugin | Version | Repo | Status |
-|--------|---------|------|--------|
-| **sdk-bridge** | 4.8.1 | [github.com/flight505/sdk-bridge](https://github.com/flight505/sdk-bridge) | ✅ Active |
-| **taskplex** | 4.1.0 | [github.com/flight505/taskplex](https://github.com/flight505/taskplex) | ✅ Active |
-| **storybook-assistant** | 2.2.1 | [github.com/flight505/storybook-assistant](https://github.com/flight505/storybook-assistant) | ✅ Active |
-| **claude-project-planner** | 1.4.6 | [github.com/flight505/claude-project-planner](https://github.com/flight505/claude-project-planner) | ✅ Active |
-| **nano-banana** | 1.3.2 | [github.com/flight505/nano-banana](https://github.com/flight505/nano-banana) | ✅ Active |
-| **ai-frontier** | 1.1.0 | [github.com/flight505/ai-frontier](https://github.com/flight505/ai-frontier) | ✅ Active |
-
-### Version Update Checklist
-
-**Recommended approach:** Use `./scripts/bump-plugin-version.sh` (see Maintenance Scripts section)
-
-**Manual approach** (if needed):
-
-1. ✅ Plugin repo: Update `.claude-plugin/plugin.json`
-2. ✅ Plugin repo: Commit and push to main
-3. ✅ Webhook: Auto-triggers (verify in Actions tab)
-4. ✅ Marketplace: Auto-updates within 30 seconds
-5. ✅ Verify: `git pull` and check marketplace.json
-6. ✅ Run `./scripts/validate-plugin-manifests.sh` to verify sync
-
-### Manual Update (if webhook fails)
-
-```bash
-# Update submodule
-git submodule update --remote --merge <plugin-name>
-
-# Update marketplace.json
-cd .claude-plugin
-jq '.plugins |= map(if .name == "<plugin-name>" then .version = "<new-version>" else . end)' marketplace.json > tmp && mv tmp marketplace.json
-jq '.version = "<new-marketplace-version>"' marketplace.json > tmp && mv tmp marketplace.json
-
-# Commit
-cd ..
-git add <plugin-name> .claude-plugin/marketplace.json
-git commit -m "chore: update <plugin-name> to v<new-version>"
-git push origin main
-```
-
----
-
-## Submodule Management
-
-### Clone Marketplace (First Time)
-
-```bash
-git clone --recurse-submodules https://github.com/flight505/flight505-marketplace.git
-cd flight505-marketplace
-```
-
-### Update All Submodules
-
-```bash
-git submodule update --remote --merge
-git add .
-git commit -m "chore: update all submodules"
-git push origin main
-```
-
-### Work on Plugin
-
-```bash
-cd sdk-bridge
-# Make changes
-git add .
-git commit -m "feat: add new feature"
-git push origin main
-
-# Return to marketplace and update pointer
-cd ..
-git add sdk-bridge
-git commit -m "chore: update sdk-bridge submodule"
-git push origin main
-```
-
-### Add New Plugin
-
-```bash
-# 1. Add as submodule
-git submodule add https://github.com/flight505/<new-plugin>.git <new-plugin>
-
-# 2. Update marketplace.json (single source of truth — all scripts auto-detect)
-cd .claude-plugin
-jq '.plugins += [{"name": "<new-plugin>", "version": "1.0.0", ...}]' marketplace.json > tmp && mv tmp marketplace.json
-jq '.version = "<bumped-version>"' marketplace.json > tmp && mv tmp marketplace.json
-
-# 3. Deploy webhook workflow
-cp ../templates/notify-marketplace.yml ../<new-plugin>/.github/workflows/
-
-# 4. Add MARKETPLACE_UPDATE_TOKEN secret to new plugin repo
-gh secret set MARKETPLACE_UPDATE_TOKEN --repo flight505/<new-plugin> --body "$GITHUB_TOKEN"
-
-# 5. Commit all changes
-git add .
-git commit -m "feat: add <new-plugin> to marketplace"
-git push origin main
-```
-
-> **Note:** No need to update scripts or workflows — they all derive the plugin list from `marketplace.json` via `common.sh`.
-
----
-
-## Single Source of Truth: `scripts/common.sh`
-
-All scripts and automation derive plugin lists dynamically from `marketplace.json` via shared functions in `scripts/common.sh`:
-
-```bash
-source "$(dirname "$0")/common.sh"
-
-get_plugins          # newline-separated list: sdk-bridge\nstorybook-assistant\n...
-get_plugins_string   # space-separated: "sdk-bridge storybook-assistant ..."
-get_plugins_regex    # pipe-separated: "sdk-bridge|storybook-assistant|..."
-is_valid_plugin "x"  # exit 0 if valid, 1 if not
-```
-
-**When adding/removing a plugin:** Only update `marketplace.json` — all scripts, hooks, validators, and CI workflows pick up the change automatically.
-
-Files that use common.sh or derive from marketplace.json:
-- `scripts/validate-plugin-manifests.sh`, `bump-plugin-version.sh`, `setup-webhooks.sh`, `plugin-doctor.sh`, `dev-test.sh`, `test-marketplace-integration.sh`
-- `.claude/hooks/PostToolUse.sh` (dynamic plugin regex)
-- `.claude/hooks/validators/plugin-manifest-validator.py` (dynamic PLUGIN_DIRS)
-- `.github/workflows/auto-update-plugins.yml` (jq query)
-
-### Hook Trigger Flow Diagrams
-
-Visual documentation of the hook execution order and validation flow:
-- `docs/hook-flow-current.mmd` — the old problematic flow (double-update conflict)
-- `docs/hook-flow-proposed.mmd` — the current fixed flow (webhook handles sync)
-- `docs/hook-trigger-matrix.mmd` — which hook fires on which file type
-
----
-
-## Maintenance Scripts
-
-**Location:** `scripts/` directory
-
-The marketplace includes automated scripts for common maintenance tasks. **Always use these scripts instead of manual operations** to ensure consistency and avoid errors.
-
-### validate-plugin-manifests.sh
-
-Validates all plugin.json manifests for correct format and synchronization with marketplace.json.
-
-**Usage:**
-```bash
-# Validate all plugins
-./scripts/validate-plugin-manifests.sh
-
-# Auto-fix common issues (paths, formatting)
-./scripts/validate-plugin-manifests.sh --fix
-```
-
-**What it validates:**
-- JSON syntax correctness
-- Required fields (name, version, description, author)
-- Semantic versioning format (X.Y.Z)
-- Skills paths must be `./skills/name` with SKILL.md present
-- Agents paths must be `./agents/name.md`
-- Commands paths and format
-- Version synchronization with marketplace.json
-- File existence for all referenced paths
-- **hooks.json**: valid event names, script paths exist and are executable, SubagentStart/Stop matchers cross-ref against agent files (pipe-separated matchers supported)
-- **Agent frontmatter**: required fields (name, description, model, permissionMode), model/permissionMode enum validation, skills cross-ref against skill directories
-- **Skill frontmatter**: required name and description fields
-- **Shell scripts**: `bash -n` syntax check on all `.sh` files in `scripts/` and `hooks/`
-
-**When to use:**
-- Before committing any manifest changes
-- After updating plugin versions
-- In CI/CD pipelines (auto-runs on push)
-- When debugging version sync issues
-
-**Example output:**
-```bash
-✓ sdk-bridge validation passed
-✗ storybook-assistant: Skill 'my-skill' must be a relative path starting with './'
-⚠ nano-banana: Missing SKILL.md in ./skills/example
-```
-
----
-
-### bump-plugin-version.sh
-
-Automates the complete version bump workflow across plugin and marketplace repos.
-
-**Usage:**
-```bash
-./scripts/bump-plugin-version.sh <plugin-name> <new-version> [--dry-run]
-```
-
-**Examples:**
-```bash
-# Bump storybook-assistant to version 2.2.0
-./scripts/bump-plugin-version.sh storybook-assistant 2.2.0
-
-# Test what would happen without making changes
-./scripts/bump-plugin-version.sh sdk-bridge 3.1.0 --dry-run
-```
-
-**What it does (fully automated):**
-1. Updates `.claude-plugin/plugin.json` version in plugin submodule
-2. Commits version change in plugin repo
-3. Updates corresponding entry in `marketplace.json`
-4. Bumps marketplace version (patch increment)
-5. Commits marketplace changes
-6. Pushes to both plugin and marketplace repos
-7. Creates and pushes git tag (e.g., `v2.2.0`)
-8. Triggers webhook notification (~30 second delay)
-
-**Supported plugins:** All plugins listed in `marketplace.json` (auto-detected via `common.sh`).
-
-**Why use this:**
-- Ensures version synchronization between plugin.json and marketplace.json
-- Prevents manual errors in multi-step version bump process
-- Automatically creates git tags for releases
-- Triggers webhook system for real-time updates
-
----
-
-### setup-webhooks.sh
-
-Deploys webhook notification workflows to all plugin repositories.
-
-**Usage:**
-```bash
-./scripts/setup-webhooks.sh
-```
-
-**What it does:**
-- Copies `templates/notify-marketplace.yml` to each plugin's `.github/workflows/`
-- Creates `.github/workflows` directories if needed
-- Skips plugins that already have the workflow
-- Reports success/skip/error status for each plugin
-
-**When to use:**
-- Setting up a new plugin in the marketplace
-- Updating webhook workflow across all plugins
-- Troubleshooting webhook issues
-
-**Next steps after running:**
-1. Review changes in each plugin directory
-2. Commit and push to each plugin repo
-3. Verify `MARKETPLACE_UPDATE_TOKEN` secret exists in each repo
-4. Test with a version bump
-
----
-
-### plugin-doctor.sh
-
-Comprehensive diagnostic tool — native CLI validation, cache drift detection, and offline sanity checks.
-
-**Usage:**
-```bash
-./scripts/plugin-doctor.sh
-```
-
-**Three checks:**
-1. `claude plugin validate` per plugin (source-level, no API key)
-2. Cache drift detection — compares source against installed cache using `installed_plugins.json` and git SHAs
-3. Offline sanity — executable hooks, valid event names, no duplicate hooks field
-
-**Note:** Does NOT call `claude plugin list` (hangs inside a running session). Safe to run anytime.
-
----
-
-### dev-test.sh
-
-Quick development testing for individual plugins.
-
-**Usage:**
-```bash
-./scripts/dev-test.sh <plugin-name>
-# Example: ./scripts/dev-test.sh sdk-bridge
-```
-
-Runs plugin-specific validation, checks file structure, and verifies manifest integrity for a single plugin.
-
----
-
-### test-marketplace-integration.sh
-
-Multi-plugin integration testing — tests plugins in isolation and together to verify no conflicts.
-
-**Usage:**
-```bash
-./scripts/test-marketplace-integration.sh
-```
-
----
-
-### Script Workflow Examples
-
-**Before any commit:**
-```bash
-# Always validate before committing
-./scripts/validate-plugin-manifests.sh
-
-# Fix issues automatically
-./scripts/validate-plugin-manifests.sh --fix
-```
-
-**Releasing a new plugin version:**
-```bash
-# 1. Use bump script (handles everything)
-./scripts/bump-plugin-version.sh storybook-assistant 2.2.0
-
-# 2. Validate everything worked
-./scripts/validate-plugin-manifests.sh
-
-# 3. Wait for webhook (~30 seconds)
-# 4. Verify in GitHub Actions
-gh run list --repo flight505/flight505-marketplace --workflow auto-update-plugins.yml --limit 1
-```
-
-**Setting up webhooks for new plugin:**
-```bash
-# 1. Run setup script
-./scripts/setup-webhooks.sh
-
-# 2. Commit webhook to plugin repo
-cd <plugin-name>
-git add .github/workflows/notify-marketplace.yml
-git commit -m "feat: add marketplace webhook notification"
-git push origin main
-
-# 3. Add secret to plugin repo
-gh secret set MARKETPLACE_UPDATE_TOKEN --repo flight505/<plugin-name>
-
-# 4. Test with version bump
-cd ..
-./scripts/bump-plugin-version.sh <plugin-name> 1.0.1
-```
-
----
-
-### Requirements
-
-All scripts require:
-- **jq** - JSON processor
-  - macOS: `brew install jq`
-  - Ubuntu: `apt-get install jq`
-- **git** - Already required for marketplace
-- **bash** - Already available on all systems
+## Scripts
+
+All scripts derive plugin lists from `marketplace.json` via `scripts/common.sh`. Adding/removing a plugin only requires updating `marketplace.json`.
+
+| Script | Purpose |
+|--------|---------|
+| `./scripts/bump-plugin-version.sh <plugin> <version>` | Full version bump workflow (plugin + marketplace + tag + push) |
+| `./scripts/validate-plugin-manifests.sh` | Validate all manifests, hooks, frontmatter, cross-refs |
+| `./scripts/validate-plugin-manifests.sh --fix` | Auto-fix common issues |
+| `./scripts/plugin-doctor.sh` | CLI validation + cache drift + offline sanity |
+| `./scripts/dev-test.sh <plugin>` | Single-plugin validation |
+| `./scripts/test-marketplace-integration.sh` | Multi-plugin conflict testing |
+| `./scripts/setup-webhooks.sh` | Deploy notify-marketplace.yml to all plugins |
+
+**Requirements:** `jq`, `git`, `bash`
 
 ---
 
 ## Common Operations
 
-### Check Submodule Status
-
 ```bash
-git submodule status
-# Should show commit hash + name + (tag/version)
-```
+# Version bump (handles everything)
+./scripts/bump-plugin-version.sh storybook-assistant 2.2.0
 
-### Sync After Remote Changes
+# Validate before commit
+./scripts/validate-plugin-manifests.sh
 
-```bash
-git pull origin main
-git submodule update --init --recursive
-```
+# Sync submodules
+git submodule update --remote --merge
 
-### Fix Detached HEAD in Submodule
+# Fix detached HEAD
+cd <plugin> && git checkout main && git pull && cd .. && git add <plugin>
 
-```bash
-cd <plugin>
-git checkout main
-git pull origin main
-cd ..
-git add <plugin>
-git commit -m "chore: update <plugin> submodule pointer"
+# Add new plugin
+git submodule add https://github.com/flight505/<plugin>.git <plugin>
+# Then add entry to .claude-plugin/marketplace.json
+# Then: ./scripts/setup-webhooks.sh
+# Then: gh secret set MARKETPLACE_UPDATE_TOKEN --repo flight505/<plugin>
+
+# Manual update (if webhook fails)
+git submodule update --remote --merge <plugin>
+# Update version in .claude-plugin/marketplace.json
 ```
 
 ---
 
-## Documentation Standards
+## Gotchas
 
-### Root Marketplace Files
-
-```
-CLAUDE.md          - This file (critical instructions)
-README.md          - Public-facing documentation (installation, features)
-```
-
-### Each Plugin Files
-
-```
-CLAUDE.md                     - Developer instructions
-README.md                     - Public documentation
-CONTEXT_<plugin-name>.md      - Consolidated architecture/context
-.claude-plugin/plugin.json    - Plugin manifest
-```
-
-**Naming Convention:** `CONTEXT_<plugin-name>.md` for ground truth files
-- `CONTEXT_sdk-bridge.md`
-- `CONTEXT_storybook-assistant.md`
-- `CONTEXT_claude-project-planner.md`
-- `CONTEXT_nano-banana.md`
-
-**Rationale:** Distinguishable when viewing from marketplace root, clear purpose
+- `hooks.json` is auto-discovered — adding `"hooks"` field to plugin.json causes duplicate hooks error
+- `claude plugin list` hangs inside running sessions — use `plugin-doctor.sh` instead
+- Plugins update on restart only, not mid-session
+- Skills in plugins don't hot-reload (standalone symlinked skills do)
+- `PermissionRequest` hooks don't fire in `-p` (headless) mode
 
 ---
 
 ## Troubleshooting
 
-### Webhook Not Triggering
+**Webhook not triggering:**
+1. Check `notify-marketplace.yml` exists in plugin repo
+2. Verify `MARKETPLACE_UPDATE_TOKEN` secret is set
+3. Confirm version actually changed (`git show HEAD^:.claude-plugin/plugin.json`)
+4. Check workflow logs in Actions tab
 
-1. Check `.github/workflows/notify-marketplace.yml` exists in plugin repo
-2. Verify `MARKETPLACE_UPDATE_TOKEN` secret is set in plugin repo settings
-3. Confirm version actually changed in plugin.json (compare with `git show HEAD^:.claude-plugin/plugin.json`)
-4. Check workflow run logs in plugin repo Actions tab
+**Version mismatch:** `cat .claude-plugin/marketplace.json | jq '.plugins[] | {name, version}'`
 
-### Marketplace Version Mismatch
-
-```bash
-# Check current marketplace version
-cat .claude-plugin/marketplace.json | jq -r '.version'
-
-# Check plugin versions
-cat .claude-plugin/marketplace.json | jq '.plugins[] | {name, version}'
-
-# Bump marketplace version
-cd .claude-plugin
-jq '.version = "1.2.8"' marketplace.json > tmp && mv tmp marketplace.json
-cd ..
-git add .claude-plugin/marketplace.json
-git commit -m "chore: bump marketplace version to 1.2.8"
-git push origin main
-```
-
-### Submodule Out of Sync
-
-```bash
-# Reset to latest remote
-cd <plugin>
-git fetch origin
-git reset --hard origin/main
-cd ..
-git add <plugin>
-git commit -m "chore: sync <plugin> submodule"
-```
+**Submodule out of sync:** `cd <plugin> && git fetch && git reset --hard origin/main && cd .. && git add <plugin>`
 
 ---
 
 ## References
 
-- **Create Plugins:** https://code.claude.com/docs/en/plugins.md
-- **Discover & Install Plugins:** https://code.claude.com/docs/en/discover-plugins.md
-- **Plugins Reference (schemas):** https://code.claude.com/docs/en/plugins-reference.md
-- **Plugin Marketplaces:** https://code.claude.com/docs/en/plugin-marketplaces.md
-- **Hooks Guide:** https://code.claude.com/docs/en/hooks-guide.md
-- **Hooks Reference:** https://code.claude.com/docs/en/hooks.md
-- **Git Submodules Reference:** https://git-scm.com/book/en/v2/Git-Tools-Submodules
-- **GitHub Actions - repository_dispatch:** https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#repository_dispatch
+- [Plugins](https://code.claude.com/docs/en/plugins.md) | [Marketplace](https://code.claude.com/docs/en/plugin-marketplaces.md) | [Hooks](https://code.claude.com/docs/en/hooks.md) | [Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 
 ---
 
 **Maintained by:** Jesper Vang (@flight505)
-**Last Updated:** 2026-02-27

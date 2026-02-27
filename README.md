@@ -1,4 +1,4 @@
-![Flight505 Marketplace](./marketplace-hero.jpg)
+![Flight505 Marketplace](./assets/marketplace-hero.jpg)
 
 # flight505 Plugin Marketplace
 
