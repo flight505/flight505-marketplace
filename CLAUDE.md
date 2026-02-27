@@ -19,14 +19,14 @@ This marketplace uses **intelligent PostToolUse hooks** that automatically valid
 ### How It Works
 
 **1. Real-Time Validation**
-- Edit any `plugin.json` → validator runs automatically
+- Edit any `plugin.json` → manifest structure validator runs automatically
 - Edit `marketplace.json` → sync validator runs automatically
 - Issues found → Claude sees errors and **fixes them immediately**
 - No manual intervention needed
 
 **2. What Gets Validated**
 
-`.claude/hooks/validators/plugin-manifest-validator.py`:
+`.claude/hooks/validators/plugin-manifest-validator.py` (fires on `plugin.json` edits):
 - ✅ JSON syntax correctness
 - ✅ Required fields (name, version, description, author)
 - ✅ Semantic versioning format (X.Y.Z)
@@ -38,26 +38,27 @@ This marketplace uses **intelligent PostToolUse hooks** that automatically valid
 - ✅ Hooks file existence (string path or inline object)
 - ✅ File/directory existence
 
-`.claude/hooks/validators/marketplace-sync-validator.py`:
-- ✅ Plugin exists in marketplace.json
-- ✅ Version synchronization between plugin.json and marketplace.json
+`.claude/hooks/validators/marketplace-sync-validator.py` (fires on `marketplace.json` edits only):
+- ✅ All plugin versions match their respective plugin.json files
 - ✅ Marketplace top-level version drift detection (compares against git HEAD)
-- ✅ Prevents version drift
+- ⏭️ **Skips `plugin.json` edits** — the webhook chain handles plugin→marketplace sync
+
+> **Why skip plugin.json?** The webhook chain (`notify-marketplace.yml` → `auto-update-plugins.yml`) automatically syncs plugin versions to marketplace.json on push. If the sync validator also forced local marketplace.json updates on every plugin.json edit, both systems would update the same file independently, causing merge conflicts on pull. See `docs/hook-flow-*.mmd` for diagrams.
 
 **3. Self-Correcting Workflow**
 
 ```
-Edit plugin.json
+Edit plugin.json                    Edit marketplace.json
+    ↓                                   ↓
+manifest-validator runs             sync-validator runs
+    ↓                                   ↓
+Structure invalid? → BLOCK          Versions don't match? → BLOCK
+Claude fixes → re-validates         Claude fixes → re-validates
+    ↓                                   ↓
+✅ Pass                              ✅ Pass
     ↓
-Validator runs automatically (PostToolUse hook)
-    ↓
-Error found? → Claude sees error message
-    ↓
-Claude fixes the issue
-    ↓
-Validator runs again
-    ↓
-✅ Pass → Changes saved
+Webhook syncs marketplace.json
+on push (~30 seconds)
 ```
 
 **4. Benefits**
@@ -160,16 +161,16 @@ Available hook events for plugin `hooks/hooks.json`:
 ### Critical Rules (DOS & DON'TS)
 
 ✅ **DO:**
-- Bump marketplace `version` when plugin versions change
 - Keep `source` paths relative (e.g., `"./sdk-bridge"`)
 - Match plugin `name` to submodule directory name
-- Update `version` field to match plugin's plugin.json version
 - Keep `description` concise (1-2 sentences)
 - Use semantic versioning (MAJOR.MINOR.PATCH)
+- Let the webhook chain handle version sync from plugin→marketplace automatically
+- Only edit marketplace.json directly when adding/removing plugins or fixing sync issues
 
 ❌ **DON'T:**
+- Manually update marketplace.json after plugin version bumps (webhook handles this)
 - Use absolute paths in `source` field
-- Forget to update marketplace version after plugin updates
 - Change plugin names without updating submodule directory
 - Skip version bumps (breaks auto-update detection)
 - Use underscores in plugin names (use hyphens)
@@ -391,6 +392,13 @@ Files that use common.sh or derive from marketplace.json:
 - `.claude/hooks/PostToolUse.sh` (dynamic plugin regex)
 - `.claude/hooks/validators/plugin-manifest-validator.py` (dynamic PLUGIN_DIRS)
 - `.github/workflows/auto-update-plugins.yml` (jq query)
+
+### Hook Trigger Flow Diagrams
+
+Visual documentation of the hook execution order and validation flow:
+- `docs/hook-flow-current.mmd` — the old problematic flow (double-update conflict)
+- `docs/hook-flow-proposed.mmd` — the current fixed flow (webhook handles sync)
+- `docs/hook-trigger-matrix.mmd` — which hook fires on which file type
 
 ---
 
@@ -719,4 +727,4 @@ git commit -m "chore: sync <plugin> submodule"
 ---
 
 **Maintained by:** Jesper Vang (@flight505)
-**Last Updated:** 2026-02-25
+**Last Updated:** 2026-02-27
