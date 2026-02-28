@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, and AI Frontier",
   "owner": {
     "name": "Jesper Vang",
@@ -88,7 +88,7 @@
     {
       "name": "taskplex",
       "description": "Always-on autonomous development companion: brainstorming, lean skills, difficulty-aware routing, reward hacking prevention, Agent Teams, TDD enforcement, verification gates, two-stage code review, SQLite knowledge persistence with experience-based learning, and error recovery.",
-      "version": "4.1.0",
+      "version": "5.0.0",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
