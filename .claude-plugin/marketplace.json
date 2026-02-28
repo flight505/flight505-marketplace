@@ -87,7 +87,7 @@
     },
     {
       "name": "taskplex",
-      "description": "Always-on autonomous development companion: brainstorming, lean skills, difficulty-aware routing, reward hacking prevention, Agent Teams, TDD enforcement, verification gates, two-stage code review, SQLite knowledge persistence with experience-based learning, and error recovery.",
+      "description": "Always-on autonomous development companion: 17 discipline skills, 5 subagents, brainstorming, TDD enforcement, verification gates, two-stage code review, and error recovery — powered by native Claude Code features.",
       "version": "5.0.0",
       "author": {
         "name": "Jesper Vang",

@@ -259,20 +259,6 @@ while IFS= read -r cmd_path; do
   fi
 done < <(jq -r '.. | objects | .command // empty' "$hooks_file" 2>/dev/null)
 
-# SubagentStart matchers reference real agents
-while IFS= read -r matcher; do
-  [ -z "$matcher" ] || [ "$matcher" = "null" ] && continue
-  # Split pipe-separated matchers
-  IFS='|' read -ra parts <<< "$matcher"
-  for part in "${parts[@]}"; do
-    if [ -f "$PLUGIN_DIR/agents/${part}.md" ]; then
-      pass "SubagentStart matcher '$part' → agents/${part}.md exists"
-    else
-      warn "SubagentStart matcher '$part' has no matching agent file"
-    fi
-  done
-done < <(jq -r '.hooks.SubagentStart[]? | .matcher // empty' "$hooks_file" 2>/dev/null)
-
 # SubagentStop matchers reference real agents
 while IFS= read -r matcher; do
   [ -z "$matcher" ] || [ "$matcher" = "null" ] && continue
@@ -331,58 +317,7 @@ mkdir -p "$TEST_DIR"
 cleanup_test() { rm -rf "$TEST_DIR"; }
 trap cleanup_test EXIT
 
-# 4.1 stop-guard.sh
-HOOK="$PLUGIN_DIR/hooks/stop-guard.sh"
-if [ -f "$HOOK" ]; then
-  cd "$TEST_DIR" && rm -f prd.json
-
-  run_hook "stop-guard: no prd.json → allows stop" "$HOOK" \
-    '{"session_id":"test","stop_hook_active":false}' 0 "$TEST_DIR"
-
-  # Pending stories → blocks (exit 2)
-  cat > "$TEST_DIR/prd.json" <<'PRDEOF'
-{"project":"test","userStories":[{"id":"US-001","title":"Test","passes":false}]}
-PRDEOF
-  run_hook "stop-guard: pending stories → blocks (exit 2)" "$HOOK" \
-    '{"session_id":"test","stop_hook_active":false}' 2 "$TEST_DIR"
-
-  # stop_hook_active=true → allows even with pending (anti-loop)
-  run_hook "stop-guard: stop_hook_active=true → allows (anti-loop)" "$HOOK" \
-    '{"session_id":"test","stop_hook_active":true}' 0 "$TEST_DIR"
-
-  # All passing → allows stop
-  cat > "$TEST_DIR/prd.json" <<'PRDEOF'
-{"project":"test","userStories":[{"id":"US-001","title":"Test","passes":true}]}
-PRDEOF
-  run_hook "stop-guard: all passing → allows stop" "$HOOK" \
-    '{"session_id":"test","stop_hook_active":false}' 0 "$TEST_DIR"
-
-  rm -f "$TEST_DIR/prd.json"
-  cd "$SCRIPT_DIR"
-fi
-
-# 4.2 task-completed.sh
-HOOK="$PLUGIN_DIR/hooks/task-completed.sh"
-if [ -f "$HOOK" ]; then
-  cd "$TEST_DIR"
-  rm -rf "$TEST_DIR/.claude"
-
-  run_hook "task-completed: no config → allows" "$HOOK" '{}' 0 "$TEST_DIR"
-
-  # Passing test → allows
-  mkdir -p "$TEST_DIR/.claude"
-  printf '{"test_command":"exit 0"}' > "$TEST_DIR/.claude/taskplex.config.json"
-  run_hook "task-completed: passing test → allows" "$HOOK" '{}' 0 "$TEST_DIR"
-
-  # Failing test → blocks (exit 2)
-  printf '{"test_command":"exit 1"}' > "$TEST_DIR/.claude/taskplex.config.json"
-  run_hook "task-completed: failing test → blocks (exit 2)" "$HOOK" '{}' 2 "$TEST_DIR"
-
-  rm -rf "$TEST_DIR/.claude"
-  cd "$SCRIPT_DIR"
-fi
-
-# 4.3 session-context.sh
+# 4.1 session-context.sh
 HOOK="$PLUGIN_DIR/hooks/session-context.sh"
 if [ -f "$HOOK" ]; then
   cd "$TEST_DIR"
@@ -412,27 +347,7 @@ if [ -f "$HOOK" ]; then
   cd "$SCRIPT_DIR"
 fi
 
-# 4.4 inject-knowledge.sh
-HOOK="$PLUGIN_DIR/hooks/inject-knowledge.sh"
-if [ -f "$HOOK" ]; then
-  cd "$TEST_DIR" && rm -f knowledge.db
-  run_hook "inject-knowledge: no DB → exits 0" "$HOOK" \
-    '{"agent_type":"implementer","agent_id":"test-1"}' 0 "$TEST_DIR"
-
-  # With seeded DB
-  sqlite3 "$TEST_DIR/knowledge.db" "
-    CREATE TABLE IF NOT EXISTS learnings (id INTEGER PRIMARY KEY AUTOINCREMENT, story_id TEXT, run_id TEXT, content TEXT, tags TEXT, source TEXT DEFAULT 'test', confidence REAL DEFAULT 1.0, created_at INTEGER DEFAULT (strftime('%s','now')));
-    INSERT INTO learnings (story_id, run_id, content, tags) VALUES ('US-T', 'run-1', 'Test learning', '[\"test\"]');
-  " 2>/dev/null || true
-
-  run_hook "inject-knowledge: with DB → exits 0" "$HOOK" \
-    '{"agent_type":"implementer","agent_id":"test-2"}' 0 "$TEST_DIR"
-
-  rm -f "$TEST_DIR/knowledge.db"
-  cd "$SCRIPT_DIR"
-fi
-
-# 4.5 check-destructive.sh
+# 4.2 check-destructive.sh
 HOOK="$PLUGIN_DIR/scripts/check-destructive.sh"
 if [ -f "$HOOK" ]; then
   # git push --force → deny
@@ -466,6 +381,39 @@ if [ -f "$HOOK" ]; then
   if [ "$decision" != "deny" ]; then pass "check-destructive: push feature-branch → allowed"; else fail "check-destructive: push feature-branch → denied"; fi
 fi
 
+# 4.3 validate-result.sh
+HOOK="$PLUGIN_DIR/hooks/validate-result.sh"
+if [ -f "$HOOK" ]; then
+  cd "$TEST_DIR"
+  rm -rf "$TEST_DIR/.claude"
+
+  # Non-implementer → exits 0
+  run_hook "validate-result: non-implementer → allows" "$HOOK" \
+    '{"agent_type":"reviewer","stop_hook_active":false}' 0 "$TEST_DIR"
+
+  # stop_hook_active=true → exits 0 (anti-loop)
+  run_hook "validate-result: stop_hook_active=true → allows (anti-loop)" "$HOOK" \
+    '{"agent_type":"implementer","stop_hook_active":true}' 0 "$TEST_DIR"
+
+  # No config → exits 0
+  run_hook "validate-result: no config → allows" "$HOOK" \
+    '{"agent_type":"implementer","stop_hook_active":false}' 0 "$TEST_DIR"
+
+  # Passing test → allows
+  mkdir -p "$TEST_DIR/.claude"
+  printf '{"test_command":"exit 0"}' > "$TEST_DIR/.claude/taskplex.config.json"
+  run_hook "validate-result: passing test → allows" "$HOOK" \
+    '{"agent_type":"implementer","stop_hook_active":false}' 0 "$TEST_DIR"
+
+  # Failing test → blocks (exit 2)
+  printf '{"test_command":"exit 1"}' > "$TEST_DIR/.claude/taskplex.config.json"
+  run_hook "validate-result: failing test → blocks (exit 2)" "$HOOK" \
+    '{"agent_type":"implementer","stop_hook_active":false}' 2 "$TEST_DIR"
+
+  rm -rf "$TEST_DIR/.claude"
+  cd "$SCRIPT_DIR"
+fi
+
 fi
 
 # ─── SECTION 5: Script Unit Tests ───────────────────────────────────
@@ -483,134 +431,14 @@ for script in "$PLUGIN_DIR"/scripts/*.sh "$PLUGIN_DIR"/hooks/*.sh; do
   fi
 done
 
-# 5.2 knowledge-db.sh — source and test key functions
-source "$PLUGIN_DIR/scripts/knowledge-db.sh"
-TEST_DB="/tmp/taskplex-kdb-test-$$.db"
-init_knowledge_db "$TEST_DB"
-
-TABLE_COUNT=$(sqlite3 "$TEST_DB" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
-if [ "$TABLE_COUNT" -eq 6 ]; then pass "knowledge-db: creates 6 tables"; else fail "knowledge-db: expected 6 tables, got $TABLE_COUNT"; fi
-
-insert_learning "$TEST_DB" "US-T" "run-t" "Test learning" '[]'
-LEARN_COUNT=$(sqlite3 "$TEST_DB" "SELECT COUNT(*) FROM learnings;")
-if [ "$LEARN_COUNT" -eq 1 ]; then pass "knowledge-db: insert_learning works"; else fail "knowledge-db: insert_learning failed"; fi
-
-insert_error "$TEST_DB" "US-T" "run-t" "test_failure" "Test error" 1
-ERR_COUNT=$(sqlite3 "$TEST_DB" "SELECT COUNT(*) FROM error_history;")
-if [ "$ERR_COUNT" -eq 1 ]; then pass "knowledge-db: insert_error works"; else fail "knowledge-db: insert_error failed"; fi
-
-resolve_errors "$TEST_DB" "US-T"
-RESOLVED=$(sqlite3 "$TEST_DB" "SELECT COUNT(*) FROM error_history WHERE resolved=1;")
-if [ "$RESOLVED" -eq 1 ]; then pass "knowledge-db: resolve_errors works"; else fail "knowledge-db: resolve_errors failed"; fi
-
-# Decision insert + query
-insert_decision "$TEST_DB" "US-T" "run-t" "implement" "sonnet" "" "First attempt"
-DECISION=$(query_decisions "$TEST_DB" "US-T")
-if echo "$DECISION" | grep -q "implement|sonnet"; then pass "knowledge-db: insert_decision + query_decisions works"; else fail "knowledge-db: decision query failed"; fi
-
-# Run lifecycle
-insert_run "$TEST_DB" "run-t" "taskplex/test" "sequential" "sonnet" 3
-update_run "$TEST_DB" "run-t" 2 1
-RUN_COMPLETED=$(sqlite3 "$TEST_DB" "SELECT completed FROM runs WHERE id='run-t';")
-if [ "$RUN_COMPLETED" = "2" ]; then pass "knowledge-db: run lifecycle works"; else fail "knowledge-db: run lifecycle failed (completed=$RUN_COMPLETED)"; fi
-
-# SQL injection safety (single quotes in content)
-insert_learning "$TEST_DB" "US-SQL" "run-t" "Don't use single 'quotes' in SQL" '[]'
-SAFE_COUNT=$(sqlite3 "$TEST_DB" "SELECT COUNT(*) FROM learnings WHERE story_id='US-SQL';")
-if [ "$SAFE_COUNT" = "1" ]; then pass "knowledge-db: SQL injection safe (single quotes)"; else fail "knowledge-db: SQL injection safety failed"; fi
-
-# Migration from knowledge.md
-KDB_MD="/tmp/taskplex-kdb-md-$$.md"
-cat > "$KDB_MD" <<'KDBEOF'
-## Codebase Patterns
-
-## Environment Notes
-
-## Recent Learnings
-- [US-010] This project uses pnpm for package management
-- [US-011] Config files are in src/config/
-KDBEOF
-KDB_MIGRATE="/tmp/taskplex-kdb-migrate-$$.db"
-init_knowledge_db "$KDB_MIGRATE"
-migrate_knowledge_md "$KDB_MIGRATE" "$KDB_MD"
-MIGRATED=$(sqlite3 "$KDB_MIGRATE" "SELECT COUNT(*) FROM learnings WHERE source='migration';")
-if [ "$MIGRATED" = "2" ]; then pass "knowledge-db: migrate_knowledge_md works"; else fail "knowledge-db: migration failed (got $MIGRATED)"; fi
-# Idempotency check
-migrate_knowledge_md "$KDB_MIGRATE" "$KDB_MD"
-MIGRATED2=$(sqlite3 "$KDB_MIGRATE" "SELECT COUNT(*) FROM learnings WHERE source='migration';")
-if [ "$MIGRATED2" = "2" ]; then pass "knowledge-db: migration is idempotent"; else fail "knowledge-db: migration not idempotent (got $MIGRATED2)"; fi
-rm -f "$KDB_MIGRATE" "$KDB_MD"
-
-rm -f "$TEST_DB"
-
-# 5.2b Bayesian confidence tracking
-BAYES_DB="/tmp/taskplex-bayes-test-$$.db"
-init_knowledge_db "$BAYES_DB"
-
-# Verify new columns exist
-BAYES_COLS=$(sqlite3 "$BAYES_DB" "PRAGMA table_info(learnings);" | grep -c "applied_count\|success_count")
-if [ "$BAYES_COLS" -eq 2 ]; then pass "knowledge-db: Bayesian columns (applied_count, success_count) exist"; else fail "knowledge-db: missing Bayesian columns (got $BAYES_COLS)"; fi
-
-# Insert learning and test application tracking
-insert_learning "$BAYES_DB" "US-B1" "run-b" "Bayesian test learning" '["US-B1"]'
-BAYES_ID=$(sqlite3 "$BAYES_DB" "SELECT id FROM learnings WHERE story_id='US-B1' LIMIT 1;")
-record_learning_application "$BAYES_DB" "$BAYES_ID"
-APPLIED=$(sqlite3 "$BAYES_DB" "SELECT applied_count FROM learnings WHERE id=$BAYES_ID;")
-if [ "$APPLIED" = "1" ]; then pass "knowledge-db: record_learning_application increments count"; else fail "knowledge-db: applied_count expected 1, got $APPLIED"; fi
-
-# Test success tracking
-record_learning_success "$BAYES_DB" "US-B1"
-SUCCESS=$(sqlite3 "$BAYES_DB" "SELECT success_count FROM learnings WHERE id=$BAYES_ID;")
-if [ "$SUCCESS" = "1" ]; then pass "knowledge-db: record_learning_success increments count"; else fail "knowledge-db: success_count expected 1, got $SUCCESS"; fi
-
-# Test Bayesian formula: with applied_count < 2, should use time-decay
-# (fresh learning = time-decay ≈ 1.0)
-DECAY_CONF=$(sqlite3 "$BAYES_DB" "SELECT ROUND(CASE WHEN applied_count >= 2 THEN CAST(success_count + 1 AS REAL) / (applied_count + 2) ELSE confidence * POWER(0.95, julianday('now') - julianday(created_at)) END, 3) FROM learnings WHERE id=$BAYES_ID;")
-if [ "$DECAY_CONF" = "1.0" ] || [ "$DECAY_CONF" = "1.000" ]; then
-  pass "knowledge-db: Bayesian fallback to time-decay when applied_count < 2"
-else
-  fail "knowledge-db: Bayesian time-decay expected ~1.0, got $DECAY_CONF"
-fi
-
-# Apply again to trigger Bayesian mode (applied_count=2)
-record_learning_application "$BAYES_DB" "$BAYES_ID"
-APPLIED2=$(sqlite3 "$BAYES_DB" "SELECT applied_count FROM learnings WHERE id=$BAYES_ID;")
-if [ "$APPLIED2" = "2" ]; then pass "knowledge-db: applied_count incremented to 2"; else fail "knowledge-db: applied_count expected 2, got $APPLIED2"; fi
-
-# Now Bayesian formula: (1+1)/(2+2) = 0.5
-BAYES_CONF=$(sqlite3 "$BAYES_DB" "SELECT ROUND(CASE WHEN applied_count >= 2 THEN CAST(success_count + 1 AS REAL) / (applied_count + 2) ELSE confidence * POWER(0.95, julianday('now') - julianday(created_at)) END, 3) FROM learnings WHERE id=$BAYES_ID;")
-if [ "$BAYES_CONF" = "0.5" ] || [ "$BAYES_CONF" = "0.500" ]; then
-  pass "knowledge-db: Bayesian confidence = (1+1)/(2+2) = 0.5"
-else
-  fail "knowledge-db: Bayesian confidence expected 0.5, got $BAYES_CONF"
-fi
-
-# Record another success → (2+1)/(2+2) = 0.75
-record_learning_success "$BAYES_DB" "US-B1"
-BAYES_CONF2=$(sqlite3 "$BAYES_DB" "SELECT ROUND(CASE WHEN applied_count >= 2 THEN CAST(success_count + 1 AS REAL) / (applied_count + 2) ELSE confidence * POWER(0.95, julianday('now') - julianday(created_at)) END, 3) FROM learnings WHERE id=$BAYES_ID;")
-if [ "$BAYES_CONF2" = "0.75" ] || [ "$BAYES_CONF2" = "0.750" ]; then
-  pass "knowledge-db: Bayesian confidence = (2+1)/(2+2) = 0.75"
-else
-  fail "knowledge-db: Bayesian confidence expected 0.75, got $BAYES_CONF2"
-fi
-
-# Test query_learnings_with_ids returns id column
-RESULT_WITH_IDS=$(query_learnings_with_ids "$BAYES_DB" 10 '["US-B1"]')
-if echo "$RESULT_WITH_IDS" | grep -q "^${BAYES_ID}|"; then
-  pass "knowledge-db: query_learnings_with_ids returns id column"
-else
-  fail "knowledge-db: query_learnings_with_ids missing id column"
-fi
-
-rm -f "$BAYES_DB"
-
-# 5.3 decision-call.sh — source and check function definitions
-if [ -f "$PLUGIN_DIR/scripts/decision-call.sh" ]; then
-  # Just syntax check — functions need runtime context
-  if bash -n "$PLUGIN_DIR/scripts/decision-call.sh" 2>/dev/null; then
-    pass "decision-call.sh: syntax OK"
+# 5.2 check-deps.sh — verify it runs and checks for claude + jq
+if [ -f "$PLUGIN_DIR/scripts/check-deps.sh" ]; then
+  exit_code=0
+  output=$(bash "$PLUGIN_DIR/scripts/check-deps.sh" 2>&1) || exit_code=$?
+  if [ "$exit_code" -eq 0 ]; then
+    pass "check-deps: all dependencies found"
   else
-    fail "decision-call.sh: syntax errors"
+    warn "check-deps: missing deps: $output"
   fi
 fi
 
@@ -714,7 +542,7 @@ header "8. Cross-References" "cross_references"
 
 manifest="$PLUGIN_DIR/.claude-plugin/plugin.json"
 
-# 8.3 Agent skills → skill directories exist
+# 8.1 Agent skills → skill directories exist
 for agent_file in "$PLUGIN_DIR"/agents/*.md; do
   [ -f "$agent_file" ] || continue
   agent_name=$(basename "$agent_file" .md)
@@ -740,7 +568,7 @@ for agent_file in "$PLUGIN_DIR"/agents/*.md; do
   fi
 done
 
-# 8.5 Skill directories on disk → referenced in plugin.json (exact path match)
+# 8.2 Skill directories on disk → referenced in plugin.json (exact path match)
 for skill_dir in "$PLUGIN_DIR"/skills/*/; do
   [ -d "$skill_dir" ] || continue
   skill_name=$(basename "$skill_dir")
@@ -751,7 +579,7 @@ for skill_dir in "$PLUGIN_DIR"/skills/*/; do
   fi
 done
 
-# 8.6 Agent files on disk → referenced in plugin.json (exact path match)
+# 8.3 Agent files on disk → referenced in plugin.json (exact path match)
 for agent_file in "$PLUGIN_DIR"/agents/*.md; do
   [ -f "$agent_file" ] || continue
   agent_name=$(basename "$agent_file")
