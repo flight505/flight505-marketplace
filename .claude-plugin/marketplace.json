@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.5.6",
+  "version": "1.5.7",
   "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, and AI Frontier",
   "owner": {
     "name": "Jesper Vang",
