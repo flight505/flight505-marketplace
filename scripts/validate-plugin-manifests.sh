@@ -300,7 +300,7 @@ validate_hooks_json() {
     [ -z "$cmd" ] && continue
     # Extract the CLAUDE_PLUGIN_ROOT path from the command (may be preceded by interpreter)
     local script_path
-    script_path=$(echo "$cmd" | grep -o '\${CLAUDE_PLUGIN_ROOT}/[^ ]*' | head -1 | sed "s|\${CLAUDE_PLUGIN_ROOT}/||")
+    script_path=$(echo "$cmd" | grep -o '\${CLAUDE_PLUGIN_ROOT}/[^ '"'"']*' | head -1 | sed "s|\${CLAUDE_PLUGIN_ROOT}/||")
     [ -z "$script_path" ] && continue  # No plugin-root path (e.g. system command)
     local full="$MARKETPLACE_ROOT/$plugin_dir/$script_path"
     if [ ! -f "$full" ]; then
