@@ -5,7 +5,7 @@
 [![Auto-update Plugins](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml)
 [![Validate Manifests](https://github.com/flight505/flight505-marketplace/actions/workflows/validate-plugin-manifests.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/validate-plugin-manifests.yml)
 [![Marketplace Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.version&label=marketplace&color=blue)](https://github.com/flight505/flight505-marketplace)
-[![Plugins](https://img.shields.io/badge/plugins-5-success.svg)](https://github.com/flight505/flight505-marketplace)
+[![Plugins](https://img.shields.io/badge/plugins-6-success.svg)](https://github.com/flight505/flight505-marketplace)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ### Plugin Versions
@@ -15,10 +15,11 @@
 [![Claude Project Planner](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[2].version&label=claude-project-planner&color=brightgreen)](https://github.com/flight505/claude-project-planner)
 [![Nano Banana](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[3].version&label=nano-banana&color=brightgreen)](https://github.com/flight505/nano-banana)
 [![TaskPlex](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[4].version&label=taskplex&color=brightgreen)](https://github.com/flight505/taskplex)
+[![AI Frontier](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[5].version&label=ai-frontier&color=brightgreen)](https://github.com/flight505/ai-frontier)
 
 **Official Claude Code plugin marketplace by Jesper Vang**
 
-A centralized source for installing and automatically updating 5 professional Claude Code plugins with a single command.
+A centralized source for installing and automatically updating 6 professional Claude Code plugins with a single command.
 
 > 🚀 **Real-time updates!** Plugin versions sync automatically within 30 seconds when new versions are released.
 
@@ -30,7 +31,7 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 
 **What makes it special:**
 
-1. **Install all plugins with one command** - No need to visit 4 different repositories
+1. **Install all plugins with one command** - No need to visit 6 different repositories
 2. **Automatic updates** - When plugin authors release new versions, your marketplace syncs automatically (usually within 30 seconds)
 3. **Quality assurance** - All plugins are validated before release to ensure they work correctly
 4. **Maintenance scripts** - Behind the scenes, automated scripts keep everything in sync
@@ -42,16 +43,16 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 ## 📦 Available Plugins
 
 <details open>
-<summary><b>🚀 SDK Bridge</b> - Autonomous development assistant</summary>
+<summary><b>🚀 SDK Bridge</b> - PRD-driven autonomous development</summary>
 
-**What it does:** Interactive autonomous development assistant that generates PRDs, converts to execution format, and runs fresh Claude instances until all work is complete.
+**What it does:** PRD-driven autonomous development — generates PRDs, converts to execution format, and runs fresh Claude instances with quality gates until complete.
 
 **Key features:**
-- Interactive wizard with 7-checkpoint workflow
 - PRD generation with smart story decomposition
-- Configurable iteration timeouts and model selection
-- Already-implemented detection (skips completed work)
-- Robust process management with trap-based cleanup
+- Two-stage code review (spec compliance + code quality)
+- TDD enforcement and verification gates
+- Failure categorization with retry strategies
+- Isolated worktree execution per story
 
 **Repository**: [sdk-bridge](https://github.com/flight505/sdk-bridge)
 **Documentation**: [README](https://github.com/flight505/sdk-bridge#readme)
@@ -59,17 +60,17 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 </details>
 
 <details>
-<summary><b>🔧 TaskPlex</b> - Next-generation autonomous development</summary>
+<summary><b>🔧 TaskPlex</b> - Always-on development companion</summary>
 
-**What it does:** Resilient autonomous development with dependency-aware task execution, custom subagents, error categorization, and branch lifecycle management. Successor to SDK Bridge.
+**What it does:** Always-on development companion — TDD enforcement, verification gates, systematic debugging, and disciplined workflows. Pure markdown skills, zero runtime dependencies.
 
 **Key features:**
-- Custom subagents (implementer, validator, reviewer, merger)
-- Error categorization with intelligent retry/skip
-- Dependency-aware task selection
-- Branch lifecycle management (create, commit, merge)
-- Quality gate hooks (block destructive commands)
-- Structured completion reports
+- TDD enforcement (RED-GREEN-REFACTOR discipline)
+- Systematic debugging (4-phase root cause analysis)
+- Verification gates (evidence before completion claims)
+- Brainstorming (challenge assumptions before building)
+- Bite-sized planning with TDD steps
+- Git worktree management for parallel development
 
 **Repository**: [taskplex](https://github.com/flight505/taskplex)
 **Documentation**: [README](https://github.com/flight505/taskplex#readme)
@@ -126,6 +127,21 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 **Repository**: [nano-banana](https://github.com/flight505/nano-banana)
 **Documentation**: [README](https://github.com/flight505/nano-banana#readme)
 
+<details>
+<summary><b>🔬 AI Frontier</b> - Deep research intelligence</summary>
+
+**What it does:** SOTA discovery, method analysis, and implementation guidance from arXiv, Semantic Scholar, Hugging Face Papers, and Perplexity.
+
+**Key features:**
+- Literature review with multi-source synthesis
+- Method comparison with structured tradeoff analysis
+- Implementation guidance from paper to code
+- Architecture evaluation against SOTA research
+- Free APIs (arXiv, Semantic Scholar, HF Papers)
+
+**Repository**: [ai-frontier](https://github.com/flight505/ai-frontier)
+**Documentation**: [README](https://github.com/flight505/ai-frontier#readme)
+
 </details>
 
 ---
@@ -134,7 +150,7 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 
 ### Quick Install (Recommended)
 
-Install the marketplace and all 5 plugins with these commands:
+Install the marketplace and all 6 plugins with these commands:
 
 ```bash
 # Start Claude Code
@@ -149,6 +165,7 @@ claude
 /plugin install storybook-assistant@flight505-plugins
 /plugin install claude-project-planner@flight505-plugins
 /plugin install nano-banana@flight505-plugins
+/plugin install ai-frontier@flight505-plugins
 ```
 
 That's it! The marketplace will now keep all plugins updated automatically.
@@ -232,6 +249,7 @@ claude
 /plugin update storybook-assistant@flight505-plugins
 /plugin update claude-project-planner@flight505-plugins
 /plugin update nano-banana@flight505-plugins
+/plugin update ai-frontier@flight505-plugins
 ```
 
 ---
@@ -411,11 +429,12 @@ The downside is complexity, which is why we built automation scripts to handle i
 
 Each plugin has comprehensive documentation in its repository:
 
-- [SDK Bridge](https://github.com/flight505/sdk-bridge#readme) - Autonomous development assistant
-- [TaskPlex](https://github.com/flight505/taskplex#readme) - Next-generation autonomous development
+- [SDK Bridge](https://github.com/flight505/sdk-bridge#readme) - PRD-driven autonomous development
+- [TaskPlex](https://github.com/flight505/taskplex#readme) - Always-on development companion
 - [Storybook Assistant](https://github.com/flight505/storybook-assistant#readme) - Complete toolkit guide
 - [Project Planner](https://github.com/flight505/claude-project-planner#readme) - Planning & tracking
 - [Nano Banana](https://github.com/flight505/nano-banana#readme) - Image & diagram generation
+- [AI Frontier](https://github.com/flight505/ai-frontier#readme) - Deep research intelligence
 
 ---
 
@@ -447,6 +466,7 @@ This marketplace infrastructure is MIT licensed. Individual plugins may have dif
 - **storybook-assistant**: MIT License
 - **claude-project-planner**: MIT License
 - **nano-banana**: MIT License
+- **ai-frontier**: MIT License
 
 Check each plugin's repository for specific license details.
 
@@ -462,6 +482,7 @@ Check each plugin's repository for specific license details.
   - [Storybook Assistant](https://github.com/flight505/storybook-assistant)
   - [Claude Project Planner](https://github.com/flight505/claude-project-planner)
   - [Nano Banana](https://github.com/flight505/nano-banana)
+  - [AI Frontier](https://github.com/flight505/ai-frontier)
 
 ---
 
