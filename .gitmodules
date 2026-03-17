@@ -16,3 +16,6 @@
 [submodule "ai-frontier"]
 	path = ai-frontier
 	url = https://github.com/flight505/ai-frontier.git
+[submodule "code-coach"]
+	path = code-coach
+	url = https://github.com/flight505/code-coach.git

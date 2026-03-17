@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
   "version": "1.8.1",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, and AI Frontier",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, and Code Coach",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -121,6 +121,25 @@
         "huggingface-papers",
         "literature-review",
         "ai-research"
+      ]
+    },
+    {
+      "name": "code-coach",
+      "description": "Claude Code fluency coach — teaches effective workflows, explains decisions, builds programming vocabulary, and suggests features you didn't know existed.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "./code-coach",
+      "category": "productivity",
+      "keywords": [
+        "coaching",
+        "learning",
+        "vocabulary",
+        "workflows",
+        "teaching",
+        "onboarding"
       ]
     }
   ]
