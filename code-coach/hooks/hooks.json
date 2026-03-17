@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "_comment": "Re-injects on resume/clear/compact intentionally — ensures command awareness persists after context compression or session restore",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd' session-start",
+            "async": false
+          }
+        ]
+      }
+    ]
+  }
+}
