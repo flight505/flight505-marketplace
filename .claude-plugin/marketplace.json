@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, and Code Coach",
   "owner": {
     "name": "Jesper Vang",
@@ -12,7 +12,7 @@
     {
       "name": "sdk-bridge",
       "description": "PRD-driven autonomous development — generates PRDs, converts to execution format, runs fresh Claude instances with quality gates until complete. Two-stage review, TDD enforcement, failure categorization.",
-      "version": "6.0.1",
+      "version": "7.0.0",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
