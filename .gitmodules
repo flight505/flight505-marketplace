@@ -19,3 +19,6 @@
 [submodule "code-coach"]
 	path = code-coach
 	url = https://github.com/flight505/code-coach.git
+[submodule "recall"]
+	path = recall
+	url = https://github.com/flight505/recall.git

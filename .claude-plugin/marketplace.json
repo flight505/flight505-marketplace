@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.8.4",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, and Code Coach",
+  "version": "1.8.5",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Code Coach, and Recall",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -140,6 +140,26 @@
         "workflows",
         "teaching",
         "onboarding"
+      ]
+    },
+    {
+      "name": "recall",
+      "description": "Zero-infrastructure memory for Claude Code — episodic session logs, semantic codebase facts, compaction protection, relevance-filtered injection. Markdown-only, no daemon, no database.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "./recall",
+      "category": "productivity",
+      "keywords": [
+        "memory",
+        "context",
+        "persistence",
+        "session-history",
+        "compaction",
+        "episodic-memory",
+        "semantic-memory"
       ]
     }
   ]
