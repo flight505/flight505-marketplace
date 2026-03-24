@@ -1,0 +1,30 @@
+{
+  "name": "senior-engineer",
+  "version": "1.0.0",
+  "description": "Deep code review and researched rewrite plugin. Two modes: /review spawns adversarial agent team to analyze code quality, architecture, and framework compliance. /rewrite reads everything, researches documentation, evaluates options, gets approval, then implements in a worktree.",
+  "author": {
+    "name": "Jesper Vang",
+    "email": "jesper_vang@me.com",
+    "url": "https://github.com/flight505"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/flight505/flight505-marketplace",
+  "keywords": [
+    "code-review",
+    "architecture",
+    "rewrite",
+    "senior-engineer",
+    "code-quality",
+    "agent-teams",
+    "worktree"
+  ],
+  "skills": [
+    "./skills/review",
+    "./skills/rewrite"
+  ],
+  "agents": [
+    "./agents/code-mapper.md",
+    "./agents/doc-researcher.md",
+    "./agents/implementer.md"
+  ]
+}
