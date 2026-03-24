@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.8.10",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Code Coach, and Recall",
+  "version": "1.9.0",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Code Coach, Recall, and Senior Engineer",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -160,6 +160,27 @@
         "compaction",
         "episodic-memory",
         "semantic-memory"
+      ]
+    },
+    {
+      "name": "senior-engineer",
+      "description": "Deep code review and researched rewrite — adversarial agent team review, framework compliance checking, documentation research, option evaluation with approval gates, worktree-isolated implementation",
+      "version": "1.0.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "./senior-engineer",
+      "category": "workflows",
+      "keywords": [
+        "code-review",
+        "architecture",
+        "rewrite",
+        "senior-engineer",
+        "code-quality",
+        "agent-teams",
+        "worktree",
+        "framework-compliance"
       ]
     }
   ]

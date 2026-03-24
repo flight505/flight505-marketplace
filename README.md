@@ -5,7 +5,7 @@
 [![Auto-update Plugins](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml)
 [![Validate Manifests](https://github.com/flight505/flight505-marketplace/actions/workflows/validate-plugin-manifests.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/validate-plugin-manifests.yml)
 [![Marketplace Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.version&label=marketplace&color=blue)](https://github.com/flight505/flight505-marketplace)
-[![Plugins](https://img.shields.io/badge/plugins-6-success.svg)](https://github.com/flight505/flight505-marketplace)
+[![Plugins](https://img.shields.io/badge/plugins-9-success.svg)](https://github.com/flight505/flight505-marketplace)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ### Plugin Versions
@@ -16,10 +16,11 @@
 [![Nano Banana](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[3].version&label=nano-banana&color=brightgreen)](https://github.com/flight505/nano-banana)
 [![TaskPlex](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[4].version&label=taskplex&color=brightgreen)](https://github.com/flight505/taskplex)
 [![AI Frontier](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[5].version&label=ai-frontier&color=brightgreen)](https://github.com/flight505/ai-frontier)
+[![Senior Engineer](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[8].version&label=senior-engineer&color=brightgreen)](https://github.com/flight505/flight505-marketplace/tree/main/senior-engineer)
 
 **Official Claude Code plugin marketplace by Jesper Vang**
 
-A centralized source for installing and automatically updating 6 professional Claude Code plugins with a single command.
+A centralized source for installing and automatically updating 9 professional Claude Code plugins with a single command.
 
 > 🚀 **Real-time updates!** Plugin versions sync automatically within 30 seconds when new versions are released.
 
@@ -144,13 +145,30 @@ Think of this marketplace as an **app store for Claude Code plugins**. Instead o
 
 </details>
 
+<details>
+<summary><b>🏗️ Senior Engineer</b> - Deep code review + researched rewrite</summary>
+
+**What it does:** Forces the "stop, read everything, research documentation, evaluate options, get approval, then implement" workflow that senior engineers follow but Claude usually skips.
+
+**Key features:**
+- `/senior-engineer:review` — deep architectural review with adversarial agent team debate
+- `/senior-engineer:rewrite` — read → research docs → evaluate 3 options → approve → implement in worktree
+- Framework compliance checking (catches workarounds that should use native APIs)
+- PATCH/REFACTOR/REWRITE/RETHINK intervention classification
+- Worktree-isolated implementation (safe to discard if wrong)
+- Doc-aware research via context7, web search, and project doc skills
+
+**Source**: [senior-engineer](https://github.com/flight505/flight505-marketplace/tree/main/senior-engineer)
+
+</details>
+
 ---
 
 ## 🚀 Installation
 
 ### Quick Install (Recommended)
 
-Install the marketplace and all 6 plugins with these commands:
+Install the marketplace and all 9 plugins with these commands:
 
 ```bash
 # Start Claude Code
