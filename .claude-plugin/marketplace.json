@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.9.4",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Code Coach, Recall, and Senior Engineer",
+  "version": "1.10.0",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Code Coach, Recall, Senior Engineer, and Autoresearch",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -181,6 +181,28 @@
         "agent-teams",
         "worktree",
         "framework-compliance"
+      ]
+    },
+    {
+      "name": "autoresearch",
+      "description": "Karpathy's autoresearch as a Claude Code plugin — autonomous fixed-budget optimization for ML training, code performance, prompt engineering, and more. Apple Silicon (MLX), NVIDIA CUDA, and RunPod cloud.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "./autoresearch",
+      "category": "research",
+      "keywords": [
+        "autoresearch",
+        "karpathy",
+        "autonomous",
+        "experiment-loop",
+        "mlx",
+        "cuda",
+        "optimization",
+        "runpod",
+        "claude-max"
       ]
     }
   ]

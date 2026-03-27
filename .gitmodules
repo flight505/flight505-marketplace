@@ -22,3 +22,6 @@
 [submodule "recall"]
 	path = recall
 	url = https://github.com/flight505/recall.git
+[submodule "autoresearch"]
+	path = autoresearch
+	url = https://github.com/flight505/autoresearch.git
