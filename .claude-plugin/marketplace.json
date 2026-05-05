@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.10.4",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, TaskPlex, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Code Coach, Recall, Senior Engineer, and Autoresearch",
+  "version": "1.11.0",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, and Autoresearch",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -12,7 +12,7 @@
     {
       "name": "sdk-bridge",
       "description": "PRD-driven autonomous development — generates PRDs, converts to execution format, runs fresh Claude instances with quality gates until complete. Two-stage review, TDD enforcement, failure categorization.",
-      "version": "7.1.0",
+      "version": "7.1.1",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
@@ -86,25 +86,6 @@
       ]
     },
     {
-      "name": "taskplex",
-      "description": "Development companion that right-sizes process to task complexity — TDD enforcement, proportional verification, systematic debugging, tier-based routing. Pure markdown skills, zero runtime dependencies.",
-      "version": "9.0.0",
-      "author": {
-        "name": "Jesper Vang",
-        "url": "https://github.com/flight505"
-      },
-      "source": "./taskplex",
-      "category": "workflows",
-      "keywords": [
-        "tdd",
-        "debugging",
-        "verification",
-        "brainstorm",
-        "planning",
-        "discipline"
-      ]
-    },
-    {
       "name": "ai-frontier",
       "description": "Deep research intelligence — SOTA discovery, method analysis, and implementation guidance from arXiv, Semantic Scholar, Hugging Face Papers, and Perplexity",
       "version": "1.1.0",
@@ -124,69 +105,9 @@
       ]
     },
     {
-      "name": "code-coach",
-      "description": "Claude Code fluency coach — teaches effective workflows, explains decisions, builds programming vocabulary, and suggests features you didn't know existed.",
-      "version": "1.0.0",
-      "author": {
-        "name": "Jesper Vang",
-        "url": "https://github.com/flight505"
-      },
-      "source": "./code-coach",
-      "category": "productivity",
-      "keywords": [
-        "coaching",
-        "learning",
-        "vocabulary",
-        "workflows",
-        "teaching",
-        "onboarding"
-      ]
-    },
-    {
-      "name": "recall",
-      "description": "Zero-infrastructure memory for Claude Code — episodic session logs, semantic codebase facts, compaction protection, relevance-filtered injection. Markdown-only, no daemon, no database.",
-      "version": "1.2.0",
-      "author": {
-        "name": "Jesper Vang",
-        "url": "https://github.com/flight505"
-      },
-      "source": "./recall",
-      "category": "productivity",
-      "keywords": [
-        "memory",
-        "context",
-        "persistence",
-        "session-history",
-        "compaction",
-        "episodic-memory",
-        "semantic-memory"
-      ]
-    },
-    {
-      "name": "senior-engineer",
-      "description": "Deep code review and researched rewrite — adversarial agent team review, framework compliance checking, documentation research, option evaluation with approval gates, worktree-isolated implementation",
-      "version": "1.0.0",
-      "author": {
-        "name": "Jesper Vang",
-        "url": "https://github.com/flight505"
-      },
-      "source": "./senior-engineer",
-      "category": "workflows",
-      "keywords": [
-        "code-review",
-        "architecture",
-        "rewrite",
-        "senior-engineer",
-        "code-quality",
-        "agent-teams",
-        "worktree",
-        "framework-compliance"
-      ]
-    },
-    {
       "name": "autoresearch",
       "description": "Karpathy's autoresearch as a Claude Code plugin — autonomous fixed-budget optimization for ML training, code performance, prompt engineering, and more. Apple Silicon (MLX), NVIDIA CUDA, and RunPod cloud.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
