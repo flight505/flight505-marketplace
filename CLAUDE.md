@@ -22,11 +22,11 @@ Webhook chain handles plugin→marketplace version sync on push. Don't manually 
 ```
 flight505-marketplace/
 ├── sdk-bridge/              → github.com/flight505/sdk-bridge
-├── taskplex/                → github.com/flight505/taskplex
 ├── storybook-assistant/     → github.com/flight505/storybook-assistant
 ├── claude-project-planner/  → github.com/flight505/claude-project-planner
 ├── nano-banana/             → github.com/flight505/nano-banana
-└── ai-frontier/             → github.com/flight505/ai-frontier
+├── ai-frontier/             → github.com/flight505/ai-frontier
+└── autoresearch/            → github.com/flight505/autoresearch
 ```
 
 **Each plugin has:** `CLAUDE.md`, `README.md`, `.claude-plugin/plugin.json`
