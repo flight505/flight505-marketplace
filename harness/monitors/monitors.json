@@ -1,0 +1,7 @@
+[
+  {
+    "name": "harness-state",
+    "command": "node ${CLAUDE_PLUGIN_ROOT}/bin/watch-harness-state.mjs .harness",
+    "description": "Tail .harness/ state files and notify on phase status changes"
+  }
+]

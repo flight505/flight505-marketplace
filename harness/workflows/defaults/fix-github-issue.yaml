@@ -1,0 +1,59 @@
+name: fix-github-issue
+description: "Diagnose a GitHub issue, plan the fix with ultraplan, implement with agent teams, review, get approval, and open a PR."
+
+# Usage:
+#   Copy to .harness/workflow.yaml, fill in the issue_url and branch, then:
+#   /harness:run
+#
+# Requires: GitHub CLI (gh), Claude Code on the web (for ultraplan phase)
+
+phases:
+  - id: diagnose
+    plugin: harness
+    type: subagent
+    agent: diagnostician
+    config:
+      issue_url: "REPLACE_WITH_ISSUE_URL"
+
+  - id: plan
+    plugin: harness
+    type: ultraplan
+    depends_on: [diagnose]
+    config:
+      prompt: "Plan fixing this issue based on the diagnosis: {artifact:diagnose/diagnosis.md}"
+      on_approval: teleport
+      timeout: "15m"
+
+  - id: implement
+    plugin: harness
+    type: agent-teams
+    depends_on: [plan]
+    config:
+      branch: "fix/REPLACE_WITH_ISSUE_NUMBER"
+      teammates:
+        - type: implementer
+          count: 2
+      require_plan_approval: false
+      code_review: true
+      tasks_from: ".harness/artifacts/plan/plan.md"
+
+  - id: review
+    plugin: harness
+    type: subagent
+    agent: reviewer
+    depends_on: [implement]
+
+  - id: gate
+    plugin: harness
+    type: approval
+    depends_on: [review]
+    config:
+      prompt: "Review the implementation and review verdicts before creating a PR. Check .harness/artifacts/review/review.md for the spec compliance report."
+      context_from: "review/review.md"
+
+  - id: pr
+    plugin: harness
+    type: inline
+    depends_on: [gate]
+    config:
+      command: "gh pr create --fill --head fix/REPLACE_WITH_ISSUE_NUMBER"

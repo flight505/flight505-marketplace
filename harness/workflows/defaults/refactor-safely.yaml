@@ -1,0 +1,57 @@
+name: refactor-safely
+description: "Safe refactoring with a test-fix loop. Investigate, plan, refactor in a generic loop until typecheck passes, review, and open a PR."
+
+# Usage:
+#   Copy to .harness/workflow.yaml, fill in the description and branch, then:
+#   /harness:run
+#
+# No ultraplan required — uses a subagent for planning.
+# The generic loop runs the refactoring + typecheck until clean.
+
+defaults:
+  quality:
+    typecheck: "REPLACE_WITH_TYPECHECK_CMD"
+    test: "REPLACE_WITH_TEST_CMD"
+
+phases:
+  - id: investigate
+    plugin: harness
+    type: subagent
+    agent: searcher
+    config:
+      query: "REPLACE_WITH_REFACTORING_GOAL"
+      sources: ["perplexity", "web"]
+      max_results: 5
+
+  - id: plan
+    plugin: harness
+    type: subagent
+    agent: synthesizer
+    depends_on: [investigate]
+    config:
+      query: "Based on the investigation, produce a step-by-step refactoring plan: {artifact:investigate/synthesis.md}"
+
+  - id: refactor
+    plugin: harness
+    type: loop
+    depends_on: [plan]
+    config:
+      body:
+        type: inline
+        config:
+          command: "REPLACE_WITH_TYPECHECK_CMD 2>&1"
+      until: "$body.exit_code == 0"
+      max_iterations: 10
+
+  - id: review
+    plugin: harness
+    type: subagent
+    agent: reviewer
+    depends_on: [refactor]
+
+  - id: pr
+    plugin: harness
+    type: inline
+    depends_on: [review]
+    config:
+      command: "gh pr create --fill --head refactor/REPLACE_WITH_BRANCH_NAME"

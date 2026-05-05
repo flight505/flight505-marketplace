@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# SessionStart hook — inject harness hardware config into context
+
+set -euo pipefail
+
+CONFIG_DIR="${CLAUDE_PLUGIN_DATA:-${HOME}/.harness}"
+CONFIG_FILE="${CONFIG_DIR}/config.json"
+
+escape_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+if [ ! -f "$CONFIG_FILE" ]; then
+    context="[harness-optimize] No hardware targets configured. Run /harness:setup to configure your Apple Silicon, NVIDIA server, or RunPod cloud GPU targets."
+else
+    context=$(python3 -c "
+import json, sys
+try:
+    config = json.loads(open(sys.argv[1]).read())
+    targets = config.get('targets', {})
+    parts = []
+    for name in ['local', 'server', 'runpod']:
+        t = targets.get(name, {})
+        if t.get('enabled'):
+            desc = t.get('description', name)
+            backend = t.get('backend', '?')
+            path = t.get('path', '')
+            ssh = t.get('ssh_host', '')
+            loc = path if path else (ssh + ':' + t.get('path', '') if ssh else 'cloud')
+            parts.append(f'{name}: {desc} [{backend}] @ {loc}')
+        else:
+            parts.append(f'{name}: not configured')
+    print('[harness-optimize] Hardware targets: ' + ' | '.join(parts))
+except Exception as e:
+    print(f'[harness-optimize] Config error: {e}. Run /harness:setup.')
+" "$CONFIG_FILE" 2>/dev/null || echo "[harness-optimize] Config read error. Run /harness:setup.")
+fi
+
+escaped=$(escape_json "$context")
+
+cat <<HOOKEOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "${escaped}"
+  }
+}
+HOOKEOF
+
+exit 0

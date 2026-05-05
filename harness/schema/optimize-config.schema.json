@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/flight505/flight505-harness/harness/schema/optimize-config.schema.json",
+  "title": "Harness-Optimize Hardware Config",
+  "description": "Persistent hardware target configuration written by the setup skill",
+  "type": "object",
+  "required": ["version", "targets"],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "targets": {
+      "type": "object",
+      "properties": {
+        "local": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "path": { "type": "string", "description": "Local path to experiment repo" },
+            "backend": { "type": "string", "enum": ["mlx", "cuda", "cpu"] },
+            "description": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "server": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "ssh_host": { "type": "string", "description": "SSH hostname (user@host)" },
+            "path": { "type": "string", "description": "Remote working directory" },
+            "backend": { "const": "cuda" },
+            "gpu_type": { "type": "string", "description": "Detected GPU model" },
+            "repo": { "type": "string", "description": "Git remote URL of installed fork" },
+            "description": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "runpod": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "api_key": { "type": "string" },
+            "gpu_type": { "type": "string", "default": "NVIDIA RTX 4090" },
+            "description": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.11.0",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, and Autoresearch",
+  "version": "1.12.0",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Autoresearch, and Harness",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -124,6 +124,32 @@
         "optimization",
         "runpod",
         "claude-max"
+      ]
+    },
+    {
+      "name": "harness",
+      "description": "Composable harness engineering — workflow orchestrator with build, optimize, research, and triage agents. Headless, single-session, resumable.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "./harness",
+      "category": "workflows",
+      "keywords": [
+        "orchestrator",
+        "workflow",
+        "pipeline",
+        "agent-teams",
+        "build",
+        "tdd",
+        "optimization",
+        "autoresearch",
+        "research",
+        "literature-review",
+        "triage",
+        "harness",
+        "headless"
       ]
     }
   ]

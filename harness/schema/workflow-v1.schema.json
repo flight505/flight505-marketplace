@@ -1,0 +1,516 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/flight505/flight505-harness/schema/workflow-v1.schema.json",
+  "title": "Harness Workflow v1",
+  "description": "Defines a pipeline of phases for the conductor to execute. Written as YAML, validated against this JSON Schema.",
+  "type": "object",
+  "required": ["name", "phases"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Workflow identifier. Used as workflow_id in state files. Lowercase, hyphens only."
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of what this workflow does"
+    },
+    "defaults": {
+      "type": "object",
+      "description": "Global config inherited by all phases unless overridden",
+      "properties": {
+        "quality": {
+          "type": "object",
+          "description": "Quality gate commands run after each task/experiment",
+          "properties": {
+            "test": {
+              "type": "string",
+              "description": "Test command (e.g., npm test)"
+            },
+            "build": {
+              "type": "string",
+              "description": "Build command (e.g., npm run build)"
+            },
+            "typecheck": {
+              "type": "string",
+              "description": "Typecheck command (e.g., tsc --noEmit)"
+            },
+            "lint": {
+              "type": "string",
+              "description": "Lint command (e.g., eslint .)"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/phase"
+      },
+      "description": "Ordered list of phases to execute"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "phase": {
+      "type": "object",
+      "required": ["id", "plugin", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "Phase identifier. Used as phase_id in state files."
+        },
+        "plugin": {
+          "type": "string",
+          "const": "harness",
+          "description": "Plugin executing this phase (always 'harness' since consolidation)"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["agent-teams", "loop", "subagent", "inline", "approval", "ultraplan"],
+          "description": "Execution model for this phase"
+        },
+        "agent": {
+          "type": "string",
+          "description": "For subagent phases: which agent to spawn (e.g., reviewer, code-reviewer, searcher)"
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Phase IDs that must complete before this phase starts"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Expression that must evaluate to true for this phase to run. References previous phase output: phases.<id>.output.<field> <op> <value>"
+        },
+        "config": {
+          "type": "object",
+          "description": "Plugin-specific configuration for this phase. String values support interpolation: {phases.<id>.output.<field>} for phase output values, and {artifact:<phase_id>/<filename>} for artifact file contents.",
+          "additionalProperties": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "plugin": { "const": "harness" },
+              "type": { "const": "agent-teams" }
+            },
+            "required": ["plugin", "type"]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["branch"],
+                "properties": {
+                  "branch": {
+                    "type": "string",
+                    "description": "Git branch for feature work. The conductor creates this branch before spawning the team."
+                  },
+                  "teammates": {
+                    "type": "array",
+                    "description": "Teammate roles to spawn. Each entry references a subagent definition by name (e.g., 'implementer', 'reviewer'). If omitted, defaults to one entry: {type: 'implementer', count: 3}.",
+                    "items": {
+                      "type": "object",
+                      "required": ["type"],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "description": "Subagent type name (e.g., 'implementer', 'reviewer', 'code-reviewer')"
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "default": 1,
+                          "description": "Number of teammates to spawn with this role"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "require_plan_approval": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "When true, teammates must submit a plan to the lead and wait for approval before implementing. The approval decision is made autonomously by the lead based on approval_criteria."
+                  },
+                  "approval_criteria": {
+                    "type": "string",
+                    "description": "Criteria the lead uses to judge plans (e.g., 'only approve plans with test coverage and no DB schema changes'). Passed to the lead in its spawn prompt."
+                  },
+                  "code_review": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to run the code-reviewer subagent after spec review"
+                  },
+                  "tasks_from": {
+                    "type": "string",
+                    "description": "Path to a markdown or JSON file containing task definitions. One of tasks/tasks_from is required."
+                  },
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/task"
+                    },
+                    "description": "Inline task definitions. One of tasks/tasks_from is required."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "_comment": "Optimize-mode loop: discriminated by absence of config.body (which marks generic-mode loops)",
+          "if": {
+            "properties": {
+              "type": { "const": "loop" },
+              "config": {
+                "type": "object",
+                "not": { "required": ["body"] }
+              }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["artifact", "metric", "direction", "run_command"],
+                "properties": {
+                  "target": {
+                    "type": "string",
+                    "enum": ["local", "server", "runpod"],
+                    "default": "local",
+                    "description": "Where to run experiments"
+                  },
+                  "ssh_host": {
+                    "type": "string",
+                    "description": "SSH host for server target (e.g., user@host)"
+                  },
+                  "cwd": {
+                    "type": "string",
+                    "description": "Working directory (local path or remote path for server target)"
+                  },
+                  "artifact": {
+                    "type": "string",
+                    "description": "File to optimize (e.g., train.py, src/api/handler.ts)"
+                  },
+                  "metric": {
+                    "type": "string",
+                    "description": "Metric name to extract from run output"
+                  },
+                  "direction": {
+                    "type": "string",
+                    "enum": ["lower", "higher"],
+                    "description": "Whether lower or higher metric values are better"
+                  },
+                  "run_command": {
+                    "type": "string",
+                    "description": "Command to run after each edit (e.g., uv run train.py, npm run benchmark)"
+                  },
+                  "time_budget": {
+                    "type": "string",
+                    "pattern": "^\\d+[smh]$",
+                    "description": "Max time per experiment (e.g., 3m, 300s, 1h)"
+                  },
+                  "max_experiments": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 20,
+                    "description": "Maximum number of experiments before stopping"
+                  },
+                  "convergence_window": {
+                    "type": "integer",
+                    "minimum": 2,
+                    "default": 5,
+                    "description": "Stop after N experiments with no improvement"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "_comment": "Generic-mode loop: discriminated by presence of config.body",
+          "if": {
+            "properties": {
+              "type": { "const": "loop" },
+              "config": {
+                "type": "object",
+                "required": ["body"]
+              }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["body", "until"],
+                "properties": {
+                  "body": {
+                    "type": "object",
+                    "description": "The action to execute each iteration. Has a type (inline or subagent) and its own config.",
+                    "required": ["type"],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["inline", "subagent"],
+                        "description": "Body action type"
+                      },
+                      "agent": {
+                        "type": "string",
+                        "description": "For subagent body: which agent to spawn (e.g., harness:fixer)"
+                      },
+                      "config": {
+                        "type": "object",
+                        "description": "Body-specific config. For inline: command. For subagent: agent input.",
+                        "additionalProperties": true
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "until": {
+                    "type": "string",
+                    "description": "Expression evaluated after each iteration. Loop exits when true. Supports $body.exit_code, $body.stdout, $body.output, $iteration."
+                  },
+                  "max_iterations": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 10,
+                    "description": "Maximum iterations before the loop exits regardless of the until condition."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "_comment": "Research subagent: discriminated by agent ∈ research-agents",
+          "if": {
+            "properties": {
+              "type": { "const": "subagent" },
+              "agent": { "enum": ["searcher", "synthesizer", "method-analyst", "implementation-guide", "architecture-evaluator"] }
+            },
+            "required": ["type", "agent"]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Research question. Supports {phases.<id>.output.<field>} interpolation."
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["arxiv", "semantic-scholar", "hf-papers", "perplexity", "web"]
+                    },
+                    "default": ["arxiv", "semantic-scholar", "hf-papers", "perplexity"],
+                    "description": "Which search sources to use"
+                  },
+                  "max_results": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 10,
+                    "description": "Maximum number of results to include in findings"
+                  },
+                  "methods": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Methods/approaches to compare (method-analyst agent)"
+                  },
+                  "criteria": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Comparison criteria (method-analyst agent)"
+                  },
+                  "codebase_path": {
+                    "type": "string",
+                    "description": "Path to codebase for implementation-guide or architecture-evaluator"
+                  },
+                  "constraints": {
+                    "type": "string",
+                    "description": "Implementation constraints (language, framework, etc.)"
+                  },
+                  "focus_areas": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Specific areas to evaluate (architecture-evaluator agent)"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "_comment": "Triage subagent: discriminated by agent ∈ triage-agents",
+          "if": {
+            "properties": {
+              "type": { "const": "subagent" },
+              "agent": { "enum": ["diagnostician", "fixer", "verifier"] }
+            },
+            "required": ["type", "agent"]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "type": "object",
+                "properties": {
+                  "issue_url": {
+                    "type": "string",
+                    "description": "GitHub issue URL to diagnose"
+                  },
+                  "error_log": {
+                    "type": "string",
+                    "description": "Error message or log to diagnose (alternative to issue_url)"
+                  },
+                  "fix_branch_prefix": {
+                    "type": "string",
+                    "default": "fix/",
+                    "description": "Branch name prefix for fix branches"
+                  },
+                  "create_pr": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to create a PR for the fix"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "approval" }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": {
+              "plugin": {
+                "description": "Approval phases are plugin-agnostic — use any plugin value or omit."
+              },
+              "config": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "Message shown to the user describing what needs approval and what to look for."
+                  },
+                  "context_from": {
+                    "type": "string",
+                    "description": "Optional artifact reference to include as context (e.g., 'plan/plan.md'). Resolved to .harness/artifacts/<path>."
+                  },
+                  "timeout": {
+                    "type": "string",
+                    "pattern": "^\\d+[smhd]$",
+                    "description": "Optional timeout for the approval gate (e.g., '24h', '30m'). Informational — the conductor does not auto-reject on timeout."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "ultraplan" }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": {
+              "plugin": {
+                "description": "Ultraplan phases are plugin-agnostic — use any valid plugin value."
+              },
+              "config": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "The planning prompt passed to /ultraplan. Describes what needs to be planned."
+                  },
+                  "on_approval": {
+                    "type": "string",
+                    "enum": ["teleport", "cloud"],
+                    "default": "teleport",
+                    "description": "What happens after the user approves the plan in the browser. 'teleport' sends it back to the terminal (saved as artifact). 'cloud' executes on Claude Code web."
+                  },
+                  "timeout": {
+                    "type": "string",
+                    "pattern": "^\\d+[smhd]$",
+                    "description": "Informational timeout shown to the user. The conductor does not auto-cancel."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "task": {
+      "type": "object",
+      "required": ["id", "title", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task identifier (e.g., US-001)"
+        },
+        "title": {
+          "type": "string",
+          "description": "Short task title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Full task description (user story format preferred)"
+        },
+        "criteria": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Acceptance criteria for this task"
+        },
+        "blocked_by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Task IDs that must complete before this task can start. Use for tasks that modify shared interfaces or types consumed by this task."
+        },
+        "modifies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Shared files or interfaces this task modifies (e.g., 'src/types/user.ts', 'API: /users'). Tasks sharing entries should declare blocked_by relationships."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

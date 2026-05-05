@@ -1,0 +1,76 @@
+name: smart-pr-review
+description: "Multi-perspective PR review with 4 parallel reviewers (security, performance, tests, docs) plus synthesis. Comments findings on the PR."
+
+# Usage:
+#   Copy to .harness/workflow.yaml, fill in the branch, then:
+#   /harness:run
+#
+# Requires: GitHub CLI (gh) for the final comment.
+# Does NOT require ultraplan or Claude Code on the web.
+
+phases:
+  - id: review
+    plugin: harness
+    type: agent-teams
+    config:
+      branch: "REPLACE_WITH_PR_BRANCH"
+      teammates:
+        - type: reviewer
+          count: 4
+      require_plan_approval: false
+      code_review: false
+      tasks:
+        - id: "REV-001"
+          title: "Security review"
+          description: |
+            Review the PR diff for security issues: injection risks, auth
+            bypasses, data leaks, XSS, unsafe deserialization, credential
+            exposure. Report findings with severity and file:line references.
+          criteria:
+            - "All critical and high-severity findings documented with file:line"
+            - "No false positives — each finding is verified against actual code"
+
+        - id: "REV-002"
+          title: "Performance review"
+          description: |
+            Review the PR diff for performance issues: N+1 queries, memory
+            leaks, blocking I/O, unnecessary re-renders, missing indexes,
+            large payloads. Report findings with severity and file:line.
+          criteria:
+            - "All performance regressions documented with evidence"
+            - "Suggested fixes are concrete and actionable"
+
+        - id: "REV-003"
+          title: "Test coverage review"
+          description: |
+            Review the PR diff for test quality: are new features tested?
+            Edge cases covered? Tests actually run? Mocks appropriate?
+            Missing integration tests? Report gaps with file:line.
+          criteria:
+            - "Every untested code path identified with file:line"
+            - "Suggested test cases are specific and implementable"
+
+        - id: "REV-004"
+          title: "Documentation review"
+          description: |
+            Review the PR diff for documentation impact: are public APIs
+            documented? Breaking changes noted in changelog? README updated
+            if user-facing behavior changed? Types and interfaces documented?
+          criteria:
+            - "Missing documentation identified with specific suggestions"
+            - "Breaking changes flagged if any"
+
+  - id: synthesize
+    plugin: harness
+    type: subagent
+    agent: synthesizer
+    depends_on: [review]
+    config:
+      query: "Synthesize the 4 review perspectives into a single prioritized summary with a final verdict (approve / request changes). Group by severity."
+
+  - id: comment
+    plugin: harness
+    type: inline
+    depends_on: [synthesize]
+    config:
+      command: "gh pr comment REPLACE_WITH_PR_NUMBER --body-file .harness/artifacts/synthesize/synthesis.md"

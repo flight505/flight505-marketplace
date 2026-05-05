@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# PostToolUse hook — validate experiment metric parsing
+# Only activates when harness-optimize state files exist and are in "running" status
+# Reads the latest state file to check if metric parsing succeeded
+
+set -euo pipefail
+
+HARNESS_DIR=".harness"
+
+# Quick exit if no harness state directory exists
+if [ ! -d "$HARNESS_DIR" ]; then
+    exit 0
+fi
+
+# Find the most recently modified optimize state file
+LATEST_STATE=$(ls -t "${HARNESS_DIR}"/optimize-*.json 2>/dev/null | head -1 || echo "")
+
+if [ -z "$LATEST_STATE" ]; then
+    exit 0
+fi
+
+# Check if it's currently running
+STATUS=$(python3 -c "
+import json, sys
+try:
+    state = json.loads(open(sys.argv[1]).read())
+    print(state.get('status', ''))
+except:
+    print('')
+" "$LATEST_STATE" 2>/dev/null || echo "")
+
+if [ "$STATUS" != "running" ]; then
+    exit 0
+fi
+
+# Check the last experiment in history for metric parse issues
+LAST_STATUS=$(python3 -c "
+import json, sys
+try:
+    state = json.loads(open(sys.argv[1]).read())
+    history = state.get('metric', {}).get('history', [])
+    if not history:
+        print('no_history')
+    else:
+        last = history[-1]
+        if last.get('description', '').startswith('metric parse failure'):
+            print('parse_failure')
+        else:
+            print('ok')
+except:
+    print('error')
+" "$LATEST_STATE" 2>/dev/null || echo "error")
+
+if [ "$LAST_STATUS" = "parse_failure" ]; then
+    cat <<HOOKEOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolUse",
+    "additionalContext": "[harness-optimize] WARNING: Last experiment failed to parse metric. Check run_command output format. Expected: '<metric_name>: <value>' or JSON with metric key."
+  }
+}
+HOOKEOF
+fi
+
+exit 0

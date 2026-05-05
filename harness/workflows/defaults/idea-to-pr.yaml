@@ -1,0 +1,45 @@
+name: idea-to-pr
+description: "Turn a feature idea into a reviewed PR. Plan with ultraplan, build with 3 implementers, review, approve, and open a PR."
+
+# Usage:
+#   Copy to .harness/workflow.yaml, fill in the prompt and branch, then:
+#   /harness:run
+#
+# Requires: GitHub CLI (gh), Claude Code on the web (for ultraplan phase)
+
+phases:
+  - id: plan
+    plugin: harness
+    type: ultraplan
+    config:
+      prompt: "REPLACE_WITH_FEATURE_DESCRIPTION"
+      on_approval: teleport
+      timeout: "20m"
+
+  - id: build
+    plugin: harness
+    type: agent-teams
+    depends_on: [plan]
+    config:
+      branch: "feat/REPLACE_WITH_FEATURE_NAME"
+      teammates:
+        - type: implementer
+          count: 3
+      require_plan_approval: false
+      code_review: true
+      tasks_from: ".harness/artifacts/plan/plan.md"
+
+  - id: gate
+    plugin: harness
+    type: approval
+    depends_on: [build]
+    config:
+      prompt: "All tasks are done and reviews passed. Inspect the branch diff before creating a PR."
+      context_from: "build/review.md"
+
+  - id: pr
+    plugin: harness
+    type: inline
+    depends_on: [gate]
+    config:
+      command: "gh pr create --fill --head feat/REPLACE_WITH_FEATURE_NAME"

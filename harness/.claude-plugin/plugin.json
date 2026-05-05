@@ -1,0 +1,29 @@
+{
+  "name": "harness",
+  "version": "1.0.0",
+  "description": "Composable harness engineering for Claude Code — workflow orchestrator with build, optimize, research, and triage agents. Headless, single-session, resumable.",
+  "author": {
+    "name": "Jesper Vang",
+    "email": "jesper_vang@me.com",
+    "url": "https://github.com/flight505"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/flight505/flight505-harness",
+  "homepage": "https://github.com/flight505/flight505-harness",
+  "keywords": [
+    "claude-cli",
+    "orchestrator",
+    "workflow",
+    "pipeline",
+    "agent-teams",
+    "build",
+    "tdd",
+    "optimization",
+    "autoresearch",
+    "research",
+    "literature-review",
+    "triage",
+    "harness",
+    "headless"
+  ]
+}

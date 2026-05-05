@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# SessionStart hook — inject harness workflow progress into context
+
+set -euo pipefail
+
+HARNESS_DIR=".harness"
+
+escape_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+# Check if any conductor state files exist
+if [ ! -d "$HARNESS_DIR" ]; then
+    context="[conductor] No active workflows. Create one with /conductor:compose or place workflow.yaml at .harness/workflow.yaml"
+else
+    context=$(python3 -c "
+import json, glob, sys, os
+
+harness_dir = sys.argv[1]
+conductor_files = sorted(glob.glob(os.path.join(harness_dir, 'conductor-*.json')), key=os.path.getmtime, reverse=True)
+
+if not conductor_files:
+    # Check for workflow.yaml without conductor state
+    workflow = os.path.join(harness_dir, 'workflow.yaml')
+    if os.path.exists(workflow):
+        print('[conductor] workflow.yaml found but no run state. Run /conductor:run to start.')
+    else:
+        print('[conductor] No active workflows. Create one with /conductor:compose')
+    sys.exit(0)
+
+# Read the most recent conductor state
+try:
+    state = json.loads(open(conductor_files[0]).read())
+    wf_id = state.get('workflow_id', '?')
+    status = state.get('status', '?')
+    progress = state.get('progress', {})
+    current = progress.get('current', 0)
+    total = progress.get('total', 0)
+    elapsed = state.get('elapsed_seconds', 0)
+
+    phases_out = state.get('output', {}).get('phases', {})
+    completed = sum(1 for p in phases_out.values() if isinstance(p, dict) and p.get('status') == 'completed')
+    failed = sum(1 for p in phases_out.values() if isinstance(p, dict) and p.get('status') == 'failed')
+    skipped = sum(1 for p in phases_out.values() if isinstance(p, dict) and p.get('status') == 'skipped')
+
+    elapsed_str = f'{elapsed//60}m {elapsed%60}s' if elapsed > 0 else '0s'
+
+    if status == 'completed':
+        print(f'[conductor] Workflow \"{wf_id}\" completed: {completed}/{total} phases done, {skipped} skipped, {failed} failed ({elapsed_str})')
+    elif status == 'running':
+        print(f'[conductor] Workflow \"{wf_id}\" in progress: phase {current}/{total} ({elapsed_str} elapsed). Resume with /conductor:run')
+    elif status == 'failed':
+        error = state.get('error', {})
+        msg = error.get('message', 'unknown error') if isinstance(error, dict) else 'unknown error'
+        print(f'[conductor] Workflow \"{wf_id}\" FAILED at phase {current}/{total}: {msg}. Resume with /conductor:run')
+    else:
+        print(f'[conductor] Workflow \"{wf_id}\" status: {status}')
+
+except Exception as e:
+    print(f'[conductor] State read error: {e}')
+" "$HARNESS_DIR" 2>/dev/null || echo "[conductor] State read error.")
+fi
+
+escaped=$(escape_json "$context")
+
+cat <<HOOKEOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "${escaped}"
+  }
+}
+HOOKEOF
+
+exit 0

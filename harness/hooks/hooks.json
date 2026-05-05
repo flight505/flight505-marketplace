@@ -1,0 +1,117 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "_comment": "Inject current workflow progress into session context.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd' inject-status"
+          }
+        ]
+      },
+      {
+        "matcher": "startup|resume|clear|compact",
+        "_comment": "Inject configured hardware targets into session context. Re-injects on resume/clear/compact so hardware awareness survives compaction.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd' inject-targets"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "_comment": "Desktop notification when Claude finishes work or needs input. Cross-platform.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd' notify-complete"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "_comment": "After each Bash call during optimization, validate that metric was parseable if this was an experiment run.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd' validate-experiment"
+          }
+        ]
+      },
+      {
+        "_comment": "Validates research agent output structure after state file writes.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'TOOL=\"$TOOL_NAME\"; INPUT=\"$TOOL_INPUT\"; if [ \"$TOOL\" = \"Write\" ]; then FILE=$(echo \"$INPUT\" | grep -o \".harness/research-[^\\\"]*\\.json\" || true); if [ -n \"$FILE\" ] && [ -f \"$FILE\" ]; then node -e \"const fs=require(\\\"fs\\\"); const s=JSON.parse(fs.readFileSync(\\\"$FILE\\\",\\\"utf8\\\")); const o=s.output||{}; const errs=[]; if(o.results&&!Array.isArray(o.results))errs.push(\\\"results must be array\\\"); if(o.findings&&!Array.isArray(o.findings))errs.push(\\\"findings must be array\\\"); if(o.recommendations&&!Array.isArray(o.recommendations))errs.push(\\\"recommendations must be array\\\"); if(o.tradeoff_matrix&&!Array.isArray(o.tradeoff_matrix))errs.push(\\\"tradeoff_matrix must be array\\\"); if(errs.length){console.error(\\\"Research output validation:\\\",errs.join(\\\", \\\"));process.exit(1)}\" 2>&1; fi; fi'",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "_comment": "Before context compaction, flush optimizer state summary to stdout so baseline/best/recent-history survive the compaction summary.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/on-pre-compact.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "TaskCreated": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/on-task-created.sh",
+            "timeout": 5,
+            "statusMessage": "Validating task..."
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/on-task-completed.sh",
+            "timeout": 180,
+            "statusMessage": "Validating and recording task completion..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/validate-fix.sh",
+            "timeout": 120,
+            "statusMessage": "Validating fix..."
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/on-teammate-idle.sh",
+            "timeout": 10,
+            "statusMessage": "Checking team progress..."
+          }
+        ]
+      }
+    ]
+  }
+}

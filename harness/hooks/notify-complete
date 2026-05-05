@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Notification hook — desktop notification when conductor finishes
+# Reads the latest conductor state to include workflow name and result
+
+set -euo pipefail
+
+HARNESS_DIR=".harness"
+TITLE="flight505-harness"
+MESSAGE="Claude Code needs your attention"
+
+# Try to read conductor state for a richer message
+if [ -d "$HARNESS_DIR" ]; then
+    LATEST=$(ls -t "${HARNESS_DIR}"/conductor-*.json 2>/dev/null | head -1 || echo "")
+    if [ -n "$LATEST" ]; then
+        INFO=$(python3 -c "
+import json, sys
+try:
+    s = json.loads(open(sys.argv[1]).read())
+    wf = s.get('workflow_id', '?')
+    status = s.get('status', '?')
+    progress = s.get('progress', {})
+    done = progress.get('current', 0)
+    total = progress.get('total', 0)
+    if status == 'completed':
+        print(f'Workflow \"{wf}\" complete ({done}/{total} phases)')
+    elif status == 'failed':
+        print(f'Workflow \"{wf}\" FAILED at phase {done}/{total}')
+    else:
+        print(f'Workflow \"{wf}\" — {status}')
+except:
+    print('Workflow finished')
+" "$LATEST" 2>/dev/null || echo "Workflow finished")
+        MESSAGE="$INFO"
+    fi
+fi
+
+# Cross-platform notification
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    osascript -e "display notification \"${MESSAGE}\" with title \"${TITLE}\"" 2>/dev/null || true
+elif command -v notify-send &>/dev/null; then
+    notify-send "$TITLE" "$MESSAGE" 2>/dev/null || true
+fi
+
+exit 0
