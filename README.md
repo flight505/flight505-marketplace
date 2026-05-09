@@ -16,8 +16,9 @@
 [![Nano Banana](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[3].version&label=nano-banana&color=brightgreen)](https://github.com/flight505/nano-banana)
 [![AI Frontier](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[4].version&label=ai-frontier&color=brightgreen)](https://github.com/flight505/ai-frontier)
 [![Autoresearch](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[5].version&label=autoresearch&color=brightgreen)](https://github.com/flight505/autoresearch)
+[![Harness](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[6].version&label=harness&color=brightgreen)](https://github.com/flight505/flight505-marketplace/tree/main/harness)
 
-A centralized marketplace for 6 Claude Code plugins. Install the marketplace once, then pick the plugins you want. Updates sync automatically within ~30 seconds of a new release.
+A centralized marketplace for 7 Claude Code plugins. Install the marketplace once, then pick the plugins you want. Updates sync automatically within ~30 seconds of a new release.
 
 ---
 

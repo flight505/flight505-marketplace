@@ -1,6 +1,6 @@
 # flight505-marketplace
 
-6 Claude Code plugins as git submodules. Webhook-driven auto-updates, self-correcting validation hooks.
+7 Claude Code plugins (6 git submodules + harness in-repo). Webhook-driven auto-updates, self-correcting validation hooks.
 
 **Repository:** https://github.com/flight505/flight505-marketplace
 
@@ -21,12 +21,13 @@ Webhook chain handles plugin→marketplace version sync on push. Don't manually 
 
 ```
 flight505-marketplace/
-├── sdk-bridge/              → github.com/flight505/sdk-bridge
-├── storybook-assistant/     → github.com/flight505/storybook-assistant
-├── claude-project-planner/  → github.com/flight505/claude-project-planner
-├── nano-banana/             → github.com/flight505/nano-banana
-├── ai-frontier/             → github.com/flight505/ai-frontier
-└── autoresearch/            → github.com/flight505/autoresearch
+├── sdk-bridge/              → github.com/flight505/sdk-bridge (submodule)
+├── storybook-assistant/     → github.com/flight505/storybook-assistant (submodule)
+├── claude-project-planner/  → github.com/flight505/claude-project-planner (submodule)
+├── nano-banana/             → github.com/flight505/nano-banana (submodule)
+├── ai-frontier/             → github.com/flight505/ai-frontier (submodule)
+├── autoresearch/            → github.com/flight505/autoresearch (submodule)
+└── harness/                 → in-repo (composable workflow orchestrator)
 ```
 
 **Each plugin has:** `CLAUDE.md`, `README.md`, `.claude-plugin/plugin.json`
