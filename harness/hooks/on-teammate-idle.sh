@@ -23,16 +23,27 @@ INPUT=$(cat || echo "")
 TEAMMATE=$(printf '%s' "$INPUT" | jq -r '.teammate_name // empty' 2>/dev/null || echo "")
 TEAM=$(printf '%s' "$INPUT" | jq -r '.team_name // empty' 2>/dev/null || echo "")
 
-# Compute remaining work from the state file
-REMAINING=$(python3 - "$STATE_FILE" <<'PY'
+# Compute slack: pending tasks beyond what other teammates are already working.
+# Without claim tracking, we approximate: if more tasks remain than teammates
+# currently in 'working' status, the idle teammate should claim one. If
+# remaining tasks <= working count, all pending work is already covered and
+# this teammate is genuinely free to idle. Avoids the historical thrash where
+# every idle teammate got prodded back even when there was nothing to claim.
+read -r REMAINING WORKING < <(python3 - "$STATE_FILE" "$TEAMMATE" <<'PY'
 import json, sys
 try:
     state = json.loads(open(sys.argv[1]).read())
+    me = sys.argv[2] if len(sys.argv) > 2 else ""
     tasks = state.get("output", {}).get("tasks", {})
     remaining = sum(1 for t in tasks.values() if t.get("status") != "completed")
-    print(remaining)
+    teammates = state.get("teammates", [])
+    # Count teammates currently working — exclude self because we are about to
+    # be marked idle by record-teammate-status above.
+    working = sum(1 for m in teammates
+                  if m.get("status") == "working" and m.get("name") != me)
+    print(remaining, working)
 except Exception:
-    print(0)
+    print(0, 0)
 PY
 )
 
@@ -44,9 +55,12 @@ if [ -n "$TEAMMATE" ]; then
     record-teammate-status "$STATE_FILE" "$TEAMMATE" "implementer" "$STATUS" "$TEAM"
 fi
 
-# Block idle only if work remains
-if [ "$REMAINING" -gt 0 ]; then
-  echo "There are still ${REMAINING} incomplete tasks. Run TaskList, claim an unblocked task, and keep working." >&2
+# Block idle only when remaining work exceeds what other teammates are already
+# handling. If REMAINING <= WORKING, all pending tasks are claimed in flight by
+# others — let this teammate idle.
+SLACK=$((REMAINING - WORKING))
+if [ "$SLACK" -gt 0 ]; then
+  echo "There are still ${SLACK} unclaimed tasks (${REMAINING} remaining, ${WORKING} in flight by other teammates). Run TaskList, claim an unblocked task, and keep working." >&2
   exit 2
 fi
 

@@ -38,15 +38,8 @@ fi
 
 # Record the task in the build state file
 if [ -n "$TASK_ID" ]; then
-  mutate_state "$STATE_FILE" "
-tasks = state.setdefault('output', {}).setdefault('tasks', {})
-tasks['${TASK_ID}'] = {
-    'subject': ${TASK_SUBJECT@Q},
-    'status': 'pending',
-}
-progress = state.setdefault('progress', {'current': 0, 'total': 0, 'unit': 'stories'})
-progress['total'] = max(progress.get('total', 0), len(tasks))
-"
+  python3 "${CLAUDE_PLUGIN_ROOT}/bin/state-mutate.py" \
+    add-task "$STATE_FILE" "$TASK_ID" "$TASK_SUBJECT"
 fi
 
 exit 0

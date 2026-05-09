@@ -107,9 +107,23 @@ def op_record_teammate_status(args):
     save_state(state_file, state)
 
 
+def op_add_task(args):
+    if len(args) < 3:
+        print("usage: add-task <state-file> <task-id> <task-subject>", file=sys.stderr)
+        sys.exit(2)
+    state_file, task_id, subject = args[0], args[1], args[2]
+    state = load_state(state_file)
+    tasks = state.setdefault("output", {}).setdefault("tasks", {})
+    tasks[task_id] = {"subject": subject, "status": "pending"}
+    progress = state.setdefault("progress", {"current": 0, "total": 0, "unit": "stories"})
+    progress["total"] = max(progress.get("total", 0), len(tasks))
+    save_state(state_file, state)
+
+
 OPS = {
     "mark-task-completed": op_mark_task_completed,
     "record-teammate-status": op_record_teammate_status,
+    "add-task": op_add_task,
 }
 
 
