@@ -122,6 +122,10 @@ if [ "${#FILES[@]}" -eq 0 ]; then
 fi
 
 for file in "${FILES[@]}"; do
+  # Resolve to absolute path: tests cd into tmpdirs, so the source must be absolute.
+  if [ -f "$file" ]; then
+    file=$(cd "$(dirname "$file")" && pwd)/$(basename "$file")
+  fi
   case "$file" in
     *.test.sh)  run_bash_file "$file" ;;
     *.test.mjs) run_node_file "$file" ;;

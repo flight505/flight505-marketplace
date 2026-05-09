@@ -31,12 +31,20 @@ The CLI exits non-zero with a JSON `{errors: [...], warnings: [...]}` report on 
 
 **Implementation reference:** [`harness/bin/conductor.mjs`](../bin/conductor.mjs) — the `validate` subcommand. Tests in [`harness/tests/conductor.test.mjs`](../tests/conductor.test.mjs).
 
-## 2b. Launch Dashboard
+## 2b. Launch Dashboard + Heartbeat
 
-Before executing any phases, start the monitoring dashboard in the background so the user can follow progress in real time.
+Before executing any phases, start the monitoring dashboard so the user can follow progress in real time, and the heartbeat daemon so liveness-gated hooks know the workflow is alive.
 
 ```bash
 launch-dashboard "$(pwd)/.harness"
+
+# Heartbeat: every 1.5s, writes last_heartbeat into running state files.
+# Hooks (TaskCompleted, TeammateIdle, etc.) gate on freshness via
+# HARNESS_STALE_THRESHOLD_SECONDS (default 600s). Without this, a crashed
+# session's state file would hijack the next session's hook firings.
+node "${CLAUDE_PLUGIN_ROOT}/bin/heartbeat.mjs" "$(pwd)/.harness" &
+HEARTBEAT_PID=$!
+trap 'kill -TERM $HEARTBEAT_PID 2>/dev/null || true' EXIT
 ```
 
 This:
