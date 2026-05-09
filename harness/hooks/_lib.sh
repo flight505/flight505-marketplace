@@ -70,6 +70,61 @@ read_team_name() {
   printf '%s' "$payload" | jq -r '.team_name // ""' 2>/dev/null || echo ""
 }
 
+# Validate that a quality-gate command is safe to execute via `bash -c`.
+# Workflow.yaml controls what runs during TaskCompleted hooks, so we apply
+# defense-in-depth here:
+#
+#   1. The first token (the binary) must be in QUALITY_ALLOWED_BINARIES.
+#   2. The command must not chain via `;`, `&&`, `||`, command substitution
+#      `$(...)`, or backticks. Pipes and `2>&1` redirects are allowed.
+#
+# Returns 0 if safe, 1 if rejected (writes reason to stderr).
+#
+# Override the allowlist via HARNESS_QUALITY_ALLOWED_BINARIES (space-separated).
+QUALITY_ALLOWED_BINARIES_DEFAULT="pnpm npm yarn bun cargo go rustc pytest python python3 uv ruff mypy make tsc eslint prettier biome node deno bash sh"
+
+is_safe_quality_command() {
+  local cmd="$1"
+  local allowed="${HARNESS_QUALITY_ALLOWED_BINARIES:-$QUALITY_ALLOWED_BINARIES_DEFAULT}"
+
+  if [ -z "$cmd" ]; then return 0; fi
+
+  # Reject shell control flow that would let an attacker chain commands.
+  case "$cmd" in
+    *';'*|*'&&'*|*'||'*|*'`'*|*'$('*)
+      echo "rejected: command contains chaining metacharacter (; && || \` \$(): $cmd" >&2
+      return 1
+      ;;
+  esac
+
+  # First token = binary. Strip env assignments like FOO=bar prefix.
+  local first
+  first=$(printf '%s' "$cmd" | awk '{
+    for (i=1; i<=NF; i++) {
+      if ($i !~ /=/) { print $i; exit }
+    }
+  }')
+  # awk above breaks if `awk` is not the standard one; fall back to bash.
+  if [ -z "$first" ]; then
+    # shellcheck disable=SC2086
+    set -- $cmd
+    while [ $# -gt 0 ]; do
+      case "$1" in *=*) shift ;; *) first="$1"; break ;; esac
+    done
+  fi
+  # Strip path prefix: /usr/bin/pnpm → pnpm.
+  first=$(basename "$first")
+
+  for binary in $allowed; do
+    if [ "$first" = "$binary" ]; then
+      return 0
+    fi
+  done
+
+  echo "rejected: '$first' is not in the quality-command allowlist (set HARNESS_QUALITY_ALLOWED_BINARIES to override)" >&2
+  return 1
+}
+
 # Extract a quality command from a build state file's config.
 # Usage: read_quality_cmd <state_file> <key>
 read_quality_cmd() {

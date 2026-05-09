@@ -36,7 +36,16 @@ run_gate() {
   local label="$1"
   local cmd="$2"
   [ -n "$cmd" ] || return 0
-  if ! OUTPUT=$(eval "$cmd" 2>&1); then
+  # Defense-in-depth: validate the command before executing. workflow.yaml
+  # controls these strings, so an unvetted yaml could otherwise run anything.
+  if ! is_safe_quality_command "$cmd" 2>/tmp/harness-gate-rejection-$$; then
+    local reason
+    reason=$(cat /tmp/harness-gate-rejection-$$ 2>/dev/null)
+    rm -f /tmp/harness-gate-rejection-$$
+    FAILURES+="[${label}] command rejected by allowlist:"$'\n'"  ${reason}"$'\n'"  command: ${cmd}"$'\n\n'
+    return 0
+  fi
+  if ! OUTPUT=$(bash -c -- "$cmd" 2>&1); then
     FAILURES+="[${label}] failed:"$'\n'"${OUTPUT}"$'\n\n'
   fi
 }
