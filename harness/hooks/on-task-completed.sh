@@ -64,20 +64,8 @@ fi
 
 # --- Step 2: record completion in state file ---
 if [ -n "$TASK_ID" ]; then
-  mutate_state "$STATE_FILE" "
-output = state.setdefault('output', {})
-tasks = output.setdefault('tasks', {})
-if '${TASK_ID}' in tasks:
-    tasks['${TASK_ID}']['status'] = 'completed'
-    tasks['${TASK_ID}']['completed_by'] = ${TEAMMATE@Q} or None
-completed = sum(1 for t in tasks.values() if t.get('status') == 'completed')
-progress = state.setdefault('progress', {'current': 0, 'total': len(tasks), 'unit': 'stories'})
-progress['current'] = completed
-if progress.get('total', 0) == 0:
-    progress['total'] = len(tasks)
-output['stories_completed'] = completed
-output['stories_total'] = progress['total']
-"
+  python3 "${CLAUDE_PLUGIN_ROOT}/bin/state-mutate.py" \
+    mark-task-completed "$STATE_FILE" "$TASK_ID" "$TEAMMATE"
 fi
 
 exit 0

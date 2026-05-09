@@ -45,11 +45,11 @@
         ]
       },
       {
-        "_comment": "Validates research agent output structure after state file writes.",
+        "_comment": "Validates research agent output structure after .harness/research-*.json writes.",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'TOOL=\"$TOOL_NAME\"; INPUT=\"$TOOL_INPUT\"; if [ \"$TOOL\" = \"Write\" ]; then FILE=$(echo \"$INPUT\" | grep -o \".harness/research-[^\\\"]*\\.json\" || true); if [ -n \"$FILE\" ] && [ -f \"$FILE\" ]; then node -e \"const fs=require(\\\"fs\\\"); const s=JSON.parse(fs.readFileSync(\\\"$FILE\\\",\\\"utf8\\\")); const o=s.output||{}; const errs=[]; if(o.results&&!Array.isArray(o.results))errs.push(\\\"results must be array\\\"); if(o.findings&&!Array.isArray(o.findings))errs.push(\\\"findings must be array\\\"); if(o.recommendations&&!Array.isArray(o.recommendations))errs.push(\\\"recommendations must be array\\\"); if(o.tradeoff_matrix&&!Array.isArray(o.tradeoff_matrix))errs.push(\\\"tradeoff_matrix must be array\\\"); if(errs.length){console.error(\\\"Research output validation:\\\",errs.join(\\\", \\\"));process.exit(1)}\" 2>&1; fi; fi'",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/validate-research-output.mjs",
             "timeout": 5000
           }
         ]

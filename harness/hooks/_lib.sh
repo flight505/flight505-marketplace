@@ -142,23 +142,7 @@ except Exception:
 PY
 }
 
-# Atomically update a JSON state file with a Python snippet that modifies the
-# `state` dict in place. Writes to a .tmp file and renames for atomicity.
-# Usage: mutate_state <state_file> <python-snippet>
-mutate_state() {
-  local state_file="$1"
-  local snippet="$2"
-  [ -f "$state_file" ] || return 0
-  python3 - "$state_file" <<PY
-import json, os, sys, datetime
-path = sys.argv[1]
-with open(path) as f:
-    state = json.load(f)
-${snippet}
-state["updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
-tmp = path + ".tmp"
-with open(tmp, "w") as f:
-    json.dump(state, f, indent=2)
-os.replace(tmp, path)
-PY
-}
+# State mutations are now handled by harness/bin/state-mutate.py with named
+# operations. The legacy mutate_state() function (which embedded a Python
+# heredoc accepting bash-templated snippets) was removed in favor of structured,
+# testable CLI ops. See bin/state-mutate.py for the available operations.

@@ -40,24 +40,8 @@ PY
 if [ -n "$TEAMMATE" ]; then
   STATUS="idle"
   [ "$REMAINING" -gt 0 ] && STATUS="working"
-  mutate_state "$STATE_FILE" "
-teammates = state.setdefault('teammates', [])
-found = False
-for m in teammates:
-    if m.get('name') == ${TEAMMATE@Q}:
-        m['status'] = ${STATUS@Q}
-        found = True
-        break
-if not found:
-    teammates.append({
-        'name': ${TEAMMATE@Q},
-        'agent_type': 'implementer',
-        'status': ${STATUS@Q},
-        'tasks_completed': 0,
-    })
-if ${TEAM@Q}:
-    state['team_name'] = ${TEAM@Q}
-"
+  python3 "${CLAUDE_PLUGIN_ROOT}/bin/state-mutate.py" \
+    record-teammate-status "$STATE_FILE" "$TEAMMATE" "implementer" "$STATUS" "$TEAM"
 fi
 
 # Block idle only if work remains
