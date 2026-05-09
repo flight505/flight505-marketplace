@@ -21,31 +21,15 @@ If the file doesn't exist, stop with: "No workflow found at `<path>`. Create one
 
 ## 2. Validate Workflow
 
-Parse the YAML. Verify:
-- `name` exists and is lowercase with hyphens only
-- `phases` is a non-empty array
-- Each phase has `id`, `plugin`, `type`
-- `type` is one of: `agent-teams`, `loop`, `subagent`, `inline`
-- `depends_on` references valid phase IDs only — apply these checks:
-  1. **Existence:** Every ID in `depends_on` must match a phase `id` in the workflow
-  2. **No forward references:** A phase cannot depend on a phase that appears later in the array (phases execute sequentially in array order)
-  3. **No cycles:** Build a dependency graph and verify it's a DAG. Walk the graph: for each phase, recursively follow `depends_on` — if you visit the same phase twice, it's a cycle. Report: "Cycle detected: A → B → ... → A"
-- `condition` expressions reference valid `phases.<id>.output.<field>` paths — the referenced `<id>` must be a prior phase. Also verify the referenced phase can produce the field: check the state schema or known output shape. Known output fields by phase type / agent:
-  - `loop` (optimize): `best_commit`, `best_description`, `baseline_value`, `best_value`, `improvement_pct`, `experiments_run`, `experiments_kept`
-  - `agent-teams` (build): `branch`, `stories_completed`, `stories_total`, `commits`, `files_changed`, `review_verdict`, `code_review_verdict`, `tasks` (map of id → {subject, status, completed_by})
-  - `subagent agent: searcher|synthesizer|method-analyst|...` (research): `query`, `findings`, `results`, `recommendations`, `key_sources`, `consensus`, `disagreements`, `open_questions`
-  - `subagent agent: diagnostician|fixer|verifier` (triage): `diagnosis`, `fix_branch`, `fix_pr`, `verification`
-- Phase-specific required config fields are present (e.g., `artifact` for `loop` phases)
-- **Agent validation:** If a `subagent` phase specifies `config.agent`, verify it's one of the 14 known agents:
-  - Build: `lead` (spawned by orchestrator for agent-teams phases), `implementer`, `reviewer`, `code-reviewer` (spawned by lead)
-  - Optimize: `optimizer`, `advisor`
-  - Research: `searcher`, `synthesizer`, `method-analyst`, `implementation-guide`, `architecture-evaluator`
-  - Triage: `diagnostician`, `fixer`, `verifier`
-  - If the agent name doesn't match, report: "Phase `<id>`: agent `<name>` is not a known agent. Available: ..."
-- **Agent-teams task validation:** If `max_teammates` is set and greater than the number of tasks, warn: "Phase `<id>`: max_teammates (N) exceeds task count (M) — extra teammates will idle"
-- **Task dependency validation:** If tasks define `blocked_by`, verify all referenced task IDs exist in the same phase's task list
+Delegate validation to the conductor CLI. It checks: name format, phases array, required fields per phase type, depends_on existence + no forward refs + DAG (no cycles), known agent names, and required config keys (e.g., `artifact` for optimize-mode loops, `until` for generic-mode loops).
 
-If validation fails, report **all** errors (not just the first) and stop.
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/bin/conductor.mjs" validate "$WORKFLOW_PATH"
+```
+
+The CLI exits non-zero with a JSON `{errors: [...], warnings: [...]}` report on failure. Print the report and stop. On success, surface any warnings but continue.
+
+**Implementation reference:** [`harness/bin/conductor.mjs`](../bin/conductor.mjs) — the `validate` subcommand. Tests in [`harness/tests/conductor.test.mjs`](../tests/conductor.test.mjs).
 
 ## 2b. Launch Dashboard
 
@@ -67,66 +51,45 @@ If the dashboard fails to start (missing dependencies, port conflict), log a war
 ## 3. Check for Resume State
 
 ```bash
-ls -la .harness/conductor-*.json 2>/dev/null
-```
-
-If a conductor state file exists for this workflow:
-1. Read it
-2. Check `output.phases.<id>.retry_count` for each phase (default 0 if absent)
-3. For each phase in the workflow:
-   - `completed` or `skipped` → skip (log: "Phase `<id>` already completed, skipping")
-   - `failed` → if `retry_count < 2`, increment `retry_count`, log "Retrying phase `<id>` (attempt N/3)", retry from scratch. If `retry_count >= 2`, skip with: "Phase `<id>` failed 3 times, giving up"
-   - `running` (stale — session died) → treat as failed, apply same retry logic
-   - `waiting_approval` → check `.harness/pending-approval-{phase_id}.json`. If `status == "approved"`, mark completed and continue. If `status == "rejected"`, mark failed. If `status == "pending"`, stop the conductor again with the approval prompt.
-   - `pending` → execute normally
-4. Resume from the first non-completed phase
-
-**Retry tracking:** When retrying, set `output.phases.<id>.retry_count` in the conductor state before re-executing. This survives crashes — on next resume, the conductor knows how many attempts have been made.
-
-If no state file exists, this is a fresh run. Create the conductor state:
-
-```bash
 mkdir -p .harness
-```
-
-If `.gitignore` exists but doesn't contain `.harness/`, append it:
-
-```bash
 if [ -f .gitignore ] && ! grep -q '^\.harness/' .gitignore; then
   echo '.harness/' >> .gitignore
 fi
+
+WORKFLOW_NAME=$(node -e "import('${CLAUDE_PLUGIN_ROOT}/bin/_lib/yaml.mjs').then(m=>console.log(m.parse(require('fs').readFileSync('$WORKFLOW_PATH','utf8')).name))")
+STATE_PATH=".harness/conductor-${WORKFLOW_NAME}.json"
+
+if [ ! -f "$STATE_PATH" ]; then
+  node "${CLAUDE_PLUGIN_ROOT}/bin/conductor.mjs" init "$WORKFLOW_PATH" "$STATE_PATH"
+fi
 ```
 
-Write `.harness/conductor-{workflow_name}.json`:
+The CLI writes a fresh state file with all phases marked `pending` and `retry_count: 0`, then atomically renames into place. If the file already exists, the CLI is not invoked — existing state is preserved for resume.
 
-```json
-{
-  "schema": "harness/v1",
-  "workflow_id": "<name from workflow>",
-  "phase_id": "conductor",
-  "plugin": "harness",
-  "run_id": "conductor-<name>",
-  "status": "running",
-  "started_at": "<ISO 8601 now>",
-  "updated_at": "<ISO 8601 now>",
-  "elapsed_seconds": 0,
-  "progress": {
-    "current": 0,
-    "total": <number of phases>,
-    "unit": "phases"
-  },
-  "output": {
-    "phases": {}
-  },
-  "error": null,
-  "config": {
-    "workflow_path": "<path>",
-    "workflow_name": "<name>"
-  }
-}
-```
+**Resume semantics** (handled by `conductor next`, see §4): completed/skipped phases are skipped, failed phases are retried while `retry_count < 2`, stale `running` phases are treated as abandoned and retried, `waiting_approval` returns an `approval`/`plan` action so the conductor can pause for the human gate.
 
 ## 4. Execute Phases
+
+The execution loop is CLI-driven: ask `conductor next` what to do, do it, then `conductor record` the outcome. Repeat until `done`.
+
+```bash
+while true; do
+  ACTION_JSON=$(node "${CLAUDE_PLUGIN_ROOT}/bin/conductor.mjs" next "$STATE_PATH")
+  ACTION=$(echo "$ACTION_JSON" | jq -r '.action')
+  case "$ACTION" in
+    done)     break ;;
+    failed)   echo "$ACTION_JSON" | jq -r '.reason'; exit 1 ;;
+    approval) echo "Pause: phase $(echo "$ACTION_JSON" | jq -r '.phase_id') waiting on /harness:approve"; exit 0 ;;
+    plan)     echo "Pause: phase $(echo "$ACTION_JSON" | jq -r '.phase_id') waiting on /ultraplan + /harness:plan-ready"; exit 0 ;;
+    run)      ;;  # fall through to per-type execution below
+    *)        echo "unknown action: $ACTION"; exit 1 ;;
+  esac
+  # The per-type execution logic in §4a–§4h decides which agent to spawn for
+  # the phase descriptor at .phase. After execution, record the outcome:
+  #   node "${CLAUDE_PLUGIN_ROOT}/bin/conductor.mjs" record "$STATE_PATH" "$PHASE_ID" \
+  #     '{"status":"completed","output":{...}}'
+done
+```
 
 Process phases in order. For each phase:
 
@@ -450,23 +413,10 @@ After each phase completes (or fails/skips):
 
 ## 5. Finalize
 
-When all phases are processed:
+When the loop in §4 exits with `action: done`, the conductor state file already reflects the final per-phase status (the CLI writes it atomically on every `record`). Just summarize for the user:
 
-1. Set conductor status to `completed` (or `failed` if any required phase failed)
-2. Write final output summary:
-   ```json
-   {
-     "phases": {
-       "<phase_id>": { "status": "completed", "output": {...} },
-       "<phase_id>": { "status": "skipped", "reason": "condition not met" }
-     },
-     "total_elapsed_seconds": N,
-     "phases_completed": N,
-     "phases_failed": N,
-     "phases_skipped": N
-   }
-   ```
-3. Output a final summary to the conversation:
+1. Read the final state: `cat "$STATE_PATH" | jq '.phases'`
+2. Output a final summary to the conversation:
    ```
    ## Workflow Complete: <name>
    - Phases: N completed, N skipped, N failed
