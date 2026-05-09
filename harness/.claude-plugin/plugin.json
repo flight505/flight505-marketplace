@@ -1,6 +1,6 @@
 {
   "name": "harness",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Composable harness engineering for Claude Code — workflow orchestrator with build, optimize, research, and triage agents. Headless, single-session, resumable.",
   "author": {
     "name": "Jesper Vang",
