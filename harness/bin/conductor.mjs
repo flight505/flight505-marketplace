@@ -28,6 +28,20 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from './_lib/yaml.mjs';
 
+// Pattern + enum checks aligned to harness/schema/workflow-v1.schema.json.
+// We hand-roll these instead of pulling in ajv to keep the conductor zero-dep
+// (the plugin ships no node_modules). The schema file remains the canonical
+// contract — when adding a check here, the schema should be updated to match.
+const PATTERNS = {
+  phaseId: /^[a-z0-9][a-z0-9-]*$/,
+  workflowName: /^[a-z][a-z0-9-]*$/,
+  timeBudget: /^\d+[smh]$/,
+};
+const ENUMS = {
+  direction: new Set(['lower', 'higher']),
+  target: new Set(['local', 'server', 'runpod']),
+};
+
 const KNOWN_AGENTS = new Set([
   'lead', 'implementer', 'reviewer', 'code-reviewer',
   'optimizer', 'advisor',
@@ -87,7 +101,7 @@ export function validate(workflow) {
   if (!workflow || typeof workflow !== 'object') {
     return { errors: ['workflow must be a mapping'], warnings: [] };
   }
-  if (typeof workflow.name !== 'string' || !/^[a-z][a-z0-9-]*$/.test(workflow.name)) {
+  if (typeof workflow.name !== 'string' || !PATTERNS.workflowName.test(workflow.name)) {
     errors.push('workflow.name must be lowercase with hyphens only');
   }
   if (!Array.isArray(workflow.phases) || workflow.phases.length === 0) {
@@ -107,6 +121,9 @@ export function validate(workflow) {
     if (typeof p.id !== 'string' || p.id === '') {
       errors.push(`${where}: missing id`);
       continue;
+    }
+    if (!PATTERNS.phaseId.test(p.id)) {
+      errors.push(`${where}: id '${p.id}' must match ${PATTERNS.phaseId} (lowercase alphanumerics + hyphens, must start with [a-z0-9])`);
     }
     if (seen.has(p.id)) {
       errors.push(`${where}: duplicate id '${p.id}'`);
@@ -135,11 +152,27 @@ export function validate(workflow) {
 
     // Loop has two modes: generic (config.body present) and optimize (no body).
     if (p.type === 'loop') {
-      const loopRequired = cfg.body !== undefined ? LOOP_GENERIC_REQUIRED : LOOP_OPTIMIZE_REQUIRED;
+      const isGeneric = cfg.body !== undefined;
+      const loopRequired = isGeneric ? LOOP_GENERIC_REQUIRED : LOOP_OPTIMIZE_REQUIRED;
+      const mode = isGeneric ? 'generic' : 'optimize';
       for (const key of loopRequired) {
         if (cfg[key] === undefined || cfg[key] === null || cfg[key] === '') {
-          const mode = cfg.body !== undefined ? 'generic' : 'optimize';
           errors.push(`phase '${p.id}' (loop, ${mode} mode): config.${key} is required`);
+        }
+      }
+      // Enum + pattern checks for optimize-mode fields.
+      if (!isGeneric) {
+        if (cfg.direction !== undefined && !ENUMS.direction.has(cfg.direction)) {
+          errors.push(`phase '${p.id}' (loop, optimize): direction must be one of ${[...ENUMS.direction].join(', ')}; got '${cfg.direction}'`);
+        }
+        if (cfg.target !== undefined && !ENUMS.target.has(cfg.target)) {
+          errors.push(`phase '${p.id}' (loop, optimize): target must be one of ${[...ENUMS.target].join(', ')}; got '${cfg.target}'`);
+        }
+        if (cfg.time_budget !== undefined && !PATTERNS.timeBudget.test(cfg.time_budget)) {
+          errors.push(`phase '${p.id}' (loop, optimize): time_budget '${cfg.time_budget}' must match ${PATTERNS.timeBudget} (e.g., 30s, 5m, 2h)`);
+        }
+        if (cfg.max_experiments !== undefined && (!Number.isInteger(cfg.max_experiments) || cfg.max_experiments < 1)) {
+          errors.push(`phase '${p.id}' (loop, optimize): max_experiments must be an integer >= 1; got ${cfg.max_experiments}`);
         }
       }
     }

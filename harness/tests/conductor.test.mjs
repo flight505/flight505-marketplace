@@ -142,6 +142,82 @@ test('validate: rejects duplicate phase id', () => {
   assert.ok(r.errors.some(e => e.includes("duplicate id 'a'")));
 });
 
+test('validate: rejects bad phase id pattern', () => {
+  const wf = {
+    name: 'x',
+    phases: [{ id: 'Bad_ID', plugin: 'harness', type: 'inline', config: { command: 'echo' } }],
+  };
+  const r = validate(wf);
+  assert.ok(r.errors.some(e => e.includes("id 'Bad_ID'")));
+});
+
+test('validate: optimize loop with bad direction enum', () => {
+  const wf = {
+    name: 'x',
+    phases: [{
+      id: 'a',
+      plugin: 'harness',
+      type: 'loop',
+      config: {
+        artifact: 't.py', metric: 'loss', direction: 'sideways', run_command: 'go',
+      },
+    }],
+  };
+  const r = validate(wf);
+  assert.ok(r.errors.some(e => e.includes('direction must be one of')));
+});
+
+test('validate: optimize loop with bad target enum', () => {
+  const wf = {
+    name: 'x',
+    phases: [{
+      id: 'a',
+      plugin: 'harness',
+      type: 'loop',
+      config: {
+        artifact: 't.py', metric: 'loss', direction: 'lower', run_command: 'go',
+        target: 'aws-lambda',
+      },
+    }],
+  };
+  const r = validate(wf);
+  assert.ok(r.errors.some(e => e.includes('target must be one of')));
+});
+
+test('validate: optimize loop with bad time_budget pattern', () => {
+  const wf = {
+    name: 'x',
+    phases: [{
+      id: 'a',
+      plugin: 'harness',
+      type: 'loop',
+      config: {
+        artifact: 't.py', metric: 'loss', direction: 'lower', run_command: 'go',
+        time_budget: '5 minutes',
+      },
+    }],
+  };
+  const r = validate(wf);
+  assert.ok(r.errors.some(e => e.includes('time_budget')));
+});
+
+test('validate: optimize loop with non-integer max_experiments', () => {
+  const wf = {
+    name: 'x',
+    phases: [{
+      id: 'a',
+      plugin: 'harness',
+      type: 'loop',
+      config: {
+        artifact: 't.py', metric: 'loss', direction: 'lower', run_command: 'go',
+        max_experiments: 0,
+      },
+    }],
+  };
+  const r = validate(wf);
+  assert.ok(r.errors.some(e => e.includes('max_experiments')));
+});
+
 test('validate: warns when teammates exceed task count', () => {
   const wf = {
     name: 'x',
