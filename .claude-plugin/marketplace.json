@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.12.0",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Autoresearch, and Harness",
+  "version": "1.13.0",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Autoresearch, Harness, and Ralph",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -150,6 +150,26 @@
         "triage",
         "harness",
         "headless"
+      ]
+    },
+    {
+      "name": "ralph",
+      "description": "Long-running agent loop for Claude Code, in the Ralph pattern — a stable prompt, a mutable plan, and a loop that runs until the plan is empty. Three commands, fresh context per iteration.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "./ralph",
+      "category": "workflows",
+      "keywords": [
+        "ralph",
+        "ralph-pattern",
+        "agent-loop",
+        "long-running",
+        "headless",
+        "autonomous",
+        "plan-driven"
       ]
     }
   ]
