@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "flight505-plugins",
-  "version": "1.13.0",
-  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Autoresearch, Harness, and Ralph",
+  "version": "1.14.0",
+  "description": "Official marketplace for flight505's Claude Code plugins - SDK Bridge, Storybook Assistant, Project Planner, Nano Banana, AI Frontier, Autoresearch, Harness, Ralph, and Claude Flows",
   "owner": {
     "name": "Jesper Vang",
     "email": "contact@flight505.dev",
@@ -170,6 +170,27 @@
         "headless",
         "autonomous",
         "plan-driven"
+      ]
+    },
+    {
+      "name": "claude-flows",
+      "description": "Helper plugin for Claude Code's autonomous primitives — /goal, /branch, worktrees, dynamic workflows. Wraps native features with opinionated defaults and safety guardrails.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Jesper Vang",
+        "url": "https://github.com/flight505"
+      },
+      "source": "./claude-flows",
+      "category": "workflows",
+      "keywords": [
+        "claude-code",
+        "goal",
+        "branch",
+        "worktrees",
+        "dynamic-workflows",
+        "primitives",
+        "helper",
+        "ultracode"
       ]
     }
   ]
