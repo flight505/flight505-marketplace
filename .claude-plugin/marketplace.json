@@ -175,7 +175,7 @@
     {
       "name": "claude-flows",
       "description": "Helper plugin for Claude Code's autonomous primitives — /goal, /branch, worktrees, dynamic workflows. Wraps native features with opinionated defaults and safety guardrails.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": {
         "name": "Jesper Vang",
         "url": "https://github.com/flight505"
