@@ -24,7 +24,6 @@ flight505-marketplace/
 ├── sdk-bridge/              → github.com/flight505/sdk-bridge
 ├── storybook-assistant/     → github.com/flight505/storybook-assistant
 ├── claude-project-planner/  → github.com/flight505/claude-project-planner
-├── nano-banana/             → github.com/flight505/nano-banana
 ├── ai-frontier/             → github.com/flight505/ai-frontier
 └── autoresearch/            → github.com/flight505/autoresearch
 ```

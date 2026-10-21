@@ -40,9 +40,6 @@ get_test_command() {
         storybook-assistant)
             echo "/storybook-assistant:help"
             ;;
-        nano-banana)
-            echo "/nano-banana:setup"
-            ;;
         claude-project-planner)
             echo "/claude-project-planner:help"
             ;;

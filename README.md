@@ -5,7 +5,7 @@
 [![Auto-update Plugins](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/auto-update-plugins.yml)
 [![Validate Manifests](https://github.com/flight505/flight505-marketplace/actions/workflows/validate-plugin-manifests.yml/badge.svg)](https://github.com/flight505/flight505-marketplace/actions/workflows/validate-plugin-manifests.yml)
 [![Marketplace Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.version&label=marketplace&color=blue)](https://github.com/flight505/flight505-marketplace)
-[![Plugins](https://img.shields.io/badge/plugins-6-success.svg)](https://github.com/flight505/flight505-marketplace)
+[![Plugins](https://img.shields.io/badge/plugins-8-success.svg)](https://github.com/flight505/flight505-marketplace)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ### Plugin Versions
@@ -13,11 +13,10 @@
 [![SDK Bridge](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[0].version&label=sdk-bridge&color=brightgreen)](https://github.com/flight505/sdk-bridge)
 [![Storybook Assistant](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[1].version&label=storybook-assistant&color=brightgreen)](https://github.com/flight505/storybook-assistant)
 [![Claude Project Planner](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[2].version&label=claude-project-planner&color=brightgreen)](https://github.com/flight505/claude-project-planner)
-[![Nano Banana](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[3].version&label=nano-banana&color=brightgreen)](https://github.com/flight505/nano-banana)
-[![AI Frontier](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[4].version&label=ai-frontier&color=brightgreen)](https://github.com/flight505/ai-frontier)
-[![Autoresearch](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[5].version&label=autoresearch&color=brightgreen)](https://github.com/flight505/autoresearch)
+[![AI Frontier](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[3].version&label=ai-frontier&color=brightgreen)](https://github.com/flight505/ai-frontier)
+[![Autoresearch](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[4].version&label=autoresearch&color=brightgreen)](https://github.com/flight505/autoresearch)
 
-A centralized marketplace for 6 Claude Code plugins. Install the marketplace once, then pick the plugins you want. Updates sync automatically within ~30 seconds of a new release.
+A centralized marketplace for 8 Claude Code plugins. Install the marketplace once, then pick the plugins you want. Updates sync automatically within ~30 seconds of a new release.
 
 ---
 
@@ -43,7 +42,6 @@ Install the plugins you want:
 
 ```bash
 claude plugin install sdk-bridge@flight505-plugins
-claude plugin install nano-banana@flight505-plugins
 claude plugin install ai-frontier@flight505-plugins
 # ... any combination you like
 ```
@@ -66,7 +64,6 @@ You can also install individual plugins directly from their repositories:
 
 ```bash
 claude plugin install github:flight505/sdk-bridge
-claude plugin install github:flight505/nano-banana
 ```
 
 This works but you won't get the coordinated marketplace updates.
@@ -98,16 +95,6 @@ Complete Storybook development toolkit with Vision AI design-to-code transformat
 Production-ready project planning with progress tracking and error recovery. Generates architecture docs, sprint plans with INVEST criteria, service cost analyses with ROI projections, risk assessments, and implementation roadmaps. Exports to PDF/DOCX/MD.
 
 [Repository](https://github.com/flight505/claude-project-planner) · [Documentation](https://github.com/flight505/claude-project-planner#readme)
-
----
-
-### Nano Banana
-
-AI-powered image and diagram generation using state-of-the-art models (Gemini 3 Pro, FLUX) via OpenRouter. Creates technical diagrams, visual abstracts, and illustrations with quality review and smart iteration. Includes Mermaid diagram support.
-
-**Commands:** `/nano-banana:edit`, `/nano-banana:visual-abstract`, `/nano-banana:setup`
-
-[Repository](https://github.com/flight505/nano-banana) · [Documentation](https://github.com/flight505/nano-banana#readme)
 
 ---
 
