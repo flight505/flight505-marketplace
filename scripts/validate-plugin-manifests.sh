@@ -281,13 +281,11 @@ validate_hooks_json() {
     return 1
   fi
 
-  # Valid hook events
-  local valid_events="PreToolUse PostToolUse PostToolUseFailure Stop Notification SubagentStart SubagentStop TaskCompleted PreCompact SessionStart SessionEnd PermissionRequest TeammateIdle UserPromptSubmit"
-
+  # Valid hook events come from HOOK_EVENTS in common.sh
   local events
   events=$(jq -r '.hooks | keys[]' "$hooks_json" 2>/dev/null) || true
   for event in $events; do
-    if ! echo "$valid_events" | tr ' ' '\n' | grep -qx "$event"; then
+    if ! is_hook_event "$event"; then
       echo -e "${RED}✗${NC} $plugin_name: unknown hook event '$event'"
       ERRORS_FOUND=$((ERRORS_FOUND + 1))
     fi
@@ -300,7 +298,8 @@ validate_hooks_json() {
     [ -z "$cmd" ] && continue
     # Extract the CLAUDE_PLUGIN_ROOT path from the command (may be preceded by interpreter)
     local script_path
-    script_path=$(echo "$cmd" | grep -o '\${CLAUDE_PLUGIN_ROOT}/[^ '"'"']*' | head -1 | sed "s|\${CLAUDE_PLUGIN_ROOT}/||")
+    # grep exits 1 on inline commands; under pipefail that would abort the whole script
+    script_path=$(echo "$cmd" | grep -o '\${CLAUDE_PLUGIN_ROOT}/[^ '"'"']*' | head -1 | sed "s|\${CLAUDE_PLUGIN_ROOT}/||") || true
     [ -z "$script_path" ] && continue  # No plugin-root path (e.g. system command)
     local full="$MARKETPLACE_ROOT/$plugin_dir/$script_path"
     if [ ! -f "$full" ]; then
@@ -317,15 +316,16 @@ validate_hooks_json() {
   matchers=$(jq -r '.hooks | to_entries[] | select(.key == "SubagentStart" or .key == "SubagentStop") | .value[] | .matcher // empty' "$hooks_json" 2>/dev/null | sort -u) || true
   while IFS= read -r matcher; do
     [ -z "$matcher" ] && continue
-    # Matchers can be pipe-separated regex patterns — check each part
-    echo "$matcher" | tr '|' '\n' | while IFS= read -r part; do
+    # Matchers can be pipe-separated regex patterns — check each part.
+    # Read via process substitution so ERRORS_FOUND is counted in this shell, not a subshell.
+    while IFS= read -r part; do
       [ -z "$part" ] && continue
       local agent_file="$MARKETPLACE_ROOT/$plugin_dir/agents/${part}.md"
       if [ ! -f "$agent_file" ]; then
         echo -e "${RED}✗${NC} $plugin_name: hook matcher '$part' has no agents/${part}.md"
         ERRORS_FOUND=$((ERRORS_FOUND + 1))
       fi
-    done
+    done < <(tr '|' '\n' <<< "$matcher")
   done <<< "$matchers"
 
   return 0
@@ -543,6 +543,7 @@ for plugin_name in $(get_plugins); do
 
   # Run validations
   plugin_valid=true
+  errors_before=$ERRORS_FOUND
 
   validate_json_syntax "$plugin_json" "$plugin_name" || plugin_valid=false
 
@@ -572,8 +573,11 @@ for plugin_name in $(get_plugins); do
     validate_shell_scripts "$plugin_name" "$plugin_dir"
   fi
 
-  if [ "$plugin_valid" = true ]; then
+  # Deep validations count errors without returning 1, so compare the error count too
+  if [ "$plugin_valid" = true ] && [ "$ERRORS_FOUND" -eq "$errors_before" ]; then
     echo -e "${GREEN}✓${NC} $plugin_name validation passed"
+  else
+    echo -e "${RED}✗${NC} $plugin_name validation failed"
   fi
 
   echo ""

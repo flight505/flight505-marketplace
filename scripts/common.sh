@@ -33,3 +33,19 @@ is_valid_plugin() {
     local name="$1"
     get_plugins | grep -qx "$name"
 }
+
+# Hook event names Claude Code accepts in hooks/hooks.json (case-sensitive).
+# Source: https://code.claude.com/docs/en/hooks.md (hook events table), checked 2026-10-21.
+# Claude Code adds events often: when a valid plugin fails with "unknown hook event", add it here.
+HOOK_EVENTS="SessionStart Setup UserPromptSubmit UserPromptExpansion PreToolUse PermissionRequest
+PermissionDenied PostToolUse PostToolUseFailure PostToolBatch Notification MessageDisplay
+SubagentStart SubagentStop TaskCreated TaskCompleted Stop StopFailure TeammateIdle
+InstructionsLoaded ConfigChange CwdChanged DirectoryAdded FileChanged WorktreeCreate
+WorktreeRemove PreCompact PostCompact PreModelSwitch PostModelSwitch Elicitation
+ElicitationResult SessionEnd"
+
+# Check if a name is a known hook event
+is_hook_event() {
+    local name="$1"
+    tr -s ' \n' '\n' <<< "$HOOK_EVENTS" | grep -qx "$name"
+}

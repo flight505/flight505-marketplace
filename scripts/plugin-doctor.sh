@@ -34,9 +34,6 @@ INSTALLED_JSON="$HOME/.claude/plugins/installed_plugins.json"
 KNOWN_MARKETPLACES="$HOME/.claude/plugins/known_marketplaces.json"
 MARKETPLACE_CLONE="$HOME/.claude/plugins/marketplaces/$MARKETPLACE_NAME"
 
-# Valid hook event names (case-sensitive, Claude Code CLI spec)
-VALID_EVENTS="PreToolUse PostToolUse PostToolUseFailure Stop Notification SubagentStart SubagentStop TaskCompleted PreCompact SessionStart SessionEnd PermissionRequest TeammateIdle UserPromptSubmit"
-
 get_plugin_path() {
     local plugin=$1
     echo "$MARKETPLACE_ROOT/$plugin"
@@ -202,14 +199,17 @@ check_offline_sanity() {
 
         # 3b. hooks.json event names must be valid
         if [ -f "$hooks_json" ]; then
-            local events
+            local events events_ok=true
             events=$(jq -r '.hooks | keys[]' "$hooks_json" 2>/dev/null) || true
             for event in $events; do
-                if ! echo "$VALID_EVENTS" | tr ' ' '\n' | grep -qx "$event"; then
+                if ! is_hook_event "$event"; then
                     fail "$plugin: unknown hook event '$event' in hooks.json"
+                    events_ok=false
                 fi
             done
-            pass "$plugin: hook events valid"
+            if [ "$events_ok" = true ]; then
+                pass "$plugin: hook events valid"
+            fi
         fi
 
         # 3c. Manifest must NOT have a "hooks" field (hooks/hooks.json is auto-discovered)
