@@ -1,6 +1,6 @@
 # flight505-marketplace
 
-6 Claude Code plugins as git submodules. Webhook-driven auto-updates, self-correcting validation hooks.
+8 Claude Code plugins: 7 as git submodules, plus `harness`, which lives in this repo. Webhook-driven auto-updates, self-correcting validation hooks.
 
 **Repository:** https://github.com/flight505/flight505-marketplace
 
@@ -25,7 +25,10 @@ flight505-marketplace/
 ├── storybook-assistant/     → github.com/flight505/storybook-assistant
 ├── claude-project-planner/  → github.com/flight505/claude-project-planner
 ├── ai-frontier/             → github.com/flight505/ai-frontier
-└── autoresearch/            → github.com/flight505/autoresearch
+├── autoresearch/            → github.com/flight505/autoresearch
+├── ralph/                   → github.com/flight505/ralph
+├── claude-flows/            → github.com/flight505/claude-flows
+└── harness/                 in-tree (no submodule, no webhook)
 ```
 
 **Each plugin has:** `CLAUDE.md`, `README.md`, `.claude-plugin/plugin.json`
@@ -41,7 +44,9 @@ flight505-marketplace/
 
 ### Hook Events
 
-`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `UserPromptSubmit`, `Notification`, `Stop`, `SubagentStart`, `SubagentStop`, `SessionStart`, `SessionEnd`, `TeammateIdle`, `TaskCompleted`, `PreCompact`
+The accepted event names are `HOOK_EVENTS` in `scripts/common.sh`, copied from the [hooks reference](https://code.claude.com/docs/en/hooks.md).
+Both validators read that list.
+When a plugin fails with `unknown hook event` for an event the docs list, add it there.
 
 **Hook types:** `command` (shell), `prompt` (LLM-evaluated), `agent` (agentic verifier)
 
@@ -68,6 +73,8 @@ Version bump in plugin → push to main → `notify-marketplace.yml` → `reposi
 **Each plugin repo needs:** `.github/workflows/notify-marketplace.yml` + `MARKETPLACE_UPDATE_TOKEN` secret.
 
 **Only triggers on:** version changes in plugin.json pushed to main.
+
+**No webhook yet:** `ralph` and `claude-flows`. The daily run of `auto-update-plugins.yml` syncs them instead.
 
 ---
 
@@ -124,6 +131,9 @@ git submodule update --remote --merge <plugin>
 - Plugins update on restart only, not mid-session
 - Skills in plugins don't hot-reload (standalone symlinked skills do)
 - `PermissionRequest` hooks don't fire in `-p` (headless) mode
+- GitHub disables `auto-update-plugins.yml` after 60 days without a commit, and a disabled workflow ignores webhooks too. Check with `gh workflow list -R flight505/flight505-marketplace --all`; fix with `gh workflow enable auto-update-plugins.yml -R flight505/flight505-marketplace`
+- `claude plugin validate` rejects plugin names that start with `claude-` as reserved, so `claude-project-planner` and `claude-flows` fail it and `claude plugin tag` refuses them. Claude Code still installs and loads them
+- A worktree session leaves its checkout in `.claude/worktrees/` (ignored by git). Merge or delete its branch when done, then remove the folder and run `git worktree prune`
 
 ---
 

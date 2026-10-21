@@ -13,3 +13,9 @@
 [submodule "autoresearch"]
 	path = autoresearch
 	url = https://github.com/flight505/autoresearch.git
+[submodule "ralph"]
+	path = ralph
+	url = https://github.com/flight505/ralph.git
+[submodule "claude-flows"]
+	path = claude-flows
+	url = https://github.com/flight505/claude-flows.git

@@ -15,8 +15,11 @@
 [![Claude Project Planner](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[2].version&label=claude-project-planner&color=brightgreen)](https://github.com/flight505/claude-project-planner)
 [![AI Frontier](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[3].version&label=ai-frontier&color=brightgreen)](https://github.com/flight505/ai-frontier)
 [![Autoresearch](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[4].version&label=autoresearch&color=brightgreen)](https://github.com/flight505/autoresearch)
+[![Harness](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[5].version&label=harness&color=brightgreen)](https://github.com/flight505/flight505-marketplace/tree/main/harness)
+[![Ralph](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[6].version&label=ralph&color=brightgreen)](https://github.com/flight505/ralph)
+[![Claude Flows](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/flight505/flight505-marketplace/main/.claude-plugin/marketplace.json&query=$.plugins[7].version&label=claude-flows&color=brightgreen)](https://github.com/flight505/claude-flows)
 
-A centralized marketplace for 8 Claude Code plugins. Install the marketplace once, then pick the plugins you want. Updates sync automatically within ~30 seconds of a new release.
+A centralized marketplace for 8 Claude Code plugins. Install the marketplace once, then pick the plugins you want. Plugin releases reach the marketplace automatically (see [How Updates Work](#how-updates-work)).
 
 ---
 
@@ -118,6 +121,36 @@ Karpathy's autoresearch pattern as a Claude Code plugin. Autonomous fixed-budget
 
 ---
 
+### Harness
+
+Composable harness engineering — a workflow orchestrator with build, optimize, research, and triage agents. Headless, single-session, and resumable. Harness lives in this repository rather than in its own.
+
+**Commands:** `/harness:run`
+
+[Source](https://github.com/flight505/flight505-marketplace/tree/main/harness)
+
+---
+
+### Ralph
+
+A long-running agent loop in the Ralph pattern — a stable prompt, a mutable plan, and a loop that runs until the plan is empty. Fresh context on every iteration.
+
+**Commands:** `/ralph:init`, `/ralph:run`, `/ralph:goal`
+
+[Repository](https://github.com/flight505/ralph) · [Documentation](https://github.com/flight505/ralph#readme)
+
+---
+
+### Claude Flows
+
+Helpers for Claude Code's autonomous primitives — `/goal`, `/branch`, worktrees, and dynamic workflows — with opinionated defaults and safety guardrails.
+
+**Commands:** `/claude-flows:flow-goal`
+
+[Repository](https://github.com/flight505/claude-flows) · [Documentation](https://github.com/flight505/claude-flows#readme)
+
+---
+
 ## How Updates Work
 
 When a plugin author bumps a version and pushes to main:
@@ -128,7 +161,7 @@ When a plugin author bumps a version and pushes to main:
 4. Validation runs, and if it passes, changes are committed and pushed
 5. Users with auto-update enabled get the new version on next Claude Code restart
 
-Total time from version bump to availability: ~30 seconds. A daily cron job also runs as a safety net to catch anything webhooks might miss.
+Total time from version bump to availability: ~30 seconds. A daily job also syncs every plugin, which covers plugins without the webhook (Ralph, Claude Flows) and anything a webhook missed.
 
 ---
 
